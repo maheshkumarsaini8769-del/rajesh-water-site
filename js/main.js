@@ -69,7 +69,7 @@ function updateSizing() {
   var dwellAcc = 0;
   var moveDur = 0.9;    // seconds per move (slow, premium)
   var dwell = 3.6;      // seconds held on active card
-  var autoOn = !reduced;
+  var autoOn = false;
   var dir = 1;
   var arrived = true;
   var active = 0;
@@ -219,18 +219,8 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
     autoOn = false;
     dwellAcc = 0;
   }
-  function resumeAuto() {
-    if (reduced) return;
-    autoOn = true;
-    dwellAcc = 0;
-    ensureRunning();
-  }
-  function restartAuto() {
-    if (reduced) return;
-    autoOn = true;
-    dwellAcc = 0;
-    ensureRunning();
-  }
+  function resumeAuto() {}
+  function restartAuto() {}
 
   stage.addEventListener("pointerenter", stopAuto);
   stage.addEventListener("pointerleave", resumeAuto);
@@ -426,6 +416,7 @@ var P = {
 
   var SCALE = [0.78, 0.94, 1.16, 0.94, 0.78];
   var SLIDE = [-96, -48, 0, 48, 96];
+  var slideFactor = Math.max(0.42, Math.min(1, (window.innerWidth - 150) / 550));
 
   function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
   function ease(t) { return t * t * (3 - 2 * t); }
@@ -474,7 +465,7 @@ var p = sp;
       t2 = clamp01((p - (P.inStart + i * P.inStep)) / P.inDur);
       fly = backOut(t2);
       d.style.transform =
-        "translate3d(" + (SLIDE[i] * t2) + "px," + (150 * (1 - fly)) + "px,0) " +
+        "translate3d(" + (SLIDE[i] * slideFactor * t2) + "px," + (150 * (1 - fly)) + "px,0) " +
         "rotate(" + ((2 - i) * 2 * t2) + "deg) " +
         "scale(" + (SCALE[i] * (0.5 + 0.5 * fly)) + ")";
       d.style.opacity = Math.min(1, t2 * 3);
@@ -491,7 +482,7 @@ function renderStatic() {
     for (i = 0; i < ripples.length; i++) { ripples[i].style.opacity = 0; }
     for (i = 0; i < drinks.length; i++) {
       d = drinks[i];
-      d.style.transform = "translate3d(" + SLIDE[i] + "px,0,0) scale(" + SCALE[i] + ")";
+      d.style.transform = "translate3d(" + (SLIDE[i] * slideFactor) + "px,0,0) scale(" + SCALE[i] + ")";
       d.style.opacity = 1;
     }
     foot.style.opacity = 1;
