@@ -28,7 +28,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 
-  <link rel="stylesheet" href="../css/style.css?v=46">
+  <link rel="stylesheet" href="../css/style.css?v=47">
 
   <style>
     .shop-close { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: rgba(8, 22, 38, 0.5); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: color 0.3s, border-color 0.3s; }
@@ -127,6 +127,8 @@
 
 
 <body>
+    <script src="../data/site-data.js"></script>
+    <script src="../js/site-content.js"></script>
 
 
 
@@ -146,7 +148,7 @@
           <path d="M12 2.2c3.9 5.3 6.9 9 6.9 12.6a6.9 6.9 0 1 1-13.8 0c0-3.6 3-7.3 6.9-12.6z" fill="url(#rwLogoGrad)"/>
           <path d="M9.3 16.1a2.9 2.9 0 0 0 2.2 2.7" stroke="#eafcff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
         </svg>
-        <span class="navbar-word">Rajesh Water<small>Premium Water Supply</small></span>
+        <span class="navbar-word"><span class="nb-name">Rajesh Water</span><small>Premium Water Supply</small></span>
       </a>
       <div class="navbar-links" id="navLinks">
         <a href="#hero" data-nav="home">Home</a>
@@ -204,13 +206,13 @@
         <section class="hero-copy" aria-label="Introduction">
 
 
-          <span class="eyebrow">Pure &bull; Fresh &bull; Delivered</span>
+          <span class="eyebrow" data-s="hero.eyebrow">Pure &bull; Fresh &bull; Delivered</span>
 
 
-          <h1 class="headline">The Art of<br><em>Pure Water</em></h1>
+          <h1 class="headline"><span data-s="hero.headline1">The Art of</span><br><em data-s="hero.headline2">Pure Water</em></h1>
 
 
-          <p class="lede">
+          <p class="lede" data-s="hero.lede">
 
 
             Premium bottled water and cold drinks, sourced clean and quality
@@ -234,7 +236,7 @@
             <a class="btn btn-primary" href="#">
 
 
-              <span>Order Now</span>
+              <span data-s="hero.cta1">Order Now</span>
 
 
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -249,7 +251,7 @@
             </a>
 
 
-            <a class="btn btn-ghost" href="#">Explore Products</a>
+            <a class="btn btn-ghost" href="#" data-s="hero.cta2">Explore Products</a>
 
 
           </div>
@@ -282,7 +284,7 @@
               </svg>
 
 
-              <span>Fast Delivery</span>
+              <span data-s="hero.trust1">Fast Delivery</span>
 
 
             </li>
@@ -303,7 +305,7 @@
               </svg>
 
 
-              <span>Quality Checked</span>
+              <span data-s="hero.trust2">Quality Checked</span>
 
 
             </li>
@@ -327,7 +329,7 @@
               </svg>
 
 
-              <span>Bulk Orders</span>
+              <span data-s="hero.trust3">Bulk Orders</span>
 
 
             </li>
@@ -530,13 +532,13 @@
     <div class="deliver-content">
 
 
-      <span class="deliver-eyebrow">What We Deliver</span>
+      <span class="deliver-eyebrow" data-s="deliver.eyebrow">What We Deliver</span>
 
 
-      <h2 class="deliver-title">Refreshment, <em>Delivered.</em></h2>
+      <h2 class="deliver-title"><span data-s="deliver.title">Refreshment,</span> <em data-s="deliver.title2">Delivered.</em></h2>
 
 
-      <p class="deliver-sub">Pure water and refreshing beverages, delivered when you need them.</p>
+      <p class="deliver-sub" data-s="deliver.sub">Pure water and refreshing beverages, delivered when you need them.</p>
 
 
     </div>
@@ -598,13 +600,13 @@
       <div class="deliver-foot" id="deliverFoot">
 
 
-        <p class="deliver-tag">From everyday hydration to your favourite cold drinks.</p>
+        <p class="deliver-tag" data-s="deliver.tag">From everyday hydration to your favourite cold drinks.</p>
 
 
         <a class="btn btn-ghost deliver-cta" href="#">
 
 
-          <span>Explore Products</span>
+          <span data-s="deliver.cta">Explore Products</span>
 
 
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -653,12 +655,12 @@
       <section class="flex-grow">
         <header class="mb-8 flex flex-wrap justify-between items-end gap-4">
           <div>
-            <h1 class="font-headline-lg text-headline-lg text-primary mb-2">Featured Boxes</h1>
-            <p class="font-body-md text-text-muted max-w-2xl">Our bestselling water and cold drink boxes, ready for home, office and events. Minimum order of 48 bottles required for delivery.</p>
+            <h1 class="font-headline-lg text-headline-lg text-primary mb-2" data-s="featured.title">Featured Boxes</h1>
+            <p class="font-body-md text-text-muted max-w-2xl" data-s="featured.sub">Our bestselling water and cold drink boxes, ready for home, office and events. Minimum order of 48 bottles required for delivery.</p>
           </div>
           <div class="flex items-center gap-6 ml-auto sm:ml-0">
             <span id="rwShopCount" class="font-label-caps text-label-caps text-text-muted uppercase hidden md:block">Showing 4 Products</span>
-            <a href="products.html" class="font-label-caps text-label-caps text-primary-container uppercase hover:text-white transition-colors whitespace-nowrap">View All Products →</a>
+            <a href="products.html" class="font-label-caps text-label-caps text-primary-container uppercase hover:text-white transition-colors whitespace-nowrap" data-s="featured.viewAll">View All Products →</a>
           </div>
         </header>
 
@@ -677,11 +679,11 @@
       <div class="absolute inset-0 bg-gradient-to-b from-surface-primary/30 via-surface-primary/80 to-surface-primary"></div>
     </div>
     <div class="relative z-10 max-w-container-max mx-auto text-center flex flex-col items-center gap-6">
-      <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20 shadow-lg">B2B Logistics &amp; Supply</span>
-      <h2 class="font-display-hero-mobile md:font-display-hero text-display-hero-mobile md:text-display-hero font-bold text-text-primary max-w-4xl" style="font-size: clamp(2rem, 5vw, 4.5rem); line-height: 1.1;">Reliable Bulk Beverage Supply for Business.</h2>
-      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Elevate your inventory with our premium hydration solutions. Engineered for scale, delivered with precision.</p>
+      <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20 shadow-lg" data-s="bulk.badge">B2B Logistics &amp; Supply</span>
+      <h2 class="font-display-hero-mobile md:font-display-hero text-display-hero-mobile md:text-display-hero font-bold text-text-primary max-w-4xl" style="font-size: clamp(2rem, 5vw, 4.5rem); line-height: 1.1;" data-s="bulk.title">Reliable Bulk Beverage Supply for Business.</h2>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl" data-s="bulk.desc">Elevate your inventory with our premium hydration solutions. Engineered for scale, delivered with precision.</p>
       <div class="flex flex-wrap gap-6 justify-center mt-2">
-        <button class="bg-primary-container text-surface-primary px-8 py-4 rounded-full font-label-caps text-label-caps font-bold hover:bg-white transition-all shadow-lg hover:shadow-[0_0_30px_rgba(138,243,255,0.3)] flex items-center gap-2 active:scale-95" id="bulkQuoteBtn">Request a Quote</button>
+        <button class="bg-primary-container text-surface-primary px-8 py-4 rounded-full font-label-caps text-label-caps font-bold hover:bg-white transition-all shadow-lg hover:shadow-[0_0_30px_rgba(138,243,255,0.3)] flex items-center gap-2 active:scale-95" id="bulkQuoteBtn" data-s="bulk.cta">Request a Quote</button>
         <a class="bg-transparent border border-border-subtle text-text-primary px-8 py-4 rounded-full font-label-caps text-label-caps font-bold hover:bg-surface-secondary transition-all flex items-center gap-2" href="https://wa.me/917742735762?text=Hello%20Rajesh%20Water%20B2B%20Team%2C%20I'm%20interested%20in%20a%20bulk%20supply%20partnership.%20Could%20you%20share%20your%20commercial%20rate%20card?" target="_blank" rel="noopener">
           <span class="material-symbols-outlined text-[20px]">chat</span>
           WhatsApp Inquiry
@@ -717,28 +719,28 @@
             <span class="slot-ring"></span>
           </div>
           <div class="slot-text">
-            <h3 class="slot-title">Pure. Packed. Delivered Fresh.</h3>
-            <p class="slot-sub">Premium packaged drinking water — chilled, sealed and at your doorstep, box after box, every day.</p>
+            <h3 class="slot-title" data-s="slot.title">Pure. Packed. Delivered Fresh.</h3>
+            <p class="slot-sub" data-s="slot.sub">Premium packaged drinking water — chilled, sealed and at your doorstep, box after box, every day.</p>
           </div>
         </div>
       <section id="about" aria-label="About Rajesh Water" class="font-body-md bg-surface-primary py-24 scroll-mt-24">
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center">
         <div>
-          <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20 mb-6 inline-block">About Us</span>
-          <h2 class="font-display-hero-mobile md:font-display-hero font-bold text-text-primary mb-5" style="font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15;">Pure Water, Delivered with Trust.</h2>
-          <p class="font-body-lg text-body-lg text-on-surface-variant mb-5">Rajesh Water is a premium bottled water and beverage supplier serving homes, offices, hotels and events. Every bottle is sealed, quality-checked and delivered in sturdy boxes.</p>
-          <p class="font-body-md text-body-md text-on-surface-variant mb-8">From a single box to full bulk supply, we keep the same promise — fresh stock, on-time delivery and transparent pricing.</p>
+          <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20 mb-6 inline-block" data-s="about.badge">About Us</span>
+          <h2 class="font-display-hero-mobile md:font-display-hero font-bold text-text-primary mb-5" style="font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15;" data-s="about.title">Pure Water, Delivered with Trust.</h2>
+          <p class="font-body-lg text-body-lg text-on-surface-variant mb-5" data-s="about.para1">Rajesh Water is a premium bottled water and beverage supplier serving homes, offices, hotels and events. Every bottle is sealed, quality-checked and delivered in sturdy boxes.</p>
+          <p class="font-body-md text-body-md text-on-surface-variant mb-8" data-s="about.para2">From a single box to full bulk supply, we keep the same promise — fresh stock, on-time delivery and transparent pricing.</p>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="about-point"><span class="material-symbols-outlined">verified</span><b>Quality Checked</b><small>Sealed bottles, checked stock</small></div>
-            <div class="about-point"><span class="material-symbols-outlined">schedule</span><b>On-Time</b><small>Reliable delivery slots</small></div>
-            <div class="about-point"><span class="material-symbols-outlined">handshake</span><b>Bulk Friendly</b><small>Home to wholesale supply</small></div>
+            <div class="about-point"><span class="material-symbols-outlined">verified</span><b data-s="about.p1t">Quality Checked</b><small data-s="about.p1s">Sealed bottles, checked stock</small></div>
+            <div class="about-point"><span class="material-symbols-outlined">schedule</span><b data-s="about.p2t">On-Time</b><small data-s="about.p2s">Reliable delivery slots</small></div>
+            <div class="about-point"><span class="material-symbols-outlined">handshake</span><b data-s="about.p3t">Bulk Friendly</b><small data-s="about.p3s">Home to wholesale supply</small></div>
           </div>
         </div>
         <div class="about-visual">
           <span class="about-big-icon material-symbols-outlined">water_drop</span>
-          <h3 class="font-headline-md text-headline-md text-text-primary">Every drop, accounted for.</h3>
-          <p class="font-body-md text-body-md text-on-surface-variant">Min. order 48 bottles · Sealed boxes · Cold &amp; fresh delivery</p>
+          <h3 class="font-headline-md text-headline-md text-text-primary" data-s="about.visualTitle">Every drop, accounted for.</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant" data-s="about.visualSub">Min. order 48 bottles · Sealed boxes · Cold &amp; fresh delivery</p>
         </div>
       </div>
     </div>
@@ -749,28 +751,28 @@
   <section id="support" aria-label="Support" class="font-body-md bg-surface-primary pb-24 scroll-mt-24">
     <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
       <header class="text-center flex flex-col items-center gap-3 mb-12">
-        <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20">We're Here to Help</span>
-        <h2 class="font-headline-lg text-headline-lg text-primary">Support</h2>
-        <p class="font-body-md text-text-muted max-w-2xl">Questions about an order, delivery or bulk supply? Reach us directly.</p>
+        <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20" data-s="support.badge">We're Here to Help</span>
+        <h2 class="font-headline-lg text-headline-lg text-primary" data-s="support.title">Support</h2>
+        <p class="font-body-md text-text-muted max-w-2xl" data-s="support.sub">Questions about an order, delivery or bulk supply? Reach us directly.</p>
       </header>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
         <a class="support-card" href="https://wa.me/917742735762?text=Hello%20Rajesh%20Water%2C%20I%20need%20help%20with%20my%20order." target="_blank" rel="noopener">
           <span class="support-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
-          <h3 class="font-headline-sm text-headline-sm text-text-primary">WhatsApp Support</h3>
-          <p class="font-body-md text-body-md text-on-surface-variant">Fastest way to reach us — order help, delivery status or queries.</p>
-          <span class="support-link">Chat on WhatsApp →</span>
+          <h3 class="font-headline-sm text-headline-sm text-text-primary" data-s="support.c1t">WhatsApp Support</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant" data-s="support.c1d">Fastest way to reach us — order help, delivery status or queries.</p>
+          <span class="support-link" data-s="support.c1l">Chat on WhatsApp →</span>
         </a>
         <a class="support-card" href="tel:+917742735762">
           <span class="support-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-          <h3 class="font-headline-sm text-headline-sm text-text-primary">Call Us</h3>
-          <p class="font-body-md text-body-md text-on-surface-variant">Speak to our supply team directly for urgent requirements.</p>
-          <span class="support-link">+91 77427 35762 →</span>
+          <h3 class="font-headline-sm text-headline-sm text-text-primary" data-s="support.c2t">Call Us</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant" data-s="support.c2d">Speak to our supply team directly for urgent requirements.</p>
+          <span class="support-link" data-s="support.c2l">+91 77427 35762 →</span>
         </a>
         <div class="support-card">
           <span class="support-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-          <h3 class="font-headline-sm text-headline-sm text-text-primary">Delivery Hours</h3>
-          <p class="font-body-md text-body-md text-on-surface-variant">Every day, 8:00 AM – 8:00 PM. Bulk orders can schedule earlier slots.</p>
-          <span class="support-link">7 days a week</span>
+          <h3 class="font-headline-sm text-headline-sm text-text-primary" data-s="support.c3t">Delivery Hours</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant" data-s="support.c3d">Every day, 8:00 AM – 8:00 PM. Bulk orders can schedule earlier slots.</p>
+          <span class="support-link" data-s="support.c3l">7 days a week</span>
         </div>
       </div>
     </div>
@@ -781,8 +783,8 @@
   <section id="reviews" aria-label="Customer feedback" class="relative w-full px-margin-mobile md:px-margin-desktop py-24 scroll-mt-24 overflow-hidden">
     <div class="max-w-container-max mx-auto">
 <header class="text-center flex flex-col items-center gap-4 mb-14">
-        <h2 class="font-display-hero-mobile md:font-display-hero font-bold text-text-primary" style="font-size: clamp(1.8rem, 4vw, 3.2rem); line-height: 1.15;">What Our Customers Say</h2>
-        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Real feedback from families, offices and events we supply every week.</p>
+        <h2 class="font-display-hero-mobile md:font-display-hero font-bold text-text-primary" style="font-size: clamp(1.8rem, 4vw, 3.2rem); line-height: 1.15;" data-s="reviews.gridTitle">What Our Customers Say</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl" data-s="reviews.gridSub">Real feedback from families, offices and events we supply every week.</p>
       </header>
 <div class="round-carousel" id="roundCarousel" aria-hidden="true">
         <div class="round-carousel-tilt">
@@ -906,9 +908,9 @@
               <path d="M12 2.2c3.9 5.3 6.9 9 6.9 12.6a6.9 6.9 0 1 1-13.8 0c0-3.6 3-7.3 6.9-12.6z" fill="url(#rwLogoGradF)"/>
               <path d="M9.3 16.1a2.9 2.9 0 0 0 2.2 2.7" stroke="#eafcff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
             </svg>
-            <span class="navbar-word">Rajesh Water<small>Premium Water Supply</small></span>
+            <span class="navbar-word"><span class="nb-name">Rajesh Water</span><small>Premium Water Supply</small></span>
           </a>
-          <p class="footer-about">Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.</p>
+          <p class="footer-about" data-s="footer.about">Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.</p>
         </div>
         <div class="footer-col">
           <h4>Explore</h4>
@@ -932,7 +934,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2026 Rajesh Water. All rights reserved.</span>
+        <span data-s="footer.copyright">© 2026 Rajesh Water. All rights reserved.</span>
         <span>Order via WhatsApp — no account needed.</span>
       </div>
     </div>
@@ -945,7 +947,7 @@
       "use strict";
 
       var KEY = 'rajesh-water-cart';
-      var BUSINESS = { name: 'RAJESH WATER', whatsapp: '917742735762' };
+      var BUSINESS = (window.SITE_DATA && window.SITE_DATA.contact) ? { name: (window.SITE_DATA.brand && window.SITE_DATA.brand.name) ? window.SITE_DATA.brand.name.toUpperCase() : 'RAJESH WATER', whatsapp: window.SITE_DATA.contact.whatsapp || '917742735762' } : { name: 'RAJESH WATER', whatsapp: '917742735762' };
       var MIN_ORDER = 48;
       var MAX_CARTONS = 40;
       var fmt = new Intl.NumberFormat('en-IN');
@@ -1517,7 +1519,7 @@
       }
 
       /* ---------- Customer feedback (demo data — replace with API/database later) ---------- */
-      var REVIEWS = [
+      var REVIEWS = (window.SITE_DATA && window.SITE_DATA.reviews && window.SITE_DATA.reviews.grid) || [
         { name: 'Aman Sharma', rating: 5, text: 'Regular monthly supply, always on time and the bottles are sealed and clean.', product: '500 ML Box', date: 'Aug 2026', demo: true },
         { name: 'Priya Verma', rating: 5, text: 'Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.', product: '2 LITRE Box', date: 'Jul 2026', demo: true },
         { name: 'Hotel Rajput Palace', rating: 4, text: 'Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.', product: 'Bulk Supply', date: 'Jun 2026', demo: true },
@@ -1567,7 +1569,7 @@
     var ring = document.getElementById('rcRing');
     if (!wrap || !ring) { return; }
 
-    var REVIEW_FACES = [
+    var REVIEW_FACES = (window.SITE_DATA && window.SITE_DATA.reviews && window.SITE_DATA.reviews.carousel) || [
       { name: 'Aman Sharma', rating: 5, text: 'Regular monthly supply, always on time and the bottles are sealed and clean.', meta: '500 ML Box · WhatsApp order' },
       { name: 'Priya Verma', rating: 5, text: 'Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.', meta: '2 LITRE Box · Family event' },
       { name: 'Hotel Rajput Palace', rating: 4, text: 'Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.', meta: 'Bulk Supply · Weekly' },
@@ -1866,7 +1868,7 @@ document.getElementById('quoteMinus').addEventListener('click', function () {
       }, 950);
     });
     document.getElementById('qWABtn').addEventListener('click', function () {
-      var url = 'https://wa.me/917742735762?text=' + encodeURIComponent(waText);
+      var url = 'https://wa.me/' + ((window.SITE_DATA && window.SITE_DATA.contact && window.SITE_DATA.contact.whatsapp) || '917742735762') + '?text=' + encodeURIComponent(waText);
       window.open(url, '_blank', 'noopener');
     });
     document.getElementById('quoteCloseBtn').addEventListener('click', closeQuote);

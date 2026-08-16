@@ -2,7 +2,10 @@
    Rajesh Water — Product Catalog (single source of truth)
    Add / edit products here. Images repeat across sizes —
    swap src for real brand photos later.
+   NOTE: if data/site-data.js loaded first (admin-managed
+   catalog), its PRODUCTS win and this file is a no-op.
    ============================================================ */
+if (!window.PRODUCTS) {
 window.PRODUCTS = [
   /* ---------- Water bottles ---------- */
   { id: 'p001', name: 'Bisleri', label: 'Bisleri 1 LITRE', size: '1 LITRE', category: 'Premium Water', price: 20, boxSize: 12, minBoxes: 1, img: '../images/bisleri.png', badge: 'Bestseller', featured: true },
@@ -40,3 +43,4 @@ window.PRODUCTS = [
   { id: 'p031', name: 'Appy Fizz', label: 'Appy Fizz 750 ML', size: '750 ML', category: 'Cold Drinks', price: 45, boxSize: 12, minBoxes: 1, img: '../images/fanta.png' },
   { id: 'p032', name: 'Maaza', label: 'Maaza 1 LITRE', size: '1 LITRE', category: 'Cold Drinks', price: 50, boxSize: 12, minBoxes: 1, img: '../images/coke.png' },
 ];
+}

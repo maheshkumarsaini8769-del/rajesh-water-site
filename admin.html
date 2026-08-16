@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajesh Water — Admin Panel</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%2300aeef'/></svg>">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #081524; --panel: #0e2136; --panel2: #122a42; --line: #1d3a55;
+    --text: #e8f4fb; --muted: #8fb3c9; --acc: #00aeef; --acc2: #045a8c;
+    --ok: #2fd97a; --err: #ff5d6c; --warn: #ffc65c;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+  .wrap { display: flex; min-height: 100vh; }
+
+  /* ===== Sidebar ===== */
+  .side { width: 232px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+  .side .brand { padding: 18px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .side .brand .dot { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7fe0ff, var(--acc) 45%, var(--acc2)); box-shadow: 0 0 14px rgba(0,174,239,.5); }
+  .side .brand b { font-size: 15px; letter-spacing: .04em; }
+  .side .brand small { display: block; color: var(--muted); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+  .side nav { flex: 1; padding: 10px; }
+  .side nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; margin-bottom: 3px; background: none; border: 0; border-radius: 10px; color: var(--muted); font-size: 13.5px; cursor: pointer; text-align: left; }
+  .side nav button:hover { background: var(--panel2); color: var(--text); }
+  .side nav button.on { background: linear-gradient(90deg, rgba(0,174,239,.18), rgba(0,174,239,.05)); color: var(--acc); font-weight: 600; border: 1px solid rgba(0,174,239,.35); }
+  .side nav button .ic { width: 18px; text-align: center; }
+  .side .foot { padding: 12px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
+
+  /* ===== Main ===== */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .topbar { display: flex; align-items: center; gap: 14px; padding: 12px 22px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; }
+  .topbar h1 { font-size: 16.5px; font-weight: 600; }
+  .topbar .spacer { flex: 1; }
+  .topbar .open-site { text-decoration: none; color: var(--acc); font-weight: 600; padding: 7px 14px; border: 1px solid rgba(0,174,239,.4); border-radius: 999px; font-size: 12.5px; }
+  .topbar .open-site:hover { background: rgba(0,174,239,.12); }
+  .btn { padding: 9px 18px; border: 0; border-radius: 10px; background: linear-gradient(135deg, var(--acc), var(--acc2)); color: #fff; font-weight: 700; cursor: pointer; font-size: 13px; letter-spacing: .02em; }
+  .btn:hover { filter: brightness(1.12); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  .btn.ghost { background: none; border: 1px solid var(--line); color: var(--muted); }
+  .btn.ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn.danger { background: linear-gradient(135deg, #ff5d6c, #b3243a); }
+  .btn.small { padding: 5px 11px; font-size: 12px; border-radius: 8px; }
+  .content { padding: 22px; max-width: 1040px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; }
+  .card h3 { font-size: 14px; letter-spacing: .05em; text-transform: uppercase; color: var(--acc); margin-bottom: 14px; font-weight: 700; }
+  .card .sub { color: var(--muted); font-size: 12px; margin: -8px 0 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+  .grid .full { grid-column: 1 / -1; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: .03em; }
+  .field label b { color: var(--err); }
+  input[type=text], input[type=number], input[type=tel], input[type=password], input[type=url], textarea, select {
+    width: 100%; background: var(--panel2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 9px; padding: 9px 12px; font-size: 13.5px; font-family: inherit;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px rgba(0,174,239,.18); }
+  textarea { resize: vertical; min-height: 62px; }
+  input[type=color] { width: 100%; height: 38px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel2); padding: 3px; cursor: pointer; }
+  input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--acc); }
+  .hint { color: var(--muted); font-size: 11.5px; margin-top: 4px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .pill.ok { background: rgba(47,217,122,.15); color: var(--ok); }
+  .pill.warn { background: rgba(255,198,92,.14); color: var(--warn); }
+  .pill.err { background: rgba(255,93,108,.15); color: var(--err); }
+
+  /* ===== Products ===== */
+  .ptable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .ptable th { text-align: left; color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .ptable td { padding: 7px 6px; border-bottom: 1px solid rgba(29,58,85,.5); vertical-align: middle; }
+  .ptable input { padding: 5px 8px; font-size: 12.5px; border-radius: 7px; }
+  .ptable .thumb { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; background: #fff; padding: 2px; }
+  .mini { display: flex; gap: 4px; }
+  .mini button { background: var(--panel2); border: 1px solid var(--line); color: var(--muted); width: 24px; height: 24px; border-radius: 7px; cursor: pointer; font-size: 12px; }
+  .mini button:hover { color: var(--text); border-color: var(--acc); }
+  .mini button.rm:hover { color: var(--err); border-color: var(--err); }
+  .feat-badge { width: 90px; }
+
+  /* ===== Save bar ===== */
+  .savebar { position: sticky; bottom: 0; margin-top: auto; display: flex; align-items: center; gap: 14px; padding: 12px 22px; background: rgba(8,21,36,.94); border-top: 1px solid var(--line); backdrop-filter: blur(8px); }
+  .savebar .st { font-size: 12.5px; color: var(--muted); }
+  .savebar .st.dirty { color: var(--warn); font-weight: 700; }
+
+  /* ===== Toast ===== */
+  #toast { position: fixed; right: 20px; bottom: 74px; background: var(--panel2); border: 1px solid var(--line); border-left: 4px solid var(--ok); border-radius: 10px; padding: 12px 18px; font-size: 13px; max-width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,.45); opacity: 0; transform: translateY(10px); transition: .25s; pointer-events: none; z-index: 60; }
+  #toast.show { opacity: 1; transform: none; }
+  #toast.err { border-left-color: var(--err); }
+
+  /* ===== Login ===== */
+  #login { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; }
+  #login .box { width: 330px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 28px; text-align: center; }
+  #login .box .drop { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7fe0ff, var(--acc) 45%, var(--acc2)); box-shadow: 0 0 22px rgba(0,174,239,.55); }
+  #login .box h2 { font-size: 17px; margin-bottom: 4px; }
+  #login .box p { color: var(--muted); font-size: 12.5px; margin-bottom: 18px; }
+  #login input { margin-bottom: 12px; text-align: center; }
+  #login .err { color: var(--err); font-size: 12.5px; min-height: 18px; margin-bottom: 6px; }
+
+  /* ===== Misc ===== */
+  .img-pick { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .img-thumb { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); object-fit: contain; background: #fff; cursor: pointer; padding: 2px; }
+  .img-thumb.on { outline: 2px solid var(--acc); }
+  .backup-code { width: 100%; min-height: 130px; background: #071322; border: 1px dashed #2c4a66; color: #9fd8ee; border-radius: 10px; padding: 12px; font-family: Consolas, monospace; font-size: 12px; }
+  .kbd { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; font-size: 11.5px; color: var(--muted); }
+  @media (max-width: 760px) {
+    .side { display: none; }
+    .grid { grid-template-columns: 1fr; }
+    .content { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="box">
+    <div class="drop"></div>
+    <h2>Admin Panel</h2>
+    <p>Rajesh Water — content manager</p>
+    <input id="pw" type="password" placeholder="Passcode" autocomplete="off">
+    <div class="err" id="pwErr"></div>
+    <button class="btn" id="pwBtn" style="width:100%">Unlock</button>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <aside class="side">
+    <div class="brand">
+      <div class="dot"></div>
+      <div><b>Rajesh Water</b><small>Admin Panel</small></div>
+    </div>
+    <nav id="nav">
+      <button data-tab="home" class="on"><span class="ic">&#9632;</span> Overview</button>
+      <button data-tab="brand"><span class="ic">&#9733;</span> Brand &amp; Logo</button>
+      <button data-tab="homepage"><span class="ic">&#9776;</span> Homepage Texts</button>
+      <button data-tab="reviews"><span class="ic">&#9734;</span> Reviews</button>
+      <button data-tab="products"><span class="ic">&#9650;</span> Products</button>
+      <button data-tab="contact"><span class="ic">&#9993;</span> Contact &amp; WhatsApp</button>
+      <button data-tab="theme"><span class="ic">&#9679;</span> Colors &amp; Motion</button>
+      <button data-tab="settings"><span class="ic">&#9881;</span> Settings &amp; Backup</button>
+    </nav>
+    <div class="foot">Edits apply instantly to the site after you press <b>Save</b>.</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="tabTitle">Overview</h1>
+      <div class="spacer"></div>
+      <a class="open-site" href="pages/index.html?v=47" target="_blank" rel="noopener">&#8599; Open Site</a>
+    </div>
+    <div class="content" id="content"></div>
+    <div class="savebar">
+      <div class="st" id="saveState">No changes</div>
+      <div class="spacer" style="flex:1"></div>
+      <button class="btn ghost" id="revertBtn" disabled>Revert</button>
+      <button class="btn" id="saveBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="data/site-data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DEFAULTS = null;
+  var DATA = null;          /* working copy */
+  var dirty = false;
+  var fileHandle = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- data ---------- */
+  function loadDefaults() {
+    if (DEFAULTS) return DEFAULTS;
+    try {
+      DEFAULTS = JSON.parse(JSON.stringify(window.SITE_DATA));
+    } catch (e) {
+      DEFAULTS = null;
+    }
+    return DEFAULTS;
+  }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function setDirty(v) {
+    dirty = v;
+    $('saveState').textContent = v ? '\u25CF Unsaved changes' : 'All changes saved';
+    $('saveState').className = 'st' + (v ? ' dirty' : '');
+    $('saveBtn').disabled = !v;
+    $('revertBtn').disabled = !v;
+  }
+
+  /* ---------- login ---------- */
+  function tryUnlock() {
+    var pass = $('pw').value;
+    if (sessionStorage.getItem('rwAdminOk') === '1') { doUnlock(); return; }
+    var d = loadDefaults();
+    var ok = d && d.admin && (d.admin.passcode === pass || d.admin.passcode === 'admin123' && pass === 'admin123');
+    if (!ok) { $('pwErr').textContent = 'Wrong passcode. Try again.'; return; }
+    doUnlock();
+  }
+  function doUnlock() {
+    sessionStorage.setItem('rwAdminOk', '1');
+    $('login').style.display = 'none';
+    $('app').style.display = 'flex';
+    DATA = clone(loadDefaults());
+    render();
+  }
+  $('pwBtn').addEventListener('click', tryUnlock);
+  $('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryUnlock(); });
+  if (sessionStorage.getItem('rwAdminOk') === '1') doUnlock();
+
+  /* ---------- helpers ---------- */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function field(label, key, opts) {
+    opts = opts || {};
+    var val = resolve(DATA, key);
+    var ph = opts.placeholder ? ' placeholder="' + esc(opts.placeholder) + '"' : '';
+    var rows = opts.rows ? ' rows="' + opts.rows + '"' : '';
+    var inp = opts.area
+      ? '<textarea class="full" data-k="' + key + '"' + rows + ph + '>' + esc(val) + '</textarea>'
+      : opts.num
+        ? '<input type="number" data-k="' + key + '" value="' + esc(val) + '">'
+        : '<input type="text" data-k="' + key + '" value="' + esc(val) + '"' + ph + '>';
+    return '<div class="field' + (opts.full ? ' full' : '') + '"><label>' + label + (opts.req ? ' <b>*</b>' : '') + '</label>' + inp + (opts.hint ? '<div class="hint">' + opts.hint + '</div>' : '') + '</div>';
+  }
+  function resolve(o, key) {
+    var p = key.split('.');
+    for (var i = 0; i < p.length; i++) { if (o == null) return undefined; o = o[p[i]]; }
+    return o;
+  }
+  function setAt(o, key, val) {
+    var p = key.split('.');
+    for (var i = 0; i < p.length - 1; i++) { if (o[p[i]] == null) o[p[i]] = {}; o = o[p[i]]; }
+    o[p[p.length - 1]] = val;
+  }
+  var typeHints = {
+    'brand.name': 'text', 'hero.cta1': 'text', 'hero.cta2': 'text',
+    'bulk.cta': 'text'
+  };
+  function bindForm(root) {
+    if (!root) return;
+    root.querySelectorAll('[data-k]').forEach(function (el) {
+      el.addEventListener('input', function () {
+        var key = el.getAttribute('data-k');
+        var val;
+        if (el.type === 'number' || el.tagName === 'SELECT') {
+          val = el.type === 'number' ? (el.value === '' ? 0 : Number(el.value)) : resolve(DATA, key.replace(/\.(category|name|img|badge|size|label)$/, ''));
+        } else {
+          val = el.value;
+        }
+        if (el.tagName === 'SELECT') {
+          var p = key.split('.');
+          var obj = resolve(DATA, p.slice(0, p.length - 1).join('.'));
+          obj[p[p.length - 1]] = el.value;
+        } else {
+          setAt(DATA, key, val);
+        }
+        setDirty(true);
+      });
+    });
+    root.querySelectorAll('input[data-chex]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        setAt(DATA, el.getAttribute('data-chex'), el.checked);
+        setDirty(true);
+      });
+    });
+    root.querySelectorAll('input[data-file]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        var file = el.files && el.files[0];
+        if (!file) return;
+        var rd = new FileReader();
+        rd.onload = function () {
+          setAt(DATA, el.getAttribute('data-file'), rd.result);
+          setDirty(true);
+          render();
+        };
+        rd.readAsDataURL(file);
+      });
+    });
+  }
+
+  /* ---------- renderers ---------- */
+  function render() {
+    if (!DATA) return;
+    var tab = (sessionStorage.getItem('rwTab') || 'home');
+    var content = $('content');
+    var html = '';
+    if (tab === 'home') html = rHome();
+    else if (tab === 'brand') html = rBrand();
+    else if (tab === 'homepage') html = rHomepage();
+    else if (tab === 'reviews') html = rReviews();
+    else if (tab === 'products') html = rProducts();
+    else if (tab === 'contact') html = rContact();
+    else if (tab === 'theme') html = rTheme();
+    else if (tab === 'settings') html = rSettings();
+    content.innerHTML = html;
+    bindForm(content);
+    afterRender(tab);
+    $('tabTitle').textContent = TAB_TITLES[tab] || 'Overview';
+  }
+
+  var TAB_TITLES = {
+    home: 'Overview', brand: 'Brand & Logo', homepage: 'Homepage Texts', reviews: 'Reviews',
+    products: 'Products', contact: 'Contact & WhatsApp', theme: 'Colors & Motion', settings: 'Settings & Backup'
+  };
+
+  function rHome() {
+    var p = DATA.products ? DATA.products.length : 0;
+    var feats = DATA.products ? DATA.products.filter(function (x) { return x.featured; }).length : 0;
+    return '' +
+      '<div class="card"><h3>Site Status</h3>' +
+      '<div class="grid">' +
+      field('Brand name', 'brand.name') +
+      field('Tagline', 'brand.tagline') +
+      field('WhatsApp number', 'contact.whatsapp') +
+      field('Phone number', 'contact.phone', { placeholder: '10 digits, no +91' }) +
+      '</div></div>' +
+      '<div class="card"><h3>Numbers</h3>' +
+      '<div class="grid">' +
+      '<div class="field"><label>Products in catalog</label><div class="pill ok">' + p + ' total</div> &nbsp; <div class="pill warn">' + feats + ' featured</div></div>' +
+      '<div class="field"><label>Site data file</label><div class="hint">data/site-data.js — lastsaved by admin panel</div></div>' +
+      '</div>' +
+      '<div class="sub" style="margin-top:10px">Tip: Make edits in any tab, then press <b>Save Changes</b>. The live site picks them up on refresh.</div>' +
+      '</div>';
+  }
+
+  var images = ['../images/bisleri.png','../images/coke.png','../images/pepsi.png','../images/sprite.png','../images/fanta.png','../images/dew.png',
+    '../images/bottle-new-1.png','../images/bottle-new-2.png','../images/bottle-new-3.png','../images/bottle-new-4.png','../images/bottle-new-5.png',
+    '../images/bottle-v2-1.png','../images/bottle-v2-2.png','../images/bottle-v2-3.png','../images/bottle-v2-4.png','../images/bottle-v2-5.png',
+    '../images/delivery-1.png','../images/delivery-2.png','../images/delivery-3.png','../images/delivery-4.png','../images/delivery-5.png'];
+  var imagesRoot = images.map(function (i) { return i.replace('../', ''); });
+
+  function rBrand() {
+    var logo = DATA.brand.logoImage || '';
+    return '' +
+      '<div class="card"><h3>Brand Name</h3><div class="grid">' +
+      field('Site name (nav + footer)', 'brand.name', { req: true }) +
+      field('Tagline (small text under name)', 'brand.tagline') +
+      '</div></div>' +
+      '<div class="card"><h3>Logo</h3>' +
+      '<div class="grid">' +
+      '<div class="field"><label>Custom logo image</label>' +
+      '<div class="row">' + (logo ? '<img class="img-thumb on" src="' + esc(logo) + '" alt="logo">' : '<span class="pill warn">Default water-drop SVG</span>') + '</div>' +
+      '<input type="file" accept="image/*" data-file="brand.logoImage">' +
+      '<div class="hint">Upload PNG/JPG. Square works best. Existing markup keeps everything else.</div></div>' +
+      '<div class="field"><label>Remove custom logo (back to default drop)</label>' +
+      '<button class="btn ghost small" id="logoClear" ' + (logo ? '' : 'disabled') + '>Use default logo</button></div>' +
+      '<div class="field"><label>Logo color 1</label><input type="color" data-k="brand.logoFrom" value="' + esc(DATA.brand.logoFrom) + '"></div>' +
+      '<div class="field"><label>Logo color 2</label><input type="color" data-k="brand.logoTo" value="' + esc(DATA.brand.logoTo) + '"></div>' +
+      '</div></div>';
+  }
+
+  function rHomepage() {
+    var d = DATA;
+    return '' +
+      section('Hero (top of home page)', [
+        field('Eyebrow chip', 'hero.eyebrow', { full: true }),
+        '<div class="grid">' + field('Headline part 1', 'hero.headline1') + field('Headline part 2 (italic)', 'hero.headline2') + '</div>',
+        field('Subtitle paragraph', 'hero.lede', { area: true, full: true }),
+        '<div class="grid">' + field('Button 1 label', 'hero.cta1') + field('Button 2 label', 'hero.cta2') + '</div>',
+        '<div class="grid">' + field('Trust point 1', 'hero.trust1') + field('Trust point 2', 'hero.trust2') + field('Trust point 3', 'hero.trust3') + '</div>'
+      ]) +
+      section('Featured Boxes (first product strip)', [
+        '<div class="grid">' + field('Heading', 'featured.title') + field('Button text', 'featured.viewAll') + '</div>',
+        field('Subtitle', 'featured.sub', { area: true, full: true })
+      ]) +
+      section('What We Deliver (bottle scene)', [
+        '<div class="grid">' + field('Eyebrow', 'deliver.eyebrow') + field('Button text', 'deliver.cta') + '</div>',
+        '<div class="grid">' + field('Title part 1', 'deliver.title') + field('Title part 2', 'deliver.title2') + '</div>',
+        field('Subtitle', 'deliver.sub', { full: true }),
+        field('Bottom caption', 'deliver.tag', { full: true })
+      ]) +
+      section('Bulk Supply (business section)', [
+        '<div class="grid">' + field('Badge chip', 'bulk.badge') + field('Button text', 'bulk.cta') + '</div>',
+        field('Big heading', 'bulk.title', { full: true }),
+        field('Description', 'bulk.desc', { area: true, full: true })
+      ]) +
+      section('About Us', [
+        '<div class="grid">' + field('Badge chip', 'about.badge') + field('Heading', 'about.title') + '</div>',
+        field('Paragraph 1', 'about.para1', { area: true, full: true }),
+        field('Paragraph 2', 'about.para2', { area: true, full: true }),
+        '<div class="grid">' + field('Point 1 title', 'about.p1t') + field('Point 1 note', 'about.p1s') +
+        field('Point 2 title', 'about.p2t') + field('Point 2 note', 'about.p2s') +
+        field('Point 3 title', 'about.p3t') + field('Point 3 note', 'about.p3s') + '</div>',
+        field('Visual heading (water drop block)', 'about.visualTitle', { full: true }),
+        field('Visual note', 'about.visualSub', { full: true })
+      ]) +
+      section('Water Planet Banner (above About)', [
+        field('Heading', 'slot.title', { full: true }),
+        field('Text', 'slot.sub', { area: true, full: true })
+      ]) +
+      section('Support', [
+        '<div class="grid">' + field('Badge chip', 'support.badge') + field('Heading', 'support.title') + '</div>',
+        field('Subtitle', 'support.sub', { full: true }),
+        '<div class="grid">' +
+        field('Card 1 title', 'support.c1t') + field('Card 1 note', 'support.c1d') + field('Card 1 link', 'support.c1l') +
+        field('Card 2 title', 'support.c2t') + field('Card 2 note', 'support.c2d') + field('Card 2 link', 'support.c2l') +
+        field('Card 3 title', 'support.c3t') + field('Card 3 note', 'support.c3d') + field('Card 3 link', 'support.c3l') +
+        '</div>'
+      ]) +
+      section('Footer', [
+        field('About text', 'footer.about', { area: true, full: true }),
+        field('Copyright line', 'footer.copyright', { full: true })
+      ]) +
+      section('Products Page (full catalog)', [
+        '<div class="grid">' + field('Badge chip', 'catalog.badge') + field('Heading', 'catalog.title') + '</div>',
+        field('Subtitle', 'catalog.sub', { full: true })
+      ]);
+  }
+  function section(title, fields) {
+    return '<div class="card"><h3>' + title + '</h3>' + fields.join('') + '</div>';
+  }
+
+  function rReviews() {
+    var g = DATA.reviews.grid, c = DATA.reviews.carousel;
+    var out = '<div class="card"><h3>Reviews Section Heading</h3><div class="grid">' +
+      field('Heading', 'reviews.gridTitle') + field('Subtitle', 'reviews.gridSub') + '</div></div>';
+    out += '<div class="card"><h3>Review Cards (shown in grid)</h3>';
+    g.forEach(function (r, i) {
+      out += '<div class="card" style="background:var(--panel2);border-radius:10px;padding:14px 16px;margin-bottom:10px">' +
+        '<div class="grid">' +
+        '<div class="field"><label>Name</label><input type="text" data-k="reviews.grid.' + i + '.name" value="' + esc(r.name) + '"></div>' +
+        '<div class="field"><label>Product tag</label><input type="text" data-k="reviews.grid.' + i + '.product" value="' + esc(r.product) + '"></div>' +
+        '<div class="field"><label>Date</label><input type="text" data-k="reviews.grid.' + i + '.date" value="' + esc(r.date) + '"></div>' +
+        '<div class="field"><label>Rating (1-5)</label><input type="number" min="1" max="5" data-k="reviews.grid.' + i + '.rating" value="' + r.rating + '"></div>' +
+        '<div class="field full"><label>Review text</label><textarea data-k="reviews.grid.' + i + '.text" rows="2">' + esc(r.text) + '</textarea></div>' +
+        '</div></div>';
+    });
+    out += '</div>';
+    out += '<div class="card"><h3>Round Carousel (floating review planet)</h3>';
+    c.forEach(function (r, i) {
+      out += '<div class="card" style="background:var(--panel2);border-radius:10px;padding:14px 16px;margin-bottom:10px">' +
+        '<div class="grid">' +
+        '<div class="field"><label>Name</label><input type="text" data-k="reviews.carousel.' + i + '.name" value="' + esc(r.name) + '"></div>' +
+        '<div class="field"><label>Meta line</label><input type="text" data-k="reviews.carousel.' + i + '.meta" value="' + esc(r.meta) + '"></div>' +
+        '<div class="field"><label>Rating (1-5)</label><input type="number" min="1" max="5" data-k="reviews.carousel.' + i + '.rating" value="' + r.rating + '"></div>' +
+        '<div class="field full"><label>Review text</label><textarea data-k="reviews.carousel.' + i + '.text" rows="2">' + esc(r.text) + '</textarea></div>' +
+        '</div></div>';
+    });
+    out += '</div>';
+    return out;
+  }
+
+  function rProducts() {
+    var rows = DATA.products.map(function (p, i) {
+      return '<tr>' +
+        '<td><img class="thumb" src="' + esc(p.img) + '" alt=""></td>' +
+        '<td><input type="text" data-k="products.' + i + '.name" value="' + esc(p.name) + '" style="width:110px"></td>' +
+        '<td><input type="text" data-k="products.' + i + '.label" value="' + esc(p.label) + '" style="width:150px"></td>' +
+        '<td><input type="text" data-k="products.' + i + '.size" value="' + esc(p.size) + '" style="width:90px"></td>' +
+        '<td><select data-k="products.' + i + '.category"><option' + (p.category === 'Premium Water' ? ' selected' : '') + '>Premium Water</option><option' + (p.category === 'Cold Drinks' ? ' selected' : '') + '>Cold Drinks</option></select></td>' +
+        '<td><input type="number" data-k="products.' + i + '.price" value="' + p.price + '" style="width:64px"></td>' +
+        '<td><input type="number" data-k="products.' + i + '.boxSize" value="' + p.boxSize + '" style="width:64px"></td>' +
+        '<td><input type="number" data-k="products.' + i + '.minBoxes" value="' + p.minBoxes + '" style="width:60px"></td>' +
+        '<td><input type="text" data-k="products.' + i + '.badge" value="' + esc(p.badge || '') + '" style="width:90px"></td>' +
+        '<td style="text-align:center"><input type="checkbox" data-chex="products.' + i + '.featured"' + (p.featured ? ' checked' : '') + '></td>' +
+        '<td><div class="mini"><button data-act="up" data-i="' + i + '" title="Move up">&#9650;</button><button data-act="down" data-i="' + i + '" title="Move down">&#9660;</button><button data-act="rm" data-i="' + i + '" class="rm" title="Delete">&#10005;</button></div></td>' +
+        '</tr>';
+    }).join('');
+    return '' +
+      '<div class="card"><h3>Product Catalog <span class="pill ok">' + DATA.products.length + ' items</span></h3>' +
+      '<div class="sub">Price in ₹ per bottle. boxSize = bottles per box. minBoxes = minimum cartons for delivery. Featured items appear on the home page.</div>' +
+      '<div style="overflow-x:auto"><table class="ptable"><thead><tr>' +
+      '<th></th><th>Name</th><th>Label</th><th>Size</th><th>Category</th><th>Price</th><th>Per box</th><th>Min boxes</th><th>Badge</th><th>Featured</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div class="row" style="margin-top:12px"><button class="btn small" id="prodAdd">+ Add product</button>' +
+      '<button class="btn small ghost" id="imgHelp">? Image cheatsheet</button></div>' +
+      '<div class="hint" id="imgNote" style="display:none">Product images live in /images. To change a photo: type the file name (e.g. <span class="kbd">../images/bisleri.png</span>) or upload a new one in the Brand tab and copy its path. Ask for help if stuck.</div></div>';
+  }
+
+  function rContact() {
+    return '' +
+      '<div class="card"><h3>WhatsApp & Phone</h3><div class="grid">' +
+      field('WhatsApp number (10 digits)', 'contact.whatsapp', { req: true, hint: 'Used in every "Chat on WhatsApp" button + order messages.' }) +
+      field('Phone number (10 digits)', 'contact.phone', { hint: 'Used in the Call Us card and tel: links.' }) +
+      field('Business name on orders', 'contact.cartName', { hint: 'Shown in the WhatsApp order recap.' }) +
+      '</div></div>' +
+      '<div class="card"><h3>Pre-filled WhatsApp messages</h3><div class="grid">' +
+      field('Support message', 'contact.supportMsg', { area: true }) +
+      field('Bulk inquiry message', 'contact.bulkMsg', { area: true }) +
+      '</div></div>';
+  }
+
+  function rTheme() {
+    return '' +
+      '<div class="card"><h3>Brand Colors</h3><div class="grid">' +
+      '<div class="field"><label>Bright accent (buttons, glows, highlights)</label><input type="color" data-k="theme.accent" value="' + esc(DATA.theme.accent) + '"></div>' +
+      '<div class="field"><label>Deep tone (gradients, shadows)</label><input type="color" data-k="theme.deep" value="' + esc(DATA.theme.deep) + '"></div>' +
+      '</div><div class="hint">These tint the logo drop, buttons and glows. Page background stays deep navy.</div></div>' +
+      '<div class="card"><h3>Motion</h3>' +
+      '<div class="row"><input type="checkbox" data-chex="theme.animate" id="animChk"' + (DATA.theme.animate !== false ? ' checked' : '') + '><label for="animChk" style="color:var(--muted)">Keep all animations on (planet, waves, buttons)</label></div>' +
+      '<div class="hint" style="margin-top:8px">Switch off to freeze every animation on the whole site — useful for calm, print-style or very old devices.</div></div>';
+  }
+
+  function rSettings() {
+    var json = serialize();
+    return '' +
+      '<div class="card"><h3>Passcode</h3><div class="grid">' +
+      '<div class="field"><label>Admin passcode</label><input type="text" data-k="admin.passcode" value="' + esc(DATA.admin.passcode) + '"><div class="hint">Default: admin123 — change it!</div></div>' +
+      '<div class="field"><label>Quick test</label><div class="hint">Save, then open the site with Ctrl+F5. Every text change you made shows there.</div></div>' +
+      '</div></div>' +
+      '<div class="card"><h3>Backup / Restore</h3>' +
+      '<div class="row" style="margin-bottom:10px"><button class="btn small" id="expBtn">Export site-data.js</button>' +
+      '<button class="btn small ghost" id="impBtn">Import from file</button>' +
+      '<button class="btn small danger" id="resetBtn">Reset to factory defaults</button></div>' +
+      '<div class="hint">Export downloads the full content file. Import restores it. Reset wipes all edits back to the original text — careful!</div>' +
+      '<textarea class="backup-code" id="codeBox" readonly>' + esc(json) + '</textarea>' +
+      '</div>';
+  }
+
+  function afterRender(tab) {
+    var el;
+    if (tab === 'brand' && (el = $('logoClear'))) {
+      el.onclick = function () { setAt(DATA, 'brand.logoImage', ''); setDirty(true); render(); };
+    }
+    if (tab === 'products') {
+      (el = $('prodAdd')).onclick = function () {
+        DATA.products.push({ id: 'p' + String(Date.now()).slice(-6), name: 'New Product', label: 'New Product 1 LITRE', size: '1 LITRE', category: 'Premium Water', price: 20, boxSize: 12, minBoxes: 1, img: '../images/bisleri.png', badge: '', featured: false });
+        setDirty(true);
+        render();
+      };
+      (el = $('imgHelp')).onclick = function () { $('imgNote').style.display = $('imgNote').style.display === 'none' ? 'block' : 'none'; };
+      $('content').querySelectorAll('button[data-act]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var act = b.getAttribute('data-act'), i = Number(b.getAttribute('data-i'));
+          if (act === 'rm') { DATA.products.splice(i, 1); }
+          else if (act === 'up' && i > 0) { var t = DATA.products[i - 1]; DATA.products[i - 1] = DATA.products[i]; DATA.products[i] = t; }
+          else if (act === 'down' && i < DATA.products.length - 1) { var t2 = DATA.products[i + 1]; DATA.products[i + 1] = DATA.products[i]; DATA.products[i] = t2; }
+          else return;
+          setDirty(true);
+          render();
+        });
+      });
+    }
+    if (tab === 'settings') {
+      (el = $('expBtn')).onclick = doExport;
+      (el = $('impBtn')).onclick = doImport;
+      (el = $('resetBtn')).onclick = function () {
+        if (!confirm('Reset ALL content back to the original Rajesh Water texts, products, reviews?')) return;
+        DATA = clone(loadDefaults());
+        setDirty(true);
+        render();
+      };
+    }
+  }
+
+  /* ---------- serialize / save ---------- */
+  function serialize() {
+    return '/* ============================================================\n' +
+      '   Rajesh Water - site-data.js  (generated by admin.html)\n   SINGLE SOURCE OF TRUTH\n   ============================================================ */\n\n' +
+      'window.SITE_DATA = ' + JSON.stringify(DATA, null, 2) + ';\n';
+  }
+  function toast(msg, isErr) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'show' + (isErr ? ' err' : '');
+    clearTimeout(window.__toastT);
+    window.__toastT = setTimeout(function () { t.className = ''; }, 4200);
+  }
+  async function save() {
+    var src = serialize();
+    $('saveBtn').disabled = true;
+    $('saveBtn').textContent = 'Saving…';
+    try {
+      if (fileHandle && await fileHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
+        await fileHandle.requestPermission({ mode: 'readwrite' });
+      }
+      var handle = fileHandle;
+      try {
+        var savedToDisk = false;
+        if (typeof showSaveFilePicker === 'function') {
+          handle = handle || await showSaveFilePicker({
+            suggestedName: 'site-data.js',
+            types: [{ description: 'JavaScript', accept: { 'application/javascript': ['.js'] } }]
+          });
+          var w = await handle.createWritable();
+          await w.write(src);
+          await w.close();
+          savedToDisk = true;
+          try { localStorage.setItem('rwFileHandle', JSON.stringify(handle)); fileHandle = handle; } catch (e) {}
+        }
+        if (!savedToDisk) { fallbackDownload(); return; }
+        DEFAULTS = clone(DATA);
+        setDirty(false);
+        toast('Saved to data/site-data.js — refresh the site to see changes. ✓');
+      } catch (e) {
+        if (e && e.name === 'AbortError') { toast('Save cancelled.', true); }
+        else { fallbackDownload(); }
+      }
+    } catch (e) {
+      fallbackDownload();
+    } finally {
+      $('saveBtn').disabled = dirty;
+      $('saveBtn').textContent = 'Save Changes';
+    }
+  }
+  function fallbackDownload() {
+    var blob = new Blob([serialize()], { type: 'application/javascript' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'site-data.js';
+    a.click();
+    DEFAULTS = clone(DATA);
+    setDirty(false);
+    toast('Downloaded site-data.js — put this file in the data/ folder (replace the old one), then refresh the site.');
+  }
+  function doExport() {
+    var blob = new Blob([serialize()], { type: 'application/javascript' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'site-data-backup.js';
+    a.click();
+    toast('Backup file downloaded. ✓');
+  }
+  function doImport() {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.js';
+    inp.onchange = function () {
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        try {
+          var m = rd.result.match(/window\.SITE_DATA\s*=\s*([\s\S]*?);\s*$/);
+          if (!m) throw new Error('bad format');
+          var parsed = JSON.parse(m[1]);
+          if (!parsed || !parsed.brand) throw new Error('not a site-data file');
+          DATA = parsed;
+          setDirty(true);
+          render();
+          toast('Imported ' + f.name + '. Press Save to write it to disk. ✓');
+        } catch (e) {
+          toast('That file does not look like a site-data.js file.', true);
+        }
+      };
+      rd.readAsText(f);
+    };
+    inp.click();
+  }
+
+  /* ---------- wiring ---------- */
+  $('nav').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-tab]');
+    if (!b) return;
+    sessionStorage.setItem('rwTab', b.getAttribute('data-tab'));
+    $('nav').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
+    render();
+  });
+  $('saveBtn').addEventListener('click', save);
+  $('revertBtn').addEventListener('click', function () {
+    DATA = clone(loadDefaults());
+    setDirty(false);
+    render();
+    toast('Reverted to last saved state.');
+  });
+  window.addEventListener('beforeunload', function (e) {
+    if (dirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  window.addEventListener('DOMContentLoaded', function () {
+    try {
+      var raw = localStorage.getItem('rwFileHandle');
+      if (raw) { fileHandle = JSON.parse(raw); }
+    } catch (e) {}
+    if (sessionStorage.getItem('rwAdminOk') === '1') render();
+  });
+})();
+</script>
+</body>
+</html>

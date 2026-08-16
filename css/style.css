@@ -3175,3 +3175,8 @@ body.rw-quote-lock { overflow: hidden; }
   padding: 30px clamp(22px, 4vw, 44px);
   align-items: center;
 }
+
+/* ===== Admin content system: logo img + animation master ===== */
+.navbar-logo-img { width: 34px; height: 34px; object-fit: contain; border-radius: 50%; }
+.nb-name { line-height: 1.1; }
+html.rw-anim-off *, html.rw-anim-off *::before, html.rw-anim-off *::after { animation: none !important; transition: none !important; }

@@ -1,0 +1,538 @@
+/* ============================================================
+   Rajesh Water - site-data.js  (generated)
+   SINGLE SOURCE OF TRUTH - edit via admin.html
+   (https://localhost:5500/admin.html)
+   Passcode default: admin123 - change it in Admin > Settings
+   ============================================================ */
+
+window.SITE_DATA = {
+  "version": 1,
+  "admin": {
+    "passcode": "admin123"
+  },
+  "brand": {
+    "name": "Rajesh Water",
+    "tagline": "Premium Water Supply",
+    "logoImage": "",
+    "logoFrom": "#00aeef",
+    "logoTo": "#045a8c"
+  },
+  "contact": {
+    "whatsapp": "917742735762",
+    "phone": "917742735762",
+    "cartName": "RAJESH WATER",
+    "supportMsg": "Hello Rajesh Water, I need help with my order.",
+    "bulkMsg": "Hello Rajesh Water, I'm interested in bulk supply.",
+    "hours": "Every day, 8:00 AM – 8:00 PM. Bulk orders can schedule earlier slots."
+  },
+  "hero": {
+    "eyebrow": "Pure • Fresh • Delivered",
+    "headline1": "The Art of",
+    "headline2": "Pure Water",
+    "lede": "Premium bottled water and cold drinks, sourced clean and quality checked at every stage. Supplied in bulk to homes, offices, hotels and events — delivered cold, delivered fast.",
+    "cta1": "Order Now",
+    "cta2": "Explore Products",
+    "trust1": "Fast Delivery",
+    "trust2": "Quality Checked",
+    "trust3": "Bulk Orders"
+  },
+  "featured": {
+    "title": "Featured Boxes",
+    "sub": "Our bestselling water and cold drink boxes, ready for home, office and events. Minimum order of 48 bottles required for delivery.",
+    "viewAll": "View All Products →"
+  },
+  "deliver": {
+    "eyebrow": "What We Deliver",
+    "title": "Refreshment,",
+    "title2": "Delivered.",
+    "sub": "Pure water and refreshing beverages, delivered when you need them.",
+    "tag": "From everyday hydration to your favourite cold drinks.",
+    "cta": "Explore Products"
+  },
+  "bulk": {
+    "badge": "B2B Logistics & Supply",
+    "title": "Reliable Bulk Beverage Supply for Business.",
+    "desc": "Elevate your inventory with our premium hydration solutions. Engineered for scale, delivered with precision.",
+    "cta": "Request a Quote"
+  },
+  "about": {
+    "badge": "About Us",
+    "title": "Pure Water, Delivered with Trust.",
+    "para1": "Rajesh Water is a premium bottled water and beverage supplier serving homes, offices, hotels and events. Every bottle is sealed, quality-checked and delivered in sturdy boxes.",
+    "para2": "From a single box to full bulk supply, we keep the same promise — fresh stock, on-time delivery and transparent pricing.",
+    "p1t": "Quality Checked",
+    "p1s": "Sealed bottles, checked stock",
+    "p2t": "On-Time",
+    "p2s": "Reliable delivery slots",
+    "p3t": "Bulk Friendly",
+    "p3s": "Home to wholesale supply",
+    "visualTitle": "Every drop, accounted for.",
+    "visualSub": "Min. order 48 bottles · Sealed boxes · Cold & fresh delivery"
+  },
+  "slot": {
+    "title": "Pure. Packed. Delivered Fresh.",
+    "sub": "Premium packaged drinking water — chilled, sealed and at your doorstep, box after box, every day."
+  },
+  "support": {
+    "badge": "We're Here to Help",
+    "title": "Support",
+    "sub": "Questions about an order, delivery or bulk supply? Reach us directly.",
+    "c1t": "WhatsApp Support",
+    "c1d": "Fastest way to reach us — order help, delivery status or queries.",
+    "c1l": "Chat on WhatsApp →",
+    "c2t": "Call Us",
+    "c2d": "Speak to our supply team directly for urgent requirements.",
+    "c2l": "+91 77427 35762 →",
+    "c3t": "Delivery Hours",
+    "c3d": "Every day, 8:00 AM – 8:00 PM. Bulk orders can schedule earlier slots.",
+    "c3l": "7 days a week"
+  },
+  "reviews": {
+    "gridTitle": "What Our Customers Say",
+    "gridSub": "Real feedback from families, offices and events we supply every week.",
+    "grid": [
+      {
+        "name": "Aman Sharma",
+        "rating": 5,
+        "text": "Regular monthly supply, always on time and the bottles are sealed and clean.",
+        "product": "500 ML Box",
+        "date": "Aug 2026",
+        "demo": true
+      },
+      {
+        "name": "Priya Verma",
+        "rating": 5,
+        "text": "Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.",
+        "product": "2 LITRE Box",
+        "date": "Jul 2026",
+        "demo": true
+      },
+      {
+        "name": "Hotel Rajput Palace",
+        "rating": 4,
+        "text": "Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.",
+        "product": "Bulk Supply",
+        "date": "Jun 2026",
+        "demo": true
+      },
+      {
+        "name": "Rohit Mehta",
+        "rating": 5,
+        "text": "Messaged on WhatsApp in the morning, boxes reached by afternoon. Smooth and quick.",
+        "product": "1 LITRE Box",
+        "date": "Jul 2026",
+        "demo": true
+      },
+      {
+        "name": "Sneha Kulkarni",
+        "rating": 4,
+        "text": "Cold drink boxes for our office pantry at a fair price. Will order again next month.",
+        "product": "Cold Drinks",
+        "date": "Jun 2026",
+        "demo": true
+      }
+    ],
+    "carousel": [
+      {
+        "name": "Aman Sharma",
+        "rating": 5,
+        "text": "Regular monthly supply, always on time and the bottles are sealed and clean.",
+        "meta": "500 ML Box · WhatsApp order"
+      },
+      {
+        "name": "Priya Verma",
+        "rating": 5,
+        "text": "Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.",
+        "meta": "2 LITRE Box · Family event"
+      },
+      {
+        "name": "Hotel Rajput Palace",
+        "rating": 4,
+        "text": "Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.",
+        "meta": "Bulk Supply · Weekly"
+      },
+      {
+        "name": "Rohit Mehta",
+        "rating": 5,
+        "text": "Messaged on WhatsApp in the morning, boxes reached by afternoon. Smooth and quick.",
+        "meta": "1 LITRE Box · Same day"
+      },
+      {
+        "name": "Sneha Kulkarni",
+        "rating": 4,
+        "text": "Cold drink boxes for our office pantry at a fair price. Will order again next month.",
+        "meta": "Cold Drinks · Office"
+      }
+    ]
+  },
+  "footer": {
+    "about": "Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.",
+    "copyright": "© 2026 Rajesh Water. All rights reserved."
+  },
+  "theme": {
+    "accent": "#00aeef",
+    "deep": "#045a8c",
+    "animate": true
+  },
+  "products": [
+    {
+      "id": "p001",
+      "name": "Bisleri",
+      "label": "Bisleri 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 20,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bisleri.png",
+      "badge": "Bestseller",
+      "featured": true
+    },
+    {
+      "id": "p002",
+      "name": "Bisleri",
+      "label": "Bisleri 500 ML",
+      "size": "500 ML",
+      "category": "Premium Water",
+      "price": 10,
+      "boxSize": 24,
+      "minBoxes": 1,
+      "img": "../images/bisleri.png"
+    },
+    {
+      "id": "p003",
+      "name": "Bisleri",
+      "label": "Bisleri 200 ML",
+      "size": "200 ML",
+      "category": "Premium Water",
+      "price": 1,
+      "boxSize": 78,
+      "minBoxes": 4,
+      "img": "../images/bisleri.png"
+    },
+    {
+      "id": "p004",
+      "name": "Kinley",
+      "label": "Kinley 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 20,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-1.png"
+    },
+    {
+      "id": "p005",
+      "name": "Kinley",
+      "label": "Kinley 500 ML",
+      "size": "500 ML",
+      "category": "Premium Water",
+      "price": 10,
+      "boxSize": 24,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-1.png"
+    },
+    {
+      "id": "p006",
+      "name": "Aquafina",
+      "label": "Aquafina 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 20,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-1.png",
+      "featured": true
+    },
+    {
+      "id": "p007",
+      "name": "Aquafina",
+      "label": "Aquafina 500 ML",
+      "size": "500 ML",
+      "category": "Premium Water",
+      "price": 12,
+      "boxSize": 24,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-1.png"
+    },
+    {
+      "id": "p008",
+      "name": "Himalayan",
+      "label": "Himalayan 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 30,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-2.png",
+      "badge": "Premium"
+    },
+    {
+      "id": "p009",
+      "name": "Himalayan",
+      "label": "Himalayan 500 ML",
+      "size": "500 ML",
+      "category": "Premium Water",
+      "price": 15,
+      "boxSize": 24,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-2.png"
+    },
+    {
+      "id": "p010",
+      "name": "Rail Neer",
+      "label": "Rail Neer 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 15,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-2.png"
+    },
+    {
+      "id": "p011",
+      "name": "Oxyrich",
+      "label": "Oxyrich 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 20,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-3.png"
+    },
+    {
+      "id": "p012",
+      "name": "Kingfisher",
+      "label": "Kingfisher 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 25,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-3.png"
+    },
+    {
+      "id": "p013",
+      "name": "Bailey",
+      "label": "Bailey 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 25,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-4.png"
+    },
+    {
+      "id": "p014",
+      "name": "Manikchand",
+      "label": "Manikchand 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 20,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-4.png"
+    },
+    {
+      "id": "p015",
+      "name": "Spring Pure",
+      "label": "Spring Pure 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Premium Water",
+      "price": 18,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-5.png"
+    },
+    {
+      "id": "p016",
+      "name": "Aqua Fresh",
+      "label": "Aqua Fresh 500 ML",
+      "size": "500 ML",
+      "category": "Premium Water",
+      "price": 9,
+      "boxSize": 24,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-5.png"
+    },
+    {
+      "id": "p017",
+      "name": "Cool Valley",
+      "label": "Cool Valley 2 LITRE",
+      "size": "2 LITRE",
+      "category": "Premium Water",
+      "price": 35,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-5.png"
+    },
+    {
+      "id": "p018",
+      "name": "Jal Pure",
+      "label": "Jal Pure 2 LITRE",
+      "size": "2 LITRE",
+      "category": "Premium Water",
+      "price": 35,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-2.png"
+    },
+    {
+      "id": "p019",
+      "name": "Kingfisher",
+      "label": "Kingfisher 2 LITRE",
+      "size": "2 LITRE",
+      "category": "Premium Water",
+      "price": 45,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-v2-3.png"
+    },
+    {
+      "id": "p020",
+      "name": "Himalayan",
+      "label": "Himalayan 2 LITRE",
+      "size": "2 LITRE",
+      "category": "Premium Water",
+      "price": 55,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/bottle-new-2.png"
+    },
+    {
+      "id": "p021",
+      "name": "Coca-Cola",
+      "label": "Coca-Cola 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 40,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/coke.png",
+      "badge": "Bestseller",
+      "featured": true
+    },
+    {
+      "id": "p022",
+      "name": "Pepsi",
+      "label": "Pepsi 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 40,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/pepsi.png"
+    },
+    {
+      "id": "p023",
+      "name": "Sprite",
+      "label": "Sprite 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 40,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/sprite.png"
+    },
+    {
+      "id": "p024",
+      "name": "Fanta",
+      "label": "Fanta 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 40,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/fanta.png"
+    },
+    {
+      "id": "p025",
+      "name": "Mountain Dew",
+      "label": "Mountain Dew 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 40,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/dew.png"
+    },
+    {
+      "id": "p026",
+      "name": "Thums Up",
+      "label": "Thums Up 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 45,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/coke.png"
+    },
+    {
+      "id": "p027",
+      "name": "Limca",
+      "label": "Limca 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 35,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/sprite.png"
+    },
+    {
+      "id": "p028",
+      "name": "7UP",
+      "label": "7UP 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 40,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/pepsi.png"
+    },
+    {
+      "id": "p029",
+      "name": "Mirinda",
+      "label": "Mirinda 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 35,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/dew.png"
+    },
+    {
+      "id": "p030",
+      "name": "Sting",
+      "label": "Sting 500 ML",
+      "size": "500 ML",
+      "category": "Cold Drinks",
+      "price": 25,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/dew.png",
+      "featured": true
+    },
+    {
+      "id": "p031",
+      "name": "Appy Fizz",
+      "label": "Appy Fizz 750 ML",
+      "size": "750 ML",
+      "category": "Cold Drinks",
+      "price": 45,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/fanta.png"
+    },
+    {
+      "id": "p032",
+      "name": "Maaza",
+      "label": "Maaza 1 LITRE",
+      "size": "1 LITRE",
+      "category": "Cold Drinks",
+      "price": 50,
+      "boxSize": 12,
+      "minBoxes": 1,
+      "img": "../images/coke.png"
+    }
+  ]
+};

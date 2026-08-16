@@ -27,7 +27,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 
-  <link rel="stylesheet" href="../css/style.css?v=46">
+  <link rel="stylesheet" href="../css/style.css?v=47">
 
   <style>
     .shop-close { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: rgba(8, 22, 38, 0.5); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: color 0.3s, border-color 0.3s; }
@@ -124,6 +124,8 @@
 
 </head>
 <body class="subpage">
+  <script src="../data/site-data.js"></script>
+  <script src="../js/site-content.js"></script>
 
 
   <div class="site">
@@ -136,7 +138,7 @@
           <path d="M12 2.2c3.9 5.3 6.9 9 6.9 12.6a6.9 6.9 0 1 1-13.8 0c0-3.6 3-7.3 6.9-12.6z" fill="url(#rwLogoGrad)"/>
           <path d="M9.3 16.1a2.9 2.9 0 0 0 2.2 2.7" stroke="#eafcff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
         </svg>
-        <span class="navbar-word">Rajesh Water<small>Premium Water Supply</small></span>
+        <span class="navbar-word"><span class="nb-name">Rajesh Water</span><small>Premium Water Supply</small></span>
       </a>
       <div class="navbar-links" id="navLinks">
         <a href="index.html">Home</a>
@@ -169,9 +171,9 @@
     <div class="max-w-container-max mx-auto w-full px-margin-mobile md:px-margin-desktop py-14">
 
       <header class="mb-8 text-center flex flex-col items-center gap-3">
-        <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20">Full Catalog</span>
-        <h1 class="font-headline-lg text-headline-lg text-primary">All Products</h1>
-        <p class="font-body-md text-text-muted max-w-2xl">Every water bottle and cold drink we supply — sealed boxes, wholesale-friendly pricing.</p>
+        <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20" data-s="catalog.badge">Full Catalog</span>
+        <h1 class="font-headline-lg text-headline-lg text-primary" data-s="catalog.title">All Products</h1>
+        <p class="font-body-md text-text-muted max-w-2xl" data-s="catalog.sub">Every water bottle and cold drink we supply — sealed boxes, wholesale-friendly pricing.</p>
         <span id="productCount" class="font-label-caps text-label-caps text-text-muted uppercase">Showing 32 Products</span>
       </header>
 
@@ -298,9 +300,9 @@
               <path d="M12 2.2c3.9 5.3 6.9 9 6.9 12.6a6.9 6.9 0 1 1-13.8 0c0-3.6 3-7.3 6.9-12.6z" fill="url(#rwLogoGradF)"/>
               <path d="M9.3 16.1a2.9 2.9 0 0 0 2.2 2.7" stroke="#eafcff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
             </svg>
-            <span class="navbar-word">Rajesh Water<small>Premium Water Supply</small></span>
+            <span class="navbar-word"><span class="nb-name">Rajesh Water</span><small>Premium Water Supply</small></span>
           </a>
-          <p class="footer-about">Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.</p>
+          <p class="footer-about" data-s="footer.about">Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.</p>
         </div>
         <div class="footer-col">
           <h4>Explore</h4>
@@ -324,7 +326,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>© 2026 Rajesh Water. All rights reserved.</span>
+        <span data-s="footer.copyright">© 2026 Rajesh Water. All rights reserved.</span>
         <span>Order via WhatsApp — no account needed.</span>
       </div>
     </div>
@@ -340,7 +342,7 @@
       "use strict";
 
       var KEY = 'rajesh-water-cart';
-      var BUSINESS = { name: 'RAJESH WATER', whatsapp: '917742735762' };
+      var BUSINESS = (window.SITE_DATA && window.SITE_DATA.contact) ? { name: (window.SITE_DATA.brand && window.SITE_DATA.brand.name) ? window.SITE_DATA.brand.name.toUpperCase() : 'RAJESH WATER', whatsapp: window.SITE_DATA.contact.whatsapp || '917742735762' } : { name: 'RAJESH WATER', whatsapp: '917742735762' };
       var MIN_ORDER = 48;
       var MAX_CARTONS = 40;
       var fmt = new Intl.NumberFormat('en-IN');
@@ -903,7 +905,7 @@
       }
 
       /* ---------- Customer feedback (demo data — replace with API/database later) ---------- */
-      var REVIEWS = [
+      var REVIEWS = (window.SITE_DATA && window.SITE_DATA.reviews && window.SITE_DATA.reviews.grid) || [
         { name: 'Aman Sharma', rating: 5, text: 'Regular monthly supply, always on time and the bottles are sealed and clean.', product: '500 ML Box', date: 'Aug 2026', demo: true },
         { name: 'Priya Verma', rating: 5, text: 'Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.', product: '2 LITRE Box', date: 'Jul 2026', demo: true },
         { name: 'Hotel Rajput Palace', rating: 4, text: 'Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.', product: 'Bulk Supply', date: 'Jun 2026', demo: true }
@@ -1100,7 +1102,7 @@ document.getElementById('quoteMinus').addEventListener('click', function () {
       }, 950);
     });
     document.getElementById('qWABtn').addEventListener('click', function () {
-      var url = 'https://wa.me/917742735762?text=' + encodeURIComponent(waText);
+      var url = 'https://wa.me/' + ((window.SITE_DATA && window.SITE_DATA.contact && window.SITE_DATA.contact.whatsapp) || '917742735762') + '?text=' + encodeURIComponent(waText);
       window.open(url, '_blank', 'noopener');
     });
     document.getElementById('quoteCloseBtn').addEventListener('click', closeQuote);
