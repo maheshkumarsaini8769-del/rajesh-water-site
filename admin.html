@@ -146,7 +146,7 @@
     <div class="topbar">
       <h1 id="tabTitle">Overview</h1>
       <div class="spacer"></div>
-      <a class="open-site" href="pages/index.html?v=47" target="_blank" rel="noopener">&#8599; Open Site</a>
+      <a class="open-site" href="pages/index.html?v=48" target="_blank" rel="noopener">&#8599; Open Site</a>
     </div>
     <div class="content" id="content"></div>
     <div class="savebar">
@@ -448,6 +448,7 @@
     var rows = DATA.products.map(function (p, i) {
       return '<tr>' +
         '<td><img class="thumb" src="' + esc(p.img) + '" alt=""></td>' +
+        '<td><input type="text" data-k="products.' + i + '.img" value="' + esc(p.img) + '" style="width:130px" title="Image path (e.g. ../images/bisleri.png)"></td>' +
         '<td><input type="text" data-k="products.' + i + '.name" value="' + esc(p.name) + '" style="width:110px"></td>' +
         '<td><input type="text" data-k="products.' + i + '.label" value="' + esc(p.label) + '" style="width:150px"></td>' +
         '<td><input type="text" data-k="products.' + i + '.size" value="' + esc(p.size) + '" style="width:90px"></td>' +
@@ -462,13 +463,11 @@
     }).join('');
     return '' +
       '<div class="card"><h3>Product Catalog <span class="pill ok">' + DATA.products.length + ' items</span></h3>' +
-      '<div class="sub">Price in ₹ per bottle. boxSize = bottles per box. minBoxes = minimum cartons for delivery. Featured items appear on the home page.</div>' +
+      '<div class="sub">Price in ₹ per bottle. boxSize = bottles per box. minBoxes = minimum cartons for delivery. Featured items appear on the home page. Image = file path under /images (e.g. <span class="kbd">../images/bisleri.png</span>).</div>' +
       '<div style="overflow-x:auto"><table class="ptable"><thead><tr>' +
-      '<th></th><th>Name</th><th>Label</th><th>Size</th><th>Category</th><th>Price</th><th>Per box</th><th>Min boxes</th><th>Badge</th><th>Featured</th><th></th>' +
+      '<th></th><th>Image</th><th>Name</th><th>Label</th><th>Size</th><th>Category</th><th>Price</th><th>Per box</th><th>Min boxes</th><th>Badge</th><th>Featured</th><th></th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
-      '<div class="row" style="margin-top:12px"><button class="btn small" id="prodAdd">+ Add product</button>' +
-      '<button class="btn small ghost" id="imgHelp">? Image cheatsheet</button></div>' +
-      '<div class="hint" id="imgNote" style="display:none">Product images live in /images. To change a photo: type the file name (e.g. <span class="kbd">../images/bisleri.png</span>) or upload a new one in the Brand tab and copy its path. Ask for help if stuck.</div></div>';
+      '<div class="row" style="margin-top:12px"><button class="btn small" id="prodAdd">+ Add product</button></div></div>';
   }
 
   function rContact() {
@@ -486,10 +485,10 @@
 
   function rTheme() {
     return '' +
-      '<div class="card"><h3>Brand Colors</h3><div class="grid">' +
-      '<div class="field"><label>Bright accent (buttons, glows, highlights)</label><input type="color" data-k="theme.accent" value="' + esc(DATA.theme.accent) + '"></div>' +
-      '<div class="field"><label>Deep tone (gradients, shadows)</label><input type="color" data-k="theme.deep" value="' + esc(DATA.theme.deep) + '"></div>' +
-      '</div><div class="hint">These tint the logo drop, buttons and glows. Page background stays deep navy.</div></div>' +
+      '<div class="card"><h3>Site Highlight Color</h3><div class="grid">' +
+      '<div class="field"><label>Main highlight (icy cyan)</label><input type="color" data-k="theme.accent" value="' + esc(DATA.theme.accent) + '"><div class="hint">Default #00aeef. Tints the whole site — eyebrows, brand name, borders, glows. Change it to any color and the whole theme shifts with it.</div></div>' +
+      '<div class="field"><label>Deep tone (logo gradient + shadows)</label><input type="color" data-k="theme.deep" value="' + esc(DATA.theme.deep) + '"><div class="hint">Default #045a8c — used with the logo drop and button gradients.</div></div>' +
+      '</div></div>' +
       '<div class="card"><h3>Motion</h3>' +
       '<div class="row"><input type="checkbox" data-chex="theme.animate" id="animChk"' + (DATA.theme.animate !== false ? ' checked' : '') + '><label for="animChk" style="color:var(--muted)">Keep all animations on (planet, waves, buttons)</label></div>' +
       '<div class="hint" style="margin-top:8px">Switch off to freeze every animation on the whole site — useful for calm, print-style or very old devices.</div></div>';
@@ -522,7 +521,6 @@
         setDirty(true);
         render();
       };
-      (el = $('imgHelp')).onclick = function () { $('imgNote').style.display = $('imgNote').style.display === 'none' ? 'block' : 'none'; };
       $('content').querySelectorAll('button[data-act]').forEach(function (b) {
         b.addEventListener('click', function () {
           var act = b.getAttribute('data-act'), i = Number(b.getAttribute('data-i'));

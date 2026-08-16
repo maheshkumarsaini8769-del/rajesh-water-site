@@ -3180,3 +3180,7 @@ body.rw-quote-lock { overflow: hidden; }
 .navbar-logo-img { width: 34px; height: 34px; object-fit: contain; border-radius: 50%; }
 .nb-name { line-height: 1.1; }
 html.rw-anim-off *, html.rw-anim-off *::before, html.rw-anim-off *::after { animation: none !important; transition: none !important; }
+
+/* ===== Admin theme knobs ===== */
+:root { --rw-accent: #00aeef; --rw-deep: #045a8c; }
+.navbar-logo { box-shadow: 0 6px 18px color-mix(in srgb, var(--rw-accent) 25%, transparent); }

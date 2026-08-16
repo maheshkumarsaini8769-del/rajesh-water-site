@@ -77,7 +77,7 @@
       document.querySelectorAll('a[href*="tel:+"]').forEach(function (a) {
         a.href = a.href.replace(/tel:\+\d+/, 'tel:+' + ph);
       });
-      var fmtPh = '+91 ' + ph.slice(0, 5) + ' ' + ph.slice(5);
+      var fmtPh = '+91 ' + ph.slice(2, 7) + ' ' + ph.slice(7, 12);
       document.querySelectorAll('[data-s="support.c2l"]').forEach(function (el) {
         el.textContent = fmtPh + ' \u2192';
       });
@@ -88,6 +88,7 @@
   function applyTexts() {
     document.querySelectorAll('[data-s]').forEach(function (el) {
       var key = el.getAttribute('data-s');
+      if (key === 'support.c2l') return; /* owned by applyContact (phone formatting) */
       var parts = key.split('.');
       var node = D;
       for (var i = 0; i < parts.length && node; i++) node = node[parts[i]];
@@ -96,10 +97,25 @@
     });
   }
 
+  function hexRgb(hex) {
+    var h = String(hex || '').replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+
   function applyTheme() {
     if (!D.theme) return;
     var css = '';
-    if (D.theme.accent) css += '--rw-accent:' + D.theme.accent + ';';
+    if (D.theme.accent) {
+      var rgb = hexRgb(D.theme.accent);
+      if (rgb) {
+        css += '--ice:' + D.theme.accent + ';';
+        css += '--ice-dim:rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.55);';
+        css += '--line:rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.16);';
+      }
+      css += '--rw-accent:' + D.theme.accent + ';';
+    }
     if (D.theme.deep) css += '--rw-deep:' + D.theme.deep + ';';
     var st = document.getElementById('site-theme');
     if (!st) {

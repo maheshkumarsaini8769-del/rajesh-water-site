@@ -165,6 +165,11 @@ window.SITE_DATA = {
       }
     ]
   },
+    "catalog": {
+    "badge": "Full Catalog",
+    "title": "All Products",
+    "sub": "Every water bottle and cold drink we supply \u2014 sealed boxes, wholesale-friendly pricing."
+  },
   "footer": {
     "about": "Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.",
     "copyright": "© 2026 Rajesh Water. All rights reserved."
