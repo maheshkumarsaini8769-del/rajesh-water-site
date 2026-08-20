@@ -45,8 +45,9 @@ var orderSchema = new mongoose.Schema({
   createdAt: { type: Number, required: true }
 }, { strict: false, timestamps: false, _id: false });
 
-/* One canonical document per store (fixed _id) — mirrors the file format 1:1. */
+/* One canonical document per store (fixed String _id) — mirrors the file format 1:1. */
 var ordersDocSchema = new mongoose.Schema({
+  _id: String,
   seq: { type: Number, default: 10000 },
   orders: { type: [orderSchema], default: [] }
 }, { strict: false });
@@ -77,6 +78,7 @@ var bizSaleSchema = new mongoose.Schema({
 }, { strict: false });
 
 var bizDocSchema = new mongoose.Schema({
+  _id: String,
   settings: { type: mongoose.Schema.Types.Mixed, default: {} },
   products: { type: [bizItemSchema], default: [] },
   purchases: { type: Array, default: [] },
@@ -96,10 +98,10 @@ var reviewSchema = new mongoose.Schema({
   date: { type: String, default: '' },
   at: Number
 }, { strict: false, _id: false });
-var reviewsDocSchema = new mongoose.Schema({ list: { type: [reviewSchema], default: [] } }, { strict: false });
+var reviewsDocSchema = new mongoose.Schema({ _id: String, list: { type: [reviewSchema], default: [] } }, { strict: false });
 var ReviewDoc = mongoose.model('ReviewDoc', reviewsDocSchema);
 
-var siteDocSchema = new mongoose.Schema({ data: { type: mongoose.Schema.Types.Mixed, default: {} } }, { strict: false });
+var siteDocSchema = new mongoose.Schema({ _id: String, data: { type: mongoose.Schema.Types.Mixed, default: {} } }, { strict: false });
 var SiteDoc = mongoose.model('SiteDoc', siteDocSchema);
 
 /* Truecaller verification state - persisted so serverless instances share it */
