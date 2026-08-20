@@ -16,6 +16,8 @@ tunnel-url.txt
 
 # Logs
 *.log
+boot.err
+boot.txt
 
 # Environment / secrets (never commit)
 .env
