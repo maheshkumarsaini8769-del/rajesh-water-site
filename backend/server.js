@@ -276,11 +276,36 @@ function etaText(createdAt) {
   return 'Tomorrow, between 9:00 AM and 1:00 PM';
 }
 
-/* ---------- Truecaller Mobile Web verification state (in-memory; real verification, not simulated) ---------- */
+/* ---------- Truecaller Mobile Web verification state (Mongo-backed when connected; in-memory fallback) ---------- */
 var TC_GRANTS = new Map();    // phone -> {token, exp}; single-use grant issued only after Truecaller confirms the number
 var TC_PENDING = new Map();   // requestNonce -> {phone, createdAt}; created by /api/truecaller/begin
 var TC_REJECTED = new Map();  // phone -> timestamp; user dismissed the Truecaller profile dialog
 var NONCES = new Set();       // client submission nonces (duplicate prevention)
+
+/* Serverless (Vercel) shared state: hydrate maps from MongoDB on reads, persist after every mutation. */
+async function tcHydrate() {
+  if (!db.state().on) return;
+  try {
+    var st = await db.loadTcState();
+    if (!st) return;
+    TC_GRANTS.clear(); TC_PENDING.clear(); TC_REJECTED.clear(); NONCES.clear();
+    (st.grants || []).forEach(function (g) { TC_GRANTS.set(g.phone, { token: g.token, exp: g.exp }); });
+    (st.pending || []).forEach(function (p) { TC_PENDING.set(p.nonce, { phone: p.phone, createdAt: p.createdAt }); });
+    (st.rejected || []).forEach(function (r) { TC_REJECTED.set(r.phone, { at: r.at, reason: r.reason }); });
+    (st.nonces || []).forEach(function (n) { NONCES.add(n); });
+  } catch (e) {}
+}
+async function tcPersist() {
+  if (!db.state().on) return;
+  try {
+    await db.saveTcState({
+      grants: Array.from(TC_GRANTS.entries()).map(function (e) { return { phone: e[0], token: e[1].token, exp: e[1].exp }; }),
+      pending: Array.from(TC_PENDING.entries()).map(function (e) { return { nonce: e[0], phone: e[1].phone, createdAt: e[1].createdAt }; }),
+      rejected: Array.from(TC_REJECTED.entries()).map(function (e) { return { phone: e[0], at: e[1].at, reason: e[1].reason }; }),
+      nonces: Array.from(NONCES)
+    });
+  } catch (e) {}
+}
 
 /* Debug log for Truecaller flow — data/tc-debug.log (rotated at ~200KB). */
 function tcLog(line) {
@@ -429,12 +454,13 @@ function tcPartial() {
   return !!(t.enabled && !t.apiKey);
 }
 
-function handleTcBegin(req, res, payload) {
+async function handleTcBegin(req, res, payload) {
   var tc = CFG.truecaller || {};
   if (!tcComplete()) {
     send(res, 200, { ok: false, configured: false, error: 'Truecaller not configured — owner ko data/server-config.json me truecaller.apiKey add karni hai.' });
     return;
   }
+  await tcHydrate();
   var phone = String(payload.phone || '').replace(/\D/g, '');
   if (!/^[6-9]\d{9}$/.test(phone)) { send(res, 400, { ok: false, error: 'invalid phone' }); return; }
 var nonce = 'RW' + Date.now().toString(36) + crypto.randomBytes(2).toString('hex');
@@ -442,6 +468,7 @@ var nonce = 'RW' + Date.now().toString(36) + crypto.randomBytes(2).toString('hex
   if (TC_PENDING.size > 5000) { TC_PENDING.clear(); }
   var now = Date.now();
   TC_REJECTED.forEach(function (v, k) { if (now - (v.at || v) > 5 * 60 * 1000) TC_REJECTED.delete(k); });
+  await tcPersist();
   tcLog('begin phone=+91' + phone + ' nonce=' + nonce);
   var deepLink = 'truecallersdk://truesdk/web_verify?type=btmsheet' +
     '&requestNonce=' + encodeURIComponent(nonce) +
@@ -461,6 +488,7 @@ function handleTcCallback(req, res, payload) {
   if (!tcComplete()) return;
 var nonce = String(payload.requestId || '').trim();
   var status = String(payload.status || '');
+  tcHydrate().then(function () {
   var pending = TC_PENDING.get(nonce);
   tcLog('callback nonce=' + nonce + ' status=' + status + ' hasToken=' + (!!payload.accessToken) + ' endpoint=' + String(payload.endpoint || '').slice(0, 50));
   if (!pending) return;
@@ -468,6 +496,7 @@ var nonce = String(payload.requestId || '').trim();
     TC_PENDING.delete(nonce);
     TC_REJECTED.set(pending.phone, { at: Date.now(), reason: 'rejected' });
     tcLog('user rejected profile for +91' + pending.phone);
+    tcPersist();
     return;
   }
   if (!payload.accessToken) {
@@ -480,7 +509,7 @@ var nonce = String(payload.requestId || '').trim();
   var raw = String(payload.endpoint || '').trim();
   if (!accessToken || !raw) return;
   var parts = raw.replace(/^https?:\/\//, '').split('/');
-var g = https.get({
+  var g = https.get({
     host: parts[0],
     path: '/' + parts.slice(1).join('/'),
     headers: { 'Authorization': 'Bearer ' + accessToken, 'Cache-Control': 'no-cache' }
@@ -500,18 +529,22 @@ var g = https.get({
       if (tcPhone !== pending.phone) {
         TC_REJECTED.set(pending.phone, { at: Date.now(), reason: 'mismatch' });
         tcLog('mismatch: expected +91' + pending.phone + ' got +91' + tcPhone);
+        tcPersist();
         return;
       }
       var token = crypto.randomBytes(24).toString('hex');
       TC_GRANTS.set(pending.phone, { token: token, exp: Date.now() + 15 * 60 * 1000 });
       if (TC_GRANTS.size > 2000) { TC_GRANTS.clear(); }
       tcLog('VERIFIED +91' + pending.phone + ' nonce=' + nonce.slice(0, 12) + '...');
+      tcPersist();
     });
   });
   g.on('error', function (e) { tcLog('profile fetch error: ' + e.message); });
+  });
 }
 
-function handleTcStatus(req, res, qs) {
+async function handleTcStatus(req, res, qs) {
+  await tcHydrate();
   var phone = String(qs.phone || '').replace(/\D/g, '');
   var grant = TC_GRANTS.get(phone);
   if (grant && grant.exp > Date.now()) {
@@ -529,6 +562,7 @@ function handleTcStatus(req, res, qs) {
   TC_PENDING.forEach(function (v) { if (v.phone === phone && v.createdAt > newest) newest = v.createdAt; });
   if (newest && now - newest > 65 * 1000) {
     TC_PENDING.forEach(function (v, k) { if (v.phone === phone && now - v.createdAt > 65 * 1000) TC_PENDING.delete(k); });
+    tcPersist();
     send(res, 200, { ok: true, expired: true, error: 'Truecaller ka callback nahi aaya - matlab callback URL registered nahi hai ya site public/HTTPS nahi hai (localhost par Truecaller nahi pahunch sakta). Phone par Truecaller app se hi verify hota hai.' });
     return;
   }
@@ -545,7 +579,8 @@ function pubOrder(o) {
   };
 }
 
-function handleOrderCreate(req, res, payload) {
+async function handleOrderCreate(req, res, payload) {
+  await tcHydrate();
   var name = String(payload.name || '').trim().slice(0, 80);
   var phone = String(payload.phone || '').replace(/\D/g, '');
   var address = String(payload.address || '').trim().slice(0, 300);
@@ -569,7 +604,8 @@ function handleOrderCreate(req, res, payload) {
     }
     return;
   }
-  TC_GRANTS.delete(phone); /* single-use grant â€” consumed on order creation */
+TC_GRANTS.delete(phone); /* single-use grant â€” consumed on order creation */
+  tcPersist();
   var verified = true;
   var verificationStatus = 'Verified (Truecaller)';
   if (!Array.isArray(payload.items) || !payload.items.length) { send(res, 400, { ok: false, error: 'empty order' }); return; }
@@ -628,7 +664,8 @@ writeOrders(d);
   send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.whatsapp || {}).enabled && (CFG.whatsapp || {}).token && (CFG.whatsapp || {}).phoneId && (CFG.whatsapp || {}).owner) });
 }
 
-function handleOrderComplete(req, res, payload) {
+async function handleOrderComplete(req, res, payload) {
+  await tcHydrate();
   var token = String(payload.token || '');
   var phone = String(payload.phone || '').replace(/\D/g, '');
   var d = readOrders();
@@ -662,7 +699,8 @@ function handleOrderComplete(req, res, payload) {
   send(res, 200, { ok: true, status: 'complete_requested', message: 'Marked complete. The owner must confirm it in the admin panel â€” after that your order will show Completed.' });
 }
 
-function handleMyOrders(req, res, qp) {
+async function handleMyOrders(req, res, qp) {
+  await tcHydrate();
   var token = String(qp.token || '');
   var phone = String(qp.phone || '').replace(/\D/g, '');
   var authorized = false;
@@ -987,8 +1025,8 @@ if (req.method === 'GET' && pathname === '/api/orders/config') {
     });
     return true;
   }
-  if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
-    readBody(req, res, function (p) { handleTcBegin(req, res, p); });
+if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
+    readBody(req, res, function (p) { handleTcBegin(req, res, p).catch(function (e) { tcLog('begin error: ' + (e && e.message)); }); });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/truecaller/callback') {
@@ -997,20 +1035,20 @@ if (req.method === 'GET' && pathname === '/api/orders/config') {
   }
   if (req.method === 'GET' && pathname === '/api/truecaller/status') {
     var sq = require('url').parse(req.url, true).query || {};
-    handleTcStatus(req, res, sq);
+    handleTcStatus(req, res, sq).catch(function (e) { tcLog('status error: ' + (e && e.message)); });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/orders/create') {
-    readBody(req, res, function (p) { handleOrderCreate(req, res, p); });
+    readBody(req, res, function (p) { handleOrderCreate(req, res, p).catch(function (e) { tcLog('create error: ' + (e && e.message)); }); });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/orders/complete') {
-    readBody(req, res, function (p) { handleOrderComplete(req, res, p); });
+    readBody(req, res, function (p) { handleOrderComplete(req, res, p).catch(function (e) { tcLog('complete error: ' + (e && e.message)); }); });
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/orders/my') {
     var parts = require('url').parse(req.url, true);
-    handleMyOrders(req, res, parts.query || {});
+    handleMyOrders(req, res, parts.query || {}).catch(function (e) { tcLog('my orders error: ' + (e && e.message)); });
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/admin/orders') {
@@ -1084,7 +1122,12 @@ function appHandler(req, res) {
 async function boot() {
   await db.initDb();
   await syncFromMongo();
+  await tcHydrate();
 }
+
+/* Vercel serverless: each request may hit a different warm instance, so refresh
+   the in-memory caches from MongoDB before handling. Idempotent + cheap. */
+var refreshMem = syncFromMongo;
 
 /* Local run only: attach the HTTP listener. When required from api/index.js
    (Vercel serverless) it must NOT listen — the platform invokes appHandler. */
@@ -1098,5 +1141,5 @@ if (require.main === module) {
   }).catch(function (e) { console.log('[boot] fatal: ' + (e && e.stack || e)); });
 }
 
-module.exports = { boot: boot, appHandler: appHandler, db: db, cfg: { get: function () { return CFG; } } };
+module.exports = { boot: boot, appHandler: appHandler, db: db, cfg: { get: function () { return CFG; } }, refreshMem: refreshMem, tcHydrate: tcHydrate };
 

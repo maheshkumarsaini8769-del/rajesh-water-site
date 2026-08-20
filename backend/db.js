@@ -3,6 +3,8 @@
    Connection string: process.env.MONGODB_URI (.env file, never in frontend). */
 
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
 var state = { on: false, connecting: false, error: null, lastSave: null, lastError: null };
 
@@ -100,6 +102,19 @@ var ReviewDoc = mongoose.model('ReviewDoc', reviewsDocSchema);
 var siteDocSchema = new mongoose.Schema({ data: { type: mongoose.Schema.Types.Mixed, default: {} } }, { strict: false });
 var SiteDoc = mongoose.model('SiteDoc', siteDocSchema);
 
+/* Truecaller verification state - persisted so serverless instances share it */
+var tcStateSchema = new mongoose.Schema({ _id: String, data: { type: mongoose.Schema.Types.Mixed, default: {} } }, { strict: false });
+var TcStateDoc = mongoose.model('TcStateDoc', tcStateSchema);
+
+async function saveTcState(obj) {
+  await upsert(TcStateDoc, 'tcstate', { _id: 'tcstate', data: obj || {} });
+  markOk();
+}
+async function loadTcState() {
+  var d = await getDoc(TcStateDoc, 'tcstate');
+  return (d && d.data) || null;
+}
+
 /* ---------- Validation helpers (throw with a readable message) ---------- */
 
 function checkOrdersDoc(d) {
@@ -195,6 +210,12 @@ async function loadSiteData() {
 async function initDb() {
   var uri = String(process.env.MONGODB_URI || '').trim();
   if (!uri) {
+    try {
+      var cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'server-config.json'), 'utf8'));
+      if (cfg && typeof cfg.mongodbUri === 'string' && cfg.mongodbUri.trim()) uri = cfg.mongodbUri.trim();
+    } catch (e) {}
+  }
+  if (!uri) {
     console.log('[mongo] MONGODB_URI .env me set nahi hai — MongoDB off, files as fallback chalta rahega.');
     return state;
   }
@@ -229,5 +250,6 @@ module.exports = {
   saveOrders: saveOrders, loadOrders: loadOrders,
   saveBiz: saveBiz, loadBiz: loadBiz,
   saveReviews: saveReviews, loadReviews: loadReviews,
-  saveSiteData: saveSiteData, loadSiteData: loadSiteData
+  saveSiteData: saveSiteData, loadSiteData: loadSiteData,
+  saveTcState: saveTcState, loadTcState: loadTcState
 };

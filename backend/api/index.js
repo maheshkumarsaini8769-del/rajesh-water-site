@@ -18,6 +18,8 @@ function ensureBoot() {
 module.exports = async function handler(req, res) {
   try {
     await ensureBoot();
+    await backend.refreshMem();
+    await backend.tcHydrate();
   } catch (e) {
     /* Vercel cold start / MongoDB down — still answer so the deploy is reachable. */
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });

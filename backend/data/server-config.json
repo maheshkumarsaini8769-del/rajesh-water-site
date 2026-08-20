@@ -1,4 +1,5 @@
 {
+    "mongodbUri":  "mongodb+srv://maheshkumarsaini8769_db_user:mahesh99830@cluster0.klicsks.mongodb.net/rajesh-water?retryWrites=true&w=majority&appName=Cluster0",
     "whatsapp":  {
                      "enabled":  false,
                      "token":  "",
