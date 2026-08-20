@@ -5,8 +5,7 @@ backend/node_modules/
 backend/wa-session/
 backend/.wwebjs_cache/
 
-# Runtime state (never share: customer data, secrets, owner config)
-backend/data/server-config.json
+# Runtime state (never share: customer data, owner config) - config is deployed (private repo)
 backend/data/orders.json
 backend/data/business.json
 backend/data/user-reviews.json
