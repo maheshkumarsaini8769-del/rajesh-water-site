@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "**/*",
+      "use": "@vercel/static",
+      "config": {
+        "zeroConfig": true
+      }
+    }
+  ],
+  "rewrites": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://rajesh-water-site-7bzc-ofz10klx5.vercel.app/api/$1"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -68,15 +68,35 @@ var types = {
   '.ico': 'image/x-icon', '.woff': 'font/woff', '.woff2': 'font/woff2'
 };
 
+/* In-memory mirror of the stores. On Vercel (serverless) the filesystem is
+   read-only/ephemeral, so Mongo is the live store and MEM is hydrated from it
+   at boot. On local runs MEM falls back to the JSON files. */
+var MEM = { orders: null, biz: null, reviews: null, siteData: {} };
+function memCopy(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
+
+var CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, PUT, PATCH, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-admin-token, Authorization',
+  'Access-Control-Max-Age': '86400'
+};
+
 function readReviews() {
-  try { return JSON.parse(fs.readFileSync(REVIEW_FILE, 'utf8')); } catch (e) { return []; }
+  if (MEM.reviews) return memCopy(MEM.reviews);
+  try {
+    var l = JSON.parse(fs.readFileSync(REVIEW_FILE, 'utf8'));
+    MEM.reviews = l;
+    return memCopy(l);
+  } catch (e) { return []; }
 }
 function writeReviews(list) {
+  MEM.reviews = list;
   try { fs.writeFileSync(REVIEW_FILE, JSON.stringify(list, null, 2)); } catch (e) {}
   if (db.state().on) db.saveReviews(list).catch(function (err) { db.markError('reviews', err); });
 }
+
 function send(res, code, data, ct) {
-  res.writeHead(code, { 'Content-Type': ct || 'application/json; charset=utf-8' });
+  res.writeHead(code, Object.assign({ 'Content-Type': ct || 'application/json; charset=utf-8' }, CORS_HEADERS));
   res.end(typeof data === 'string' ? data : JSON.stringify(data));
 }
 
@@ -97,13 +117,16 @@ function proxyTo(port, req, res) {
 
 /* ---------- business store (data/business.json) ---------- */
 function readBiz() {
+  if (MEM.biz) return memCopy(MEM.biz);
   try {
     var b = JSON.parse(fs.readFileSync(BIZ_FILE, 'utf8'));
     if (!b || !Array.isArray(b.products)) return JSON.parse(JSON.stringify(EMPTY_BIZ));
-    return b;
+    MEM.biz = b;
+    return memCopy(b);
   } catch (e) { return JSON.parse(JSON.stringify(EMPTY_BIZ)); }
 }
 function writeBiz(b) {
+  MEM.biz = b;
   try { fs.writeFileSync(BIZ_FILE, JSON.stringify(b, null, 2)); } catch (e) {}
   if (db.state().on) db.saveBiz(b).catch(function (err) { db.markError('biz', err); });
 }
@@ -111,14 +134,17 @@ function writeBiz(b) {
 /* ---------- site content (data/site-data.js) ---------- */
 var SITE_DATA_FILE = path.join(APP_DIR, 'data', 'site-data.js');
 function readSiteDataJs() {
+  if (MEM.siteData && Object.keys(MEM.siteData).length) return memCopy(MEM.siteData);
   try {
     var c = fs.readFileSync(SITE_DATA_FILE, 'utf8');
     var i = c.lastIndexOf('='), j = c.lastIndexOf(';');
     if (i < 0) return {};
-    return JSON.parse(c.slice(i + 1, j > i ? j : undefined));
+    MEM.siteData = JSON.parse(c.slice(i + 1, j > i ? j : undefined));
+    return memCopy(MEM.siteData);
   } catch (e) { return {}; }
 }
 function writeSiteDataJs(obj) {
+  MEM.siteData = obj;
   try { fs.writeFileSync(SITE_DATA_FILE, 'window.SITE_DATA = ' + JSON.stringify(obj, null, 2) + ';\n'); } catch (e) {}
   if (db.state().on) db.saveSiteData(obj).catch(function (err) { db.markError('sitedata', err); });
 }
@@ -202,13 +228,15 @@ function readConfig() {
 var CFG = readConfig();
 
 function readOrders() {
+  if (MEM.orders) return memCopy(MEM.orders);
   try {
     var d = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-    if (d && Array.isArray(d.orders)) return d;
+    if (d && Array.isArray(d.orders)) { MEM.orders = d; return memCopy(d); }
   } catch (e) {}
   return { seq: 10000, orders: [] };
 }
 function writeOrders(d) {
+  MEM.orders = d;
   try {
     var tmp = ORDERS_FILE + '.tmp';
     fs.writeFileSync(tmp, JSON.stringify(d, null, 2));
@@ -1019,35 +1047,55 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
   return false;
 }
 
-(async function boot() {
-  await db.initDb();
-  await syncFromMongo();
-  http.createServer(function (req, res) {
+function appHandler(req, res) {
   var pathname = decodeURIComponent((req.url || '/').split('?')[0]);
 
+  /* CORS preflight (browser sends OPTIONS before real request) */
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, CORS_HEADERS);
+    res.end();
+    return;
+  }
+
   if (handleApi(req, res, pathname)) return;
+
+  if (pathname === '/health' || pathname === '/health/') { send(res, 200, 'Backend is running', 'text/plain'); return; }
 
   if (pathname === '/wa' || pathname === '/wa/') { proxyTo(PORT_BOT, req, res); return; }
 
   if (req.method === 'POST') { tcLog('unknown POST ' + req.url); }
 
-if (pathname === '/' || pathname === '/index.html') pathname = '/pages/index.html';
+  if (pathname === '/' || pathname === '/index.html') pathname = '/pages/index.html';
   if (pathname === '/products.html' || pathname === '/products') pathname = '/pages/products.html';
   var fp = path.normalize(path.join(APP_DIR, pathname));
   if (fp !== APP_DIR && !fp.startsWith(APP_DIR + path.sep)) { send(res, 403, 'Forbidden'); return; }
   fs.readFile(fp, function (err, data) {
     if (err) { send(res, 404, 'Not found: ' + pathname, 'text/plain'); return; }
-    var hdrs = { 'Content-Type': types[path.extname(fp)] || 'application/octet-stream' };
+    var hdrs = Object.assign({ 'Content-Type': types[path.extname(fp)] || 'application/octet-stream' }, CORS_HEADERS);
     var ext = path.extname(fp);
     if (ext === '.html' || ext === '.js' || ext === '.css' || ext === '.json') hdrs['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     else if (ext === '.webp' || ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.svg' || ext === '.gif' || ext === '.ico' || ext === '.woff' || ext === '.woff2') hdrs['Cache-Control'] = 'public, max-age=86400';
-res.writeHead(200, hdrs);
+    res.writeHead(200, hdrs);
     res.end(data);
   });
-  }).listen(port, function () {
-    console.log('[rajesh-water] serving ' + root + ' at http://localhost:' + port);
-    console.log('[rajesh-water] reviews API at http://localhost:' + port + '/api/reviews');
-    console.log('[rajesh-water] mongo status: ' + (db.state().on ? 'ON (MongoDB)' : 'OFF (file fallback)'));
-  });
-})().catch(function (e) { console.log('[boot] fatal: ' + (e && e.stack || e)); });
+}
+
+async function boot() {
+  await db.initDb();
+  await syncFromMongo();
+}
+
+/* Local run only: attach the HTTP listener. When required from api/index.js
+   (Vercel serverless) it must NOT listen — the platform invokes appHandler. */
+if (require.main === module) {
+  boot().then(function () {
+    http.createServer(appHandler).listen(port, function () {
+      console.log('[rajesh-water] serving ' + root + ' at http://localhost:' + port);
+      console.log('[rajesh-water] reviews API at http://localhost:' + port + '/api/reviews');
+      console.log('[rajesh-water] mongo status: ' + (db.state().on ? 'ON (MongoDB)' : 'OFF (file fallback)'));
+    });
+  }).catch(function (e) { console.log('[boot] fatal: ' + (e && e.stack || e)); });
+}
+
+module.exports = { boot: boot, appHandler: appHandler, db: db, cfg: { get: function () { return CFG; } } };
 
