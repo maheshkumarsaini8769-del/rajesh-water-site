@@ -1,0 +1,27 @@
+# Netlify config — static frontend
+[build]
+  publish = "."
+  command = "echo static site - no build step"
+[build.environment]
+  NODE_ENV = "production"
+
+# Backend calls (/api/*) ko VPS/backend origin par bhejo.
+# BACKEND_URL ko apne backend ka public URL me badlo (jaise https://yourdomain.com)
+# Agar backend bhi same domain par hai (nginx reverse proxy) to is redirect ko hata do.
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR-BACKEND-URL/api/:splat"
+  status = 200
+  force = false
+
+# Admin panel
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+# Single-page entry
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

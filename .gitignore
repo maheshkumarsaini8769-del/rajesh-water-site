@@ -1,24 +1,25 @@
 # Dependencies
-node_modules/
+backend/node_modules/
 
 # WhatsApp bot session (secret - linked to owner's WhatsApp)
-wa-session/
-.wwebjs_cache/
+backend/wa-session/
+backend/.wwebjs_cache/
 
 # Runtime state (never share: customer data, secrets, owner config)
-data/server-config.json
-data/orders.json
-data/business.json
-data/user-reviews.json
-data/tc-debug.log
-wa-bot-state.json
-tunnel-url.txt
+backend/data/server-config.json
+backend/data/orders.json
+backend/data/business.json
+backend/data/user-reviews.json
+backend/data/tc-debug.log
+backend/wa-bot-state.json
+backend/tunnel-url.txt
+
+# Environment / secrets (never commit)
+.env
+.env.*
 
 # Logs
 *.log
 boot.err
 boot.txt
-
-# Environment / secrets (never commit)
-.env
-.env.*
+tunnel-url.txt

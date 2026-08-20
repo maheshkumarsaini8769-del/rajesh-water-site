@@ -29,7 +29,8 @@ var https = require('https');
 var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
-var root = path.resolve(__dirname);
+var root = path.resolve(__dirname);            /* backend/ — data, config, secrets */
+var APP_DIR = path.resolve(__dirname, '..', 'frontend');  /* frontend/ — static site + admin UI */
 var port = Number(process.env.PORT || process.argv[2] || 3000);
 var PORT_BOT = Number(process.env.WA_BOT_PORT) || 3001;
 
@@ -108,7 +109,7 @@ function writeBiz(b) {
 }
 
 /* ---------- site content (data/site-data.js) ---------- */
-var SITE_DATA_FILE = path.join(root, 'data', 'site-data.js');
+var SITE_DATA_FILE = path.join(APP_DIR, 'data', 'site-data.js');
 function readSiteDataJs() {
   try {
     var c = fs.readFileSync(SITE_DATA_FILE, 'utf8');
@@ -154,7 +155,7 @@ var TRANSITIONS = {
   preparing: ['confirmed'],
   out: ['preparing'],
   delivered: ['out'],
-  completed: ['delivered', 'complete_requested', 'confirmed'],
+  completed: ['delivered', 'complete_requested', 'confirmed', 'received'],
   cancelled: ['received', 'confirmed', 'preparing', 'out', 'delivered', 'complete_requested']
 };
 
@@ -282,6 +283,16 @@ function makeWaMessage(o) {
   lines.push('Status: ' + STATUS_LABEL[o.status] || 'Order Received');
   return lines.join('\n');
 }
+function makeWaCompleteMessage(o) {
+  return [
+    '\u2705 ORDER COMPLETED & PAID\n',
+    'Order ID: #' + o.id + '\n',
+    'Customer: ' + o.name + ' (+91' + o.phone + ')\n',
+    'Total: \u20B9' + o.total + '\n',
+    'Payment: ' + (o.type || 'Cash on Delivery') + ' \u2192 Paid\n',
+    'Sale recorded in business reports \u2014 stock + profit updated.'
+  ].join('\n');
+}
 
 function sendWhatsApp(o) {
   var wa = CFG.whatsapp || {};
@@ -328,10 +339,10 @@ function persistWa(o) {
   for (var i = 0; i < d.orders.length; i++) { if (d.orders[i].id === o.id) { t = d.orders[i]; break; } }
   if (t) { t.notified = o.notified; t.notifyError = o.notifyError; writeOrders(d); }
 }
-function notifyOwnerWhatsApp(o) {
+function notifyOwnerWhatsApp(o, customText) {
   var wb = CFG.waBot || {};
   if (wb.enabled && wb.owner && wb.port) {
-    var payload = JSON.stringify({ to: wb.owner, text: makeWaMessage(o) });
+    var payload = JSON.stringify({ to: wb.owner, text: customText || makeWaMessage(o) });
     var req = http.request({ host: 'localhost', port: Number(wb.port) || 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } }, function (r) {
       var chunks = '';
       r.on('data', function (c) { chunks += c; });
@@ -725,7 +736,7 @@ function handleAdminOrderStatus(req, res, payload) {
         o.cancelledAt = now;
         o.rejectReason = String(payload.reason || '').slice(0, 300);
       }
-      if (status === 'completed') {
+if (status === 'completed') {
         o.completedAt = now;
         o.paymentStatus = 'Paid';
       }
@@ -734,9 +745,10 @@ function handleAdminOrderStatus(req, res, payload) {
         o.stockApplied = true;
         o.saleRecorded = saleInfo.recorded > 0;
         o.saleSkipped = saleInfo.skipped;
-        console.log('[sales] #' + o.id + ' completed â€” recorded ' + saleInfo.recorded + ' sale line(s) into business.json' + (saleInfo.skipped.length ? '; skipped unmatched: ' + saleInfo.skipped.join(', ') : '') + '.');
+        console.log('[sales] #' + o.id + ' completed \u2014 recorded ' + saleInfo.recorded + ' sale line(s) into business.json' + (saleInfo.skipped.length ? '; skipped unmatched: ' + saleInfo.skipped.join(', ') : '') + '.');
       }
       writeOrders(d);
+      if (status === 'completed') notifyOwnerWhatsApp(o, makeWaCompleteMessage(o));
       send(res, 200, { ok: true, status: status, id: id, section: SECTION_LABEL[status] });
       return;
     }
@@ -1019,10 +1031,10 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
 
   if (req.method === 'POST') { tcLog('unknown POST ' + req.url); }
 
-  if (pathname === '/' || pathname === '/index.html') pathname = '/pages/index.html';
+if (pathname === '/' || pathname === '/index.html') pathname = '/pages/index.html';
   if (pathname === '/products.html' || pathname === '/products') pathname = '/pages/products.html';
-  var fp = path.normalize(path.join(root, pathname));
-  if (fp !== root && !fp.startsWith(root + path.sep)) { send(res, 403, 'Forbidden'); return; }
+  var fp = path.normalize(path.join(APP_DIR, pathname));
+  if (fp !== APP_DIR && !fp.startsWith(APP_DIR + path.sep)) { send(res, 403, 'Forbidden'); return; }
   fs.readFile(fp, function (err, data) {
     if (err) { send(res, 404, 'Not found: ' + pathname, 'text/plain'); return; }
     var hdrs = { 'Content-Type': types[path.extname(fp)] || 'application/octet-stream' };

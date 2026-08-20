@@ -215,6 +215,22 @@
     S.loaded = true;
     saveBiz(false);
   }
+  /* Re-fetch business data from the server so Today's earning / sale list
+     update right after an online order is completed (not just orders list). */
+  function reloadBizData(cb) {
+    if (window.fetch) {
+      fetch('/api/biz').then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (d && Array.isArray(d.products)) {
+            S = d; S.loaded = true; apiOk = true;
+            if (!S.settings) S.settings = { bizName: 'Rajesh Water', minStock: 15, initialCapital: 0 };
+            replayStock(S.products, S.purchases, S.sales, S.adjustments);
+          }
+          cb && cb();
+        })
+        .catch(function () { cb && cb(); });
+    } else { cb && cb(); }
+  }
   function saveBiz(silent) {
     if (saving) return;
     saving = true;
@@ -1133,8 +1149,9 @@
         body: JSON.stringify({ id: o.id, status: status, reason: reason || '' })
       }, function (d) {
         if (d && d.ok) {
-          var lbl = status === 'completed' ? 'Completed — sale recorded in business reports' : (status === 'cancelled' ? 'Cancelled' : ORD_LABEL[status] || status);
+          var lbl = status === 'completed' ? 'Completed \u2014 sale recorded in business reports' : (status === 'cancelled' ? 'Cancelled' : ORD_LABEL[status] || status);
           toast('#' + o.id + ' \u2192 ' + lbl);
+          if (status === 'completed') { ordNotify(o, true, 0); notifyAlert(); reloadBizData(function () { render(); }); }
           load();
         } else if (d && d.error) {
           toast(d.error, true);
@@ -1159,10 +1176,11 @@
     function confirmOrderDialog(o) {
       rwDialog('Confirm this order?',
         '<div style="font-size:16px;font-weight:800;padding:8px 10px;border-radius:10px;margin:0 0 10px;' + (o.verified ? 'color:var(--ok);background:rgba(53,224,161,.1)' : 'color:var(--err);background:rgba(255,92,122,.12)') + '">' + (o.verified ? '\u2713 TRUECALLER VERIFIED' : '\u26A0 NOT VERIFIED — PHONE SE CONFIRM KARO') + '</div>' +
-        'Order <b>#' + esc(o.id) + '</b> will move from <b>Pending Orders</b> to <b>Confirmed Orders</b>.<br><br>' +
+        'Confirm karte hi order <b>COMPLETED</b> ho jayega — <b>online sale list me add</b> hoga aur <b>Today\u2019s earning me paise update</b> ho jayenge (stock + profit auto deduct).<br><br>' +
+        'Order <b>#' + esc(o.id) + '</b><br>' +
         'Customer: <b>' + esc(o.name) + '</b> \u00B7 +91' + esc(o.phone) + '<br>Total: <b>' + money(o.total) + '</b>' +
         '<br><div class="hint" style="margin-top:6px">Owner Notes: ' + (o.ownerNotes ? esc(o.ownerNotes) : '—') + '</div>',
-        'Confirm Order', 'ok', function () { ordSetStatus(o, 'confirmed', ''); });
+        'Confirm & Complete', 'ok', function () { ordSetStatus(o, 'completed', ''); });
     }
     function completeOrderDialog(o) {
       var boxes = 0, bottles = 0;
@@ -1510,7 +1528,7 @@
     if (old && old.parentNode) old.parentNode.removeChild(old);
     var d = document.createElement('div');
     d.id = 'ordNotif';
-    d.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:9999;background:linear-gradient(135deg,#0E1626,#101B2E);border:1px solid rgba(255,200,87,.45);border-radius:16px;padding:16px 20px;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,.55);cursor:pointer;color:#fff;font-size:13px;font-family:Inter,system-ui,sans-serif';
+    d.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);right:auto;bottom:auto;z-index:9999;background:linear-gradient(135deg,#0E1626,#101B2E);border:1px solid rgba(255,200,87,.45);border-radius:16px;padding:16px 20px;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,.55);cursor:pointer;color:#fff;font-size:13px;font-family:Inter,system-ui,sans-serif';
     var boxes = 0;
     (o.items || []).forEach(function (it) { boxes += num(it.boxes); });
     var title = quiet ? 'ABHI AAWA PENDING ORDER' : '\uD83D\uDD14 \uD83D\uDD14 NEW ORDER';
@@ -2562,6 +2580,7 @@
     render: function (t) { tab = t; render(); },
     loaded: function () { return S.loaded; },
     getState: function () { return S; },
+    reloadBizData: function (cb) { reloadBizData(cb); },
     customerSearch: function (q, kind) { return customerSearch(q, kind); },
     openCustomerDashboard: function (name, kind, date) { openCustomerDashboard(name, kind, date); },
     _t: {
