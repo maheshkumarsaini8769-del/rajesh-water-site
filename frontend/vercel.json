@@ -15,7 +15,7 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "https://rajesh-water-site-7bzc-ofz10klx5.vercel.app/api/$1"
+      "destination": "https://rajesh-water-site-7bzc.vercel.app/api/$1"
     },
     {
       "source": "/admin",
