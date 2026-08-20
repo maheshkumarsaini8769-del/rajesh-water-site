@@ -1,7 +1,7 @@
-/* ============================================================
+﻿/* ============================================================
    Rajesh Water - site-data.js  (generated)
    SINGLE SOURCE OF TRUTH - edit via admin.html
-   (https://localhost:5500/admin.html)
+   (https://localhost:3000/admin.html)
    Passcode default: admin123 - change it in Admin > Settings
    ============================================================ */
 
@@ -23,23 +23,24 @@ window.SITE_DATA = {
     "cartName": "RAJESH WATER",
     "supportMsg": "Hello Rajesh Water, I need help with my order.",
     "bulkMsg": "Hello Rajesh Water, I'm interested in bulk supply.",
-    "hours": "Every day, 8:00 AM – 8:00 PM. Bulk orders can schedule earlier slots."
+    "hours": "Every day, 8:00 AM â€“ 8:00 PM. Bulk orders can schedule earlier slots."
   },
   "hero": {
-    "eyebrow": "Pure • Fresh • Delivered",
+    "eyebrow": "Pure â€¢ Fresh â€¢ Delivered",
     "headline1": "The Art of",
     "headline2": "Pure Water",
-    "lede": "Premium bottled water and cold drinks, sourced clean and quality checked at every stage. Supplied in bulk to homes, offices, hotels and events — delivered cold, delivered fast.",
+    "lede": "Premium bottled water and cold drinks, sourced clean and quality checked at every stage. Supplied in bulk to homes, offices, hotels and events â€” delivered cold, delivered fast.",
     "cta1": "Order Now",
     "cta2": "Explore Products",
     "trust1": "Fast Delivery",
     "trust2": "Quality Checked",
-    "trust3": "Bulk Orders"
+    "trust3": "Bulk Orders",
+    "stageImg": ["", "", "", "", ""]
   },
   "featured": {
     "title": "Featured Boxes",
     "sub": "Our bestselling water and cold drink boxes, ready for home, office and events. Minimum order of 48 bottles required for delivery.",
-    "viewAll": "View All Products →"
+    "viewAll": "View All Products â†’"
   },
   "deliver": {
     "eyebrow": "What We Deliver",
@@ -58,33 +59,44 @@ window.SITE_DATA = {
   "about": {
     "badge": "About Us",
     "title": "Pure Water, Delivered with Trust.",
-    "para1": "Rajesh Water is a premium bottled water and beverage supplier serving homes, offices, hotels and events. Every bottle is sealed, quality-checked and delivered in sturdy boxes.",
-    "para2": "From a single box to full bulk supply, we keep the same promise — fresh stock, on-time delivery and transparent pricing.",
+    "para1": "Rajesh Water is a trusted bottled water and beverage supplier for homes, offices, hotels and events. Har box fresh stock se bhar jata hai â€” sealed bottles, clean packing aur quality check har delivery ke pehle.",
+    "para2": "From a single box to full bulk supply, humara promise wahi hai â€” fresh stock, on-time delivery aur transparent pricing. Regular monthly supply ho ya wedding function, hamara delivery team waqt par pohonchta hai.",
+    "para3": "Ordering is simple: pick your bottles, WhatsApp par order bhejo, aur hum chilling kiye fresh boxes aapke doorstep par chhod jayenge. Bulk rates ke liye direct baat karein â€” office, hotel aur event ke liye best prices.",
     "p1t": "Quality Checked",
     "p1s": "Sealed bottles, checked stock",
     "p2t": "On-Time",
     "p2s": "Reliable delivery slots",
     "p3t": "Bulk Friendly",
     "p3s": "Home to wholesale supply",
+    "s1n": "7",
+    "s1v": "Days a week delivery",
+    "s2n": "4",
+    "s2v": "Boxes min. order",
+    "s3n": "100%",
+    "s3v": "Sealed & checked",
+    "s4n": "24Ã—7",
+    "s4v": "WhatsApp support",
+    "btn1": "Order on WhatsApp",
+    "btn2": "View Products",
     "visualTitle": "Every drop, accounted for.",
-    "visualSub": "Min. order 48 bottles · Sealed boxes · Cold & fresh delivery"
+    "visualSub": "Min. order 4 boxes Â· Sealed boxes Â· Cold & fresh delivery"
   },
   "slot": {
     "title": "Pure. Packed. Delivered Fresh.",
-    "sub": "Premium packaged drinking water — chilled, sealed and at your doorstep, box after box, every day."
+    "sub": "Premium packaged drinking water â€” chilled, sealed and at your doorstep, box after box, every day."
   },
   "support": {
     "badge": "We're Here to Help",
     "title": "Support",
     "sub": "Questions about an order, delivery or bulk supply? Reach us directly.",
     "c1t": "WhatsApp Support",
-    "c1d": "Fastest way to reach us — order help, delivery status or queries.",
-    "c1l": "Chat on WhatsApp →",
+    "c1d": "Fastest way to reach us â€” order help, delivery status or queries.",
+    "c1l": "Chat on WhatsApp â†’",
     "c2t": "Call Us",
     "c2d": "Speak to our supply team directly for urgent requirements.",
-    "c2l": "+91 77427 35762 →",
+    "c2l": "+91 77427 35762 â†’",
     "c3t": "Delivery Hours",
-    "c3d": "Every day, 8:00 AM – 8:00 PM. Bulk orders can schedule earlier slots.",
+    "c3d": "Every day, 8:00 AM â€“ 8:00 PM. Bulk orders can schedule earlier slots.",
     "c3l": "7 days a week"
   },
   "reviews": {
@@ -102,7 +114,7 @@ window.SITE_DATA = {
       {
         "name": "Priya Verma",
         "rating": 5,
-        "text": "Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.",
+        "text": "Ordered for a family function â€” the 2 LITRE boxes worked perfectly for 150+ guests.",
         "product": "2 LITRE Box",
         "date": "Jul 2026",
         "demo": true
@@ -137,31 +149,31 @@ window.SITE_DATA = {
         "name": "Aman Sharma",
         "rating": 5,
         "text": "Regular monthly supply, always on time and the bottles are sealed and clean.",
-        "meta": "500 ML Box · WhatsApp order"
+        "meta": "500 ML Box Â· WhatsApp order"
       },
       {
         "name": "Priya Verma",
         "rating": 5,
-        "text": "Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.",
-        "meta": "2 LITRE Box · Family event"
+        "text": "Ordered for a family function â€” the 2 LITRE boxes worked perfectly for 150+ guests.",
+        "meta": "2 LITRE Box Â· Family event"
       },
       {
         "name": "Hotel Rajput Palace",
         "rating": 4,
         "text": "Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.",
-        "meta": "Bulk Supply · Weekly"
+        "meta": "Bulk Supply Â· Weekly"
       },
       {
         "name": "Rohit Mehta",
         "rating": 5,
         "text": "Messaged on WhatsApp in the morning, boxes reached by afternoon. Smooth and quick.",
-        "meta": "1 LITRE Box · Same day"
+        "meta": "1 LITRE Box Â· Same day"
       },
       {
         "name": "Sneha Kulkarni",
         "rating": 4,
         "text": "Cold drink boxes for our office pantry at a fair price. Will order again next month.",
-        "meta": "Cold Drinks · Office"
+        "meta": "Cold Drinks Â· Office"
       }
     ]
   },
@@ -171,8 +183,8 @@ window.SITE_DATA = {
     "sub": "Every water bottle and cold drink we supply \u2014 sealed boxes, wholesale-friendly pricing."
   },
   "footer": {
-    "about": "Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.",
-    "copyright": "© 2026 Rajesh Water. All rights reserved."
+    "about": "Sealed, quality-checked water bottles and cold drinks â€” delivered fresh in sturdy boxes to homes, offices, hotels and events.",
+    "copyright": "Â© 2026 Rajesh Water. All rights reserved."
   },
   "theme": {
     "accent": "#00aeef",
@@ -189,7 +201,7 @@ window.SITE_DATA = {
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bisleri.png",
+      "img": "../images/bisleri.webp",
       "badge": "Bestseller",
       "featured": true
     },
@@ -202,7 +214,7 @@ window.SITE_DATA = {
       "price": 10,
       "boxSize": 24,
       "minBoxes": 1,
-      "img": "../images/bisleri.png"
+      "img": "../images/bisleri.webp"
     },
     {
       "id": "p003",
@@ -213,7 +225,7 @@ window.SITE_DATA = {
       "price": 1,
       "boxSize": 78,
       "minBoxes": 4,
-      "img": "../images/bisleri.png"
+      "img": "../images/bisleri.webp"
     },
     {
       "id": "p004",
@@ -224,7 +236,7 @@ window.SITE_DATA = {
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-1.png"
+      "img": "../images/bottle-new-1.webp"
     },
     {
       "id": "p005",
@@ -235,7 +247,7 @@ window.SITE_DATA = {
       "price": 10,
       "boxSize": 24,
       "minBoxes": 1,
-      "img": "../images/bottle-new-1.png"
+      "img": "../images/bottle-new-1.webp"
     },
     {
       "id": "p006",
@@ -246,7 +258,7 @@ window.SITE_DATA = {
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-1.png",
+      "img": "../images/bottle-v2-1.webp",
       "featured": true
     },
     {
@@ -258,7 +270,7 @@ window.SITE_DATA = {
       "price": 12,
       "boxSize": 24,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-1.png"
+      "img": "../images/bottle-v2-1.webp"
     },
     {
       "id": "p008",
@@ -269,7 +281,7 @@ window.SITE_DATA = {
       "price": 30,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-2.png",
+      "img": "../images/bottle-new-2.webp",
       "badge": "Premium"
     },
     {
@@ -281,7 +293,7 @@ window.SITE_DATA = {
       "price": 15,
       "boxSize": 24,
       "minBoxes": 1,
-      "img": "../images/bottle-new-2.png"
+      "img": "../images/bottle-new-2.webp"
     },
     {
       "id": "p010",
@@ -292,7 +304,7 @@ window.SITE_DATA = {
       "price": 15,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-2.png"
+      "img": "../images/bottle-v2-2.webp"
     },
     {
       "id": "p011",
@@ -303,7 +315,7 @@ window.SITE_DATA = {
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-3.png"
+      "img": "../images/bottle-new-3.webp"
     },
     {
       "id": "p012",
@@ -314,7 +326,7 @@ window.SITE_DATA = {
       "price": 25,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-3.png"
+      "img": "../images/bottle-v2-3.webp"
     },
     {
       "id": "p013",
@@ -325,7 +337,7 @@ window.SITE_DATA = {
       "price": 25,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-4.png"
+      "img": "../images/bottle-new-4.webp"
     },
     {
       "id": "p014",
@@ -336,7 +348,7 @@ window.SITE_DATA = {
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-4.png"
+      "img": "../images/bottle-v2-4.webp"
     },
     {
       "id": "p015",
@@ -347,7 +359,7 @@ window.SITE_DATA = {
       "price": 18,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-5.png"
+      "img": "../images/bottle-new-5.webp"
     },
     {
       "id": "p016",
@@ -358,7 +370,7 @@ window.SITE_DATA = {
       "price": 9,
       "boxSize": 24,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-5.png"
+      "img": "../images/bottle-v2-5.webp"
     },
     {
       "id": "p017",
@@ -369,7 +381,7 @@ window.SITE_DATA = {
       "price": 35,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-5.png"
+      "img": "../images/bottle-new-5.webp"
     },
     {
       "id": "p018",
@@ -380,7 +392,7 @@ window.SITE_DATA = {
       "price": 35,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-2.png"
+      "img": "../images/bottle-v2-2.webp"
     },
     {
       "id": "p019",
@@ -391,7 +403,7 @@ window.SITE_DATA = {
       "price": 45,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-v2-3.png"
+      "img": "../images/bottle-v2-3.webp"
     },
     {
       "id": "p020",
@@ -402,7 +414,7 @@ window.SITE_DATA = {
       "price": 55,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bottle-new-2.png"
+      "img": "../images/bottle-new-2.webp"
     },
     {
       "id": "p021",
@@ -413,7 +425,7 @@ window.SITE_DATA = {
       "price": 40,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/coke.png",
+      "img": "../images/coke.webp",
       "badge": "Bestseller",
       "featured": true
     },
@@ -426,7 +438,7 @@ window.SITE_DATA = {
       "price": 40,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/pepsi.png"
+      "img": "../images/pepsi.webp"
     },
     {
       "id": "p023",
@@ -437,7 +449,7 @@ window.SITE_DATA = {
       "price": 40,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/sprite.png"
+      "img": "../images/sprite.webp"
     },
     {
       "id": "p024",
@@ -448,7 +460,7 @@ window.SITE_DATA = {
       "price": 40,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/fanta.png"
+      "img": "../images/fanta.webp"
     },
     {
       "id": "p025",
@@ -459,7 +471,7 @@ window.SITE_DATA = {
       "price": 40,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/dew.png"
+      "img": "../images/dew.webp"
     },
     {
       "id": "p026",
@@ -470,7 +482,7 @@ window.SITE_DATA = {
       "price": 45,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/coke.png"
+      "img": "../images/coke.webp"
     },
     {
       "id": "p027",
@@ -481,7 +493,7 @@ window.SITE_DATA = {
       "price": 35,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/sprite.png"
+      "img": "../images/sprite.webp"
     },
     {
       "id": "p028",
@@ -492,7 +504,7 @@ window.SITE_DATA = {
       "price": 40,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/pepsi.png"
+      "img": "../images/pepsi.webp"
     },
     {
       "id": "p029",
@@ -503,7 +515,7 @@ window.SITE_DATA = {
       "price": 35,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/dew.png"
+      "img": "../images/dew.webp"
     },
     {
       "id": "p030",
@@ -514,7 +526,7 @@ window.SITE_DATA = {
       "price": 25,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/dew.png",
+      "img": "../images/dew.webp",
       "featured": true
     },
     {
@@ -526,7 +538,7 @@ window.SITE_DATA = {
       "price": 45,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/fanta.png"
+      "img": "../images/fanta.webp"
     },
     {
       "id": "p032",
@@ -537,7 +549,9 @@ window.SITE_DATA = {
       "price": 50,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/coke.png"
+      "img": "../images/coke.webp"
     }
   ]
 };
+
+

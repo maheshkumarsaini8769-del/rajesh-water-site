@@ -74,7 +74,7 @@ function updateSizing() {
   var arrived = true;
   var active = 0;
 
-  var drag = { on: false, startX: 0, lastX: 0, lastT: 0, vel: 0, startPos: 0 };
+  var drag = { on: false, startX: 0, lastX: 0, lastT: 0, vel: 0, startPos: 0, didMove: false };
 
   /* ---------------- One-frame render ---------------- */
 
@@ -190,7 +190,7 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
   // click a side card Ã¢â€ â€™ jump to it
   spins.forEach(function (sp, i) {
     sp.addEventListener("click", function () {
-      goTo(i);
+      if (drag.didMove) return; location.href = "products.html";
     });
   });
 
@@ -235,6 +235,7 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
     drag.lastT = performance.now();
     drag.vel = 0;
     drag.startPos = pos;
+    drag.didMove = false;
     stopAuto();
     try { stage.setPointerCapture(e.pointerId); } catch (err) {}
   });
@@ -243,6 +244,7 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
     if (!drag.on) return;
     var now = performance.now();
     var dx = e.clientX - drag.startX;
+    if (dx > 6 || dx < -6) drag.didMove = true;
     if (now - drag.lastT > 0) drag.vel = (e.clientX - drag.lastX) / (now - drag.lastT);
     drag.lastX = e.clientX;
     drag.lastT = now;
@@ -493,4 +495,33 @@ function renderStatic() {
   if (reduced) { renderStatic(); return; }
 
   window.requestAnimationFrame(tick);
+})();
+
+/* ================ Bottle click -> products page ================ */
+
+(function () {
+  "use strict";
+  var hateMoved = false;
+  var downX = null;
+  var downEl = null;
+  document.addEventListener("pointerdown", function (e) {
+    if (!e.target.closest) return;
+    var hit = e.target.closest(".spin, .drink");
+    if (!hit) return;
+    downX = e.clientX;
+    hateMoved = false;
+    downEl = hit;
+  });
+  document.addEventListener("pointermove", function (e) {
+    if (downX === null) return;
+    if (e.clientX - downX > 6 || downX - e.clientX > 6) hateMoved = true;
+  });
+  document.addEventListener("click", function (e) {
+    if (hateMoved || !downEl) return;
+    if (downEl.closest("a, button")) return;
+    var hit = e.target.closest && e.target.closest(".spin, .drink");
+    if (!hit && e.target.closest && e.target.closest(".hero-stage, #deliverStage")) hit = downEl;
+    if (hit) { downEl = null; location.href = "products.html"; }
+    downEl = null;
+  });
 })();

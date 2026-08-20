@@ -128,11 +128,25 @@
     else document.documentElement.classList.remove('rw-anim-off');
   }
 
+  /* Animated showcase images (hero spin + floating bottle scene) —
+     empty value = use the default delivery-*.webp baked into the page */
+  function applyStage() {
+    var si = (D.hero && D.hero.stageImg) || [];
+    for (var i = 0; i < 5; i++) {
+      var src = si[i];
+      if (!src) continue;
+      document.querySelectorAll('.spin[data-i="' + i + '"] img, .drink[data-i="' + i + '"] img').forEach(function (im) {
+        im.src = src;
+      });
+    }
+  }
+
   function apply() {
     if (!window.SITE_DATA) return;
     applyBrand();
     applyContact();
     applyTexts();
+    applyStage();
     applyTheme();
   }
 
