@@ -1067,6 +1067,7 @@ function appHandler(req, res) {
 
   if (pathname === '/' || pathname === '/index.html') pathname = '/pages/index.html';
   if (pathname === '/products.html' || pathname === '/products') pathname = '/pages/products.html';
+  if (pathname === '/admin' || pathname === '/admin.html') pathname = '/admin.html';
   var fp = path.normalize(path.join(APP_DIR, pathname));
   if (fp !== APP_DIR && !fp.startsWith(APP_DIR + path.sep)) { send(res, 403, 'Forbidden'); return; }
   fs.readFile(fp, function (err, data) {
