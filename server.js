@@ -161,26 +161,42 @@ var TRANSITIONS = {
 function readConfig() {
   var def = {
     whatsapp: { enabled: false, token: '', phoneId: '', owner: '' },
-truecaller: { enabled: false, apiKey: '', appName: '', callbackUrl: '' },
+    truecaller: { enabled: false, apiKey: '', appName: '', callbackUrl: '' },
     waBot: { enabled: true, port: 3001, owner: '' },
     admin: { pin: '' }
   };
+  function applyEnv(c) {
+    /* Secrets live in .env (server-side). Env vars override the config file. */
+    if (process.env.ADMIN_PIN && String(process.env.ADMIN_PIN)) c.admin.pin = String(process.env.ADMIN_PIN).trim();
+    if (process.env.TRUECALLER_API_KEY && String(process.env.TRUECALLER_API_KEY)) c.truecaller.apiKey = String(process.env.TRUECALLER_API_KEY).trim();
+    if (process.env.TRUECALLER_APP_NAME) c.truecaller.appName = String(process.env.TRUECALLER_APP_NAME).trim();
+    if (process.env.TRUECALLER_CALLBACK_URL) c.truecaller.callbackUrl = String(process.env.TRUECALLER_CALLBACK_URL).trim();
+    if (String(process.env.TRUECALLER_ENABLED || '').toLowerCase() === 'true') c.truecaller.enabled = true;
+    if (process.env.WHATSAPP_TOKEN && String(process.env.WHATSAPP_TOKEN)) c.whatsapp.token = String(process.env.WHATSAPP_TOKEN).trim();
+    if (process.env.WHATSAPP_PHONE_ID) c.whatsapp.phoneId = String(process.env.WHATSAPP_PHONE_ID).trim();
+    if (process.env.WHATSAPP_OWNER) c.whatsapp.owner = String(process.env.WHATSAPP_OWNER).trim();
+    if (String(process.env.WHATSAPP_ENABLED || '').toLowerCase() === 'true') c.whatsapp.enabled = true;
+    if (process.env.WA_BOT_OWNER) c.waBot.owner = String(process.env.WA_BOT_OWNER).trim();
+    if (String(process.env.WA_BOT_ENABLED || '').toLowerCase() === 'false') c.waBot.enabled = false;
+    if (process.env.WA_BOT_PORT) c.waBot.port = Number(process.env.WA_BOT_PORT) || c.waBot.port;
+    return c;
+  }
   try {
     var c = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
     if (c && typeof c === 'object') {
       if (!c.whatsapp || typeof c.whatsapp !== 'object') c.whatsapp = def.whatsapp;
       else c.whatsapp = Object.assign({}, def.whatsapp, c.whatsapp);
-if (!c.truecaller || typeof c.truecaller !== 'object') c.truecaller = def.truecaller;
+      if (!c.truecaller || typeof c.truecaller !== 'object') c.truecaller = def.truecaller;
       else c.truecaller = Object.assign({}, def.truecaller, c.truecaller);
       if (!c.waBot || typeof c.waBot !== 'object') c.waBot = def.waBot;
       else c.waBot = Object.assign({}, def.waBot, c.waBot);
       if (!c.admin || typeof c.admin !== 'object') c.admin = def.admin;
       else c.admin = Object.assign({}, def.admin, c.admin);
-      return c;
+      return applyEnv(c);
     }
   } catch (e) {}
   try { fs.writeFileSync(CONFIG_FILE, JSON.stringify(def, null, 2)); } catch (e) {}
-  return def;
+  return applyEnv(def);
 }
 var CFG = readConfig();
 
