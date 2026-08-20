@@ -32,6 +32,16 @@ var path = require('path');
 var root = path.resolve(__dirname);
 var port = Number(process.env.PORT || process.argv[2] || 3000);
 var PORT_BOT = Number(process.env.WA_BOT_PORT) || 3001;
+
+/* ---- .env loader (MONGODB_URI stays server-side, never reaches the frontend) ---- */
+try {
+  fs.readFileSync(path.join(root, '.env'), 'utf8').split(/\r?\n/).forEach(function (line) {
+    var m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
+  });
+} catch (e) {}
+
+var db = require('./db');
 var REVIEW_FILE = path.join(root, 'data', 'user-reviews.json');
 var BIZ_FILE = path.join(root, 'data', 'business.json');
 var ORDERS_FILE = path.join(root, 'data', 'orders.json');
@@ -62,6 +72,7 @@ function readReviews() {
 }
 function writeReviews(list) {
   try { fs.writeFileSync(REVIEW_FILE, JSON.stringify(list, null, 2)); } catch (e) {}
+  if (db.state().on) db.saveReviews(list).catch(function (err) { db.markError('reviews', err); });
 }
 function send(res, code, data, ct) {
   res.writeHead(code, { 'Content-Type': ct || 'application/json; charset=utf-8' });
@@ -93,6 +104,22 @@ function readBiz() {
 }
 function writeBiz(b) {
   try { fs.writeFileSync(BIZ_FILE, JSON.stringify(b, null, 2)); } catch (e) {}
+  if (db.state().on) db.saveBiz(b).catch(function (err) { db.markError('biz', err); });
+}
+
+/* ---------- site content (data/site-data.js) ---------- */
+var SITE_DATA_FILE = path.join(root, 'data', 'site-data.js');
+function readSiteDataJs() {
+  try {
+    var c = fs.readFileSync(SITE_DATA_FILE, 'utf8');
+    var i = c.lastIndexOf('='), j = c.lastIndexOf(';');
+    if (i < 0) return {};
+    return JSON.parse(c.slice(i + 1, j > i ? j : undefined));
+  } catch (e) { return {}; }
+}
+function writeSiteDataJs(obj) {
+  try { fs.writeFileSync(SITE_DATA_FILE, 'window.SITE_DATA = ' + JSON.stringify(obj, null, 2) + ';\n'); } catch (e) {}
+  if (db.state().on) db.saveSiteData(obj).catch(function (err) { db.markError('sitedata', err); });
 }
 
 /* ============================================================
@@ -170,6 +197,22 @@ function writeOrders(d) {
     fs.writeFileSync(tmp, JSON.stringify(d, null, 2));
     fs.renameSync(tmp, ORDERS_FILE);
   } catch (e) {}
+  if (db.state().on) db.saveOrders(d).catch(function (err) { db.markError('orders', err); });
+}
+
+/* On boot: when MongoDB is reachable it is the source of truth — pull the latest
+   snapshots and rebuild the local files from them (safe, idempotent). */
+async function syncFromMongo() {
+  var todo = [];
+  if (db.state().on) {
+    var parts = await Promise.all([db.loadOrders(), db.loadBiz(), db.loadReviews(), db.loadSiteData()]);
+    if (parts[0]) { writeOrders(parts[0]); console.log('[mongo] orders restored from MongoDB (' + parts[0].orders.length + ' records).'); }
+    if (parts[1]) { writeBiz(parts[1]); console.log('[mongo] business data restored from MongoDB.'); }
+    if (parts[2]) { writeReviews(parts[2]); console.log('[mongo] reviews restored from MongoDB (' + parts[2].length + ' records).'); }
+    if (parts[3]) { writeSiteDataJs(parts[3]); console.log('[mongo] site content restored from MongoDB.'); }
+    return true;
+  }
+  return false;
 }
 
 function catalogPrices() {
@@ -822,9 +865,29 @@ function handleApi(req, res, pathname) {
       if (payload.sales) cur.sales = payload.sales;
       if (payload.adjustments) cur.adjustments = payload.adjustments;
       if (payload.settings) cur.settings = payload.settings;
-      writeBiz(cur);
+writeBiz(cur);
       send(res, 200, { ok: true });
     });
+    return true;
+  }
+  if (req.method === 'GET' && pathname === '/api/site-data') {
+    send(res, 200, { ok: true, content: readSiteDataJs() });
+    return true;
+  }
+  if (req.method === 'POST' && pathname === '/api/site-data') {
+    var sdb = '';
+    req.on('data', function (chunk) { sdb += chunk; if (sdb.length > 3e6) req.destroy(); });
+    req.on('end', function () {
+      var payload = null;
+      try { payload = JSON.parse(sdb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) { send(res, 400, { ok: false, error: 'site data must be a json object' }); return; }
+      writeSiteDataJs(payload);
+      send(res, 200, { ok: true });
+    });
+    return true;
+  }
+  if (req.method === 'GET' && pathname === '/api/db-status') {
+    send(res, 200, { ok: true, mongo: db.state() });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/orders') {
@@ -928,7 +991,10 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
   return false;
 }
 
-http.createServer(function (req, res) {
+(async function boot() {
+  await db.initDb();
+  await syncFromMongo();
+  http.createServer(function (req, res) {
   var pathname = decodeURIComponent((req.url || '/').split('?')[0]);
 
   if (handleApi(req, res, pathname)) return;
@@ -947,11 +1013,13 @@ http.createServer(function (req, res) {
     var ext = path.extname(fp);
     if (ext === '.html' || ext === '.js' || ext === '.css' || ext === '.json') hdrs['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     else if (ext === '.webp' || ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.svg' || ext === '.gif' || ext === '.ico' || ext === '.woff' || ext === '.woff2') hdrs['Cache-Control'] = 'public, max-age=86400';
-    res.writeHead(200, hdrs);
+res.writeHead(200, hdrs);
     res.end(data);
   });
-}).listen(port, function () {
-  console.log('[rajesh-water] serving ' + root + ' at http://localhost:' + port);
-  console.log('[rajesh-water] reviews API at http://localhost:' + port + '/api/reviews');
-});
+  }).listen(port, function () {
+    console.log('[rajesh-water] serving ' + root + ' at http://localhost:' + port);
+    console.log('[rajesh-water] reviews API at http://localhost:' + port + '/api/reviews');
+    console.log('[rajesh-water] mongo status: ' + (db.state().on ? 'ON (MongoDB)' : 'OFF (file fallback)'));
+  });
+})().catch(function (e) { console.log('[boot] fatal: ' + (e && e.stack || e)); });
 

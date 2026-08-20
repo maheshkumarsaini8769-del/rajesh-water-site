@@ -16,3 +16,7 @@ tunnel-url.txt
 
 # Logs
 *.log
+
+# Environment / secrets (never commit)
+.env
+.env.*
