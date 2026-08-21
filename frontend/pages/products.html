@@ -1076,19 +1076,23 @@
       }
       function rwTrkOrderHtml(o) {
         var cancelled = o.status === 'cancelled';
-        var idx = ['received', 'confirmed', 'preparing', 'out', 'delivered'].indexOf(o.status);
-        if (o.status === 'complete_requested' || o.status === 'completed') { idx = 4; }
-        var stepsHtml = ['received', 'confirmed', 'preparing', 'out', 'delivered'].map(function (s, i) {
+        var completed = o.status === 'completed';
+        var threeSteps = ['placed', 'processing', 'complete'];
+        var statusMap = { received: 'placed', confirmed: 'processing', preparing: 'processing', out: 'processing', delivered: 'complete', completed: 'complete' };
+        var current = statusMap[o.status] || 'placed';
+        var idx = threeSteps.indexOf(current);
+        var stepsHtml = threeSteps.map(function (s, i) {
           var lit = !cancelled && i <= idx;
-          return '<div class="trk-step' + (lit ? ' is-done' : '') + (s === o.status ? ' is-current' : '') + '"><span class="trk-dot"></span><span class="trk-step-label">' + TRK_STEP_LABEL[s] + '</span></div>';
+          var label = s === 'placed' ? 'Order Placed' : s === 'processing' ? 'Processing' : 'Complete Order';
+          return '<div class="trk-step' + (lit ? ' is-done' : '') + (s === current ? ' is-current' : '') + '"><span class="trk-dot"></span><span class="trk-step-label">' + label + '</span></div>';
         }).join('<div class="trk-conn"></div>');
         var hist = o.statusHistory || [];
         var last = hist[hist.length - 1];
         var big = cancelled ? 'Order Cancelled'
-          : (o.status === 'completed' ? 'Order Completed'
-          : (o.status === 'received' ? 'Order Received — Processing' : 'In Processing'));
+          : (completed ? 'Order Completed'
+          : (o.status === 'received' ? 'Order Placed — Processing' : 'In Processing'));
         var msg = cancelled ? 'This order was cancelled. For any questions, contact the seller.'
-          : (o.status === 'completed' ? 'Your order has been completed. Thank you!'
+          : (completed ? 'Your order has been completed. Thank you!'
           : 'Your order is being processed — the seller will contact you in a few minutes.');
         var completeBtn = (o.status === 'out' || o.status === 'delivered')
           ? '<button type="button" class="trk-complete-btn" data-complete="' + rwEscS(o.id) + '">Mark Order Complete</button>'

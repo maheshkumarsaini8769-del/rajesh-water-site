@@ -1710,16 +1710,20 @@
       function rwTrkOrderHtml(o) {
         var cancelled = o.status === 'cancelled';
         var completed = o.status === 'completed';
-        var idx = ['received', 'confirmed', 'preparing', 'out', 'delivered'].indexOf(o.status);
-        var stepsHtml = ['received', 'confirmed', 'preparing', 'out', 'delivered'].map(function (s, i) {
+        var threeSteps = ['placed', 'processing', 'complete'];
+        var statusMap = { received: 'placed', confirmed: 'processing', preparing: 'processing', out: 'processing', delivered: 'complete', completed: 'complete' };
+        var current = statusMap[o.status] || 'placed';
+        var idx = threeSteps.indexOf(current);
+        var stepsHtml = threeSteps.map(function (s, i) {
           var lit = !cancelled && i <= idx;
-          return '<div class="trk-step' + (lit ? ' is-done' : '') + (s === o.status ? ' is-current' : '') + '"><span class="trk-dot"></span><span class="trk-step-label">' + TRK_STEP_LABEL[s] + '</span></div>';
+          var label = s === 'placed' ? 'Order Placed' : s === 'processing' ? 'Processing' : 'Complete Order';
+          return '<div class="trk-step' + (lit ? ' is-done' : '') + (s === current ? ' is-current' : '') + '"><span class="trk-dot"></span><span class="trk-step-label">' + label + '</span></div>';
         }).join('<div class="trk-conn"></div>');
         var hist = o.statusHistory || [];
         var last = hist[hist.length - 1];
         var big = cancelled ? 'Order Cancelled'
           : (completed ? 'Order Completed'
-          : (o.status === 'received' ? 'Order Received — Processing' : 'In Processing'));
+          : (o.status === 'received' ? 'Order Placed — Processing' : 'In Processing'));
         var msg = cancelled ? 'This order was cancelled. For any questions, contact the seller.'
           : (completed ? 'Your order has been completed. Thank you!'
           : 'Your order is being processed — the seller will contact you in a few minutes.');
