@@ -212,7 +212,7 @@
 
       <div id="drawerStepCart" class="drawer-step-wrap">
         <div class="drawer-items" id="drawerItems"></div>
-        <div class="drawer-empty" id="drawerEmpty">Your cart is empty.<br>Add bottles to start your order.</div>
+        <div class="drawer-empty" id="drawerEmpty">Koi product add nahi h.<br>Pehle bottles select karo order karne ke liye.</div>
         <div class="drawer-foot" id="drawerFoot">
           <div class="min-order" id="minOrderBox">
             <div class="min-order-head no" id="minOrderHead">
@@ -397,8 +397,14 @@
           <p class="co-verify-note" id="trkAuthNote"></p>
         </div>
         <div class="trk-orders-wrap" id="trkOrdersWrap" style="display:none">
+          <div class="trk-tabs">
+            <button class="trk-tab is-active" id="trkTabActive" type="button">Active Orders</button>
+            <button class="trk-tab" id="trkTabHistory" type="button">History</button>
+          </div>
           <div class="trk-empty" id="trkEmptyEl" style="display:none">No orders found for this number yet.</div>
           <div class="trk-orders" id="trkOrdersEl"></div>
+          <div class="trk-empty" id="trkHistEmptyEl" style="display:none">No completed or cancelled orders yet.</div>
+          <div class="trk-orders" id="trkHistOrdersEl" style="display:none"></div>
         </div>
       </div>
       <div class="trk-foot"><span id="trkUpdatedEl"></span><span>Auto-refreshes every 15 seconds</span></div>
@@ -936,6 +942,12 @@
       var trkOrdersWrap = document.getElementById('trkOrdersWrap');
       var trkOrdersEl = document.getElementById('trkOrdersEl');
       var trkEmptyEl = document.getElementById('trkEmptyEl');
+      var trkHistOrdersEl = document.getElementById('trkHistOrdersEl');
+      var trkHistEmptyEl = document.getElementById('trkHistEmptyEl');
+      var trkTabActive = document.getElementById('trkTabActive');
+      var trkTabHistory = document.getElementById('trkTabHistory');
+      var trkActiveTab = 'active';
+      var trkAllOrders = [];
       var trkUpdatedEl = document.getElementById('trkUpdatedEl');
       var trkPoll = null;
       var trkVerifiedToken = '';
@@ -953,6 +965,9 @@
         if (trkStatus) { trkStatus.textContent = ''; }
         if (trkAuth) { trkAuth.style.display = ''; }
         if (trkOrdersWrap) { trkOrdersWrap.style.display = 'none'; }
+        trkActiveTab = 'active';
+        if (trkTabActive) { trkTabActive.classList.add('is-active'); }
+        if (trkTabHistory) { trkTabHistory.classList.remove('is-active'); }
         if (trkPoll) { clearInterval(trkPoll); }
         trkPoll = setInterval(function () { rwTrkLoad(true); }, 15000);
         rwTrkLoad(false);
@@ -999,41 +1014,62 @@
         if (trkAuth) { trkAuth.style.display = 'none'; }
         if (trkOrdersWrap) { trkOrdersWrap.style.display = ''; }
         if (trkStatus) { trkStatus.textContent = err || ''; }
-        if (!orders) { if (trkOrdersEl) { trkOrdersEl.innerHTML = ''; } return; }
-        if (!orders.length) {
+        if (!orders) {
           if (trkOrdersEl) { trkOrdersEl.innerHTML = ''; }
-          if (trkEmptyEl) { trkEmptyEl.style.display = ''; }
-        } else {
-          if (trkEmptyEl) { trkEmptyEl.style.display = 'none'; }
-          if (trkOrdersEl) { trkOrdersEl.innerHTML = orders.map(rwTrkOrderHtml).join(''); }
-          if (trkOrdersEl) {
-            trkOrdersEl.querySelectorAll('[data-complete]').forEach(function (b) {
-              b.addEventListener('click', function () {
-                var id = b.getAttribute('data-complete');
-                var order = null;
-                for (var i = 0; i < orders.length; i++) { if (orders[i].id === id) { order = orders[i]; break; } }
-                if (!order) return;
-                if (!confirm('Mark order #' + id + ' as complete?')) return;
-                b.disabled = true;
-                b.textContent = 'Sending...';
-                var tokens = rwTrkTokens();
-                var body = {};
-                var ordTok = null;
-                for (var j = 0; j < tokens.length; j++) { if (tokens[j].id === id) { ordTok = tokens[j].token; break; } }
-                if (ordTok) { body.token = ordTok; }
-                else {
-                  var phone = (trkPhone ? (trkPhone.value || '').replace(/\D/g, '') : '');
-                  if (/^[6-9]\d{9}$/.test(phone) && trkVerifiedToken) { body.phone = phone; body.vt = trkVerifiedToken; }
-                }
-                fetch('/api/orders/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-                  .then(function (r) { return r.json().catch(function () { return {}; }); })
-                  .then(function (d) {
-                    if (trkStatus) { trkStatus.textContent = (d && d.message) || (d && d.error) || 'Request sent.'; }
-                    rwTrkLoad(false);
-                  })
-                  .catch(function () { b.disabled = false; b.textContent = 'Mark Order Complete'; if (trkStatus) { trkStatus.textContent = 'Server unreachable.'; } });
+          if (trkHistOrdersEl) { trkHistOrdersEl.innerHTML = ''; }
+          return;
+        }
+        trkAllOrders = orders;
+        var active = orders.filter(function (o) { return o.status !== 'completed' && o.status !== 'cancelled'; });
+        var history = orders.filter(function (o) { return o.status === 'completed' || o.status === 'cancelled'; });
+        if (trkActiveTab === 'active') {
+          if (trkOrdersEl) { trkOrdersEl.style.display = ''; }
+          if (trkHistOrdersEl) { trkHistOrdersEl.style.display = 'none'; }
+          if (!active.length) {
+            if (trkOrdersEl) { trkOrdersEl.innerHTML = ''; }
+            if (trkEmptyEl) { trkEmptyEl.style.display = ''; }
+          } else {
+            if (trkEmptyEl) { trkEmptyEl.style.display = 'none'; }
+            if (trkOrdersEl) { trkOrdersEl.innerHTML = active.map(rwTrkOrderHtml).join(''); }
+            if (trkOrdersEl) {
+              trkOrdersEl.querySelectorAll('[data-complete]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                  var id = b.getAttribute('data-complete');
+                  var order = null;
+                  for (var i = 0; i < orders.length; i++) { if (orders[i].id === id) { order = orders[i]; break; } }
+                  if (!order) return;
+                  if (!confirm('Mark order #' + id + ' as complete?')) return;
+                  b.disabled = true;
+                  b.textContent = 'Sending...';
+                  var tokens = rwTrkTokens();
+                  var body = {};
+                  var ordTok = null;
+                  for (var j = 0; j < tokens.length; j++) { if (tokens[j].id === id) { ordTok = tokens[j].token; break; } }
+                  if (ordTok) { body.token = ordTok; }
+                  else {
+                    var phone = (trkPhone ? (trkPhone.value || '').replace(/\D/g, '') : '');
+                    if (/^[6-9]\d{9}$/.test(phone) && trkVerifiedToken) { body.phone = phone; body.vt = trkVerifiedToken; }
+                  }
+                  fetch('/api/orders/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+                    .then(function (r) { return r.json().catch(function () { return {}; }); })
+                    .then(function (d) {
+                      if (trkStatus) { trkStatus.textContent = (d && d.message) || (d && d.error) || 'Request sent.'; }
+                      rwTrkLoad(false);
+                    })
+                    .catch(function () { b.disabled = false; b.textContent = 'Mark Order Complete'; if (trkStatus) { trkStatus.textContent = 'Server unreachable.'; } });
+                });
               });
-            });
+            }
+          }
+        } else {
+          if (trkOrdersEl) { trkOrdersEl.style.display = 'none'; }
+          if (trkHistOrdersEl) { trkHistOrdersEl.style.display = ''; }
+          if (!history.length) {
+            if (trkHistOrdersEl) { trkHistOrdersEl.innerHTML = ''; }
+            if (trkHistEmptyEl) { trkHistEmptyEl.style.display = ''; }
+          } else {
+            if (trkHistEmptyEl) { trkHistEmptyEl.style.display = 'none'; }
+            if (trkHistOrdersEl) { trkHistOrdersEl.innerHTML = history.map(rwTrkOrderHtml).join(''); }
           }
         }
         if (trkUpdatedEl) { trkUpdatedEl.textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }); }
@@ -1147,6 +1183,8 @@
       var trkBackdrops = document.querySelectorAll('[data-close-trk]');
       for (var i = 0; i < trkBackdrops.length; i++) { trkBackdrops[i].addEventListener('click', rwTrkCloseM); }
       if (navTrackBtn) { navTrackBtn.addEventListener('click', rwTrkOpen); }
+      if (trkTabActive) { trkTabActive.addEventListener('click', function () { trkActiveTab = 'active'; trkTabActive.classList.add('is-active'); if (trkTabHistory) trkTabHistory.classList.remove('is-active'); if (trkAllOrders.length) rwTrkRender(trkAllOrders); }); }
+      if (trkTabHistory) { trkTabHistory.addEventListener('click', function () { trkActiveTab = 'history'; trkTabHistory.classList.add('is-active'); if (trkTabActive) trkTabActive.classList.remove('is-active'); if (trkAllOrders.length) rwTrkRender(trkAllOrders); }); }
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && trkModal && !trkModal.hidden) { rwTrkCloseM(); }
       });
@@ -1339,7 +1377,7 @@
           if (!address) { coAddressErr.textContent = 'Delivery address is required'; coAddress.classList.add('err'); err = true; }
           if (!city) { if (coCityErr) { coCityErr.textContent = 'City is required'; } if (coCity) { coCity.classList.add('err'); } err = true; }
           if (!/^\d{6}$/.test(pincode)) { if (coPincodeErr) { coPincodeErr.textContent = 'Enter a valid 6-digit pincode'; } if (coPincode) { coPincode.classList.add('err'); } err = true; }
-          if (!phoneVerified || !phoneVerifyToken) {
+          if (rwTcStrict && (!phoneVerified || !phoneVerifyToken)) {
             rwSetVerify('Verify your mobile number with Truecaller before placing the order', 'is-err');
             err = true;
           }
