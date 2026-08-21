@@ -1465,7 +1465,7 @@
       var searchClear = document.getElementById('navSearchClear');
       var countEl = document.getElementById('rwShopCount');
       var allCountEl = document.getElementById('productCount');
-      var emptyEl = document.getElementById('rwSearchEmpty');
+      var searchEmptyEl = document.getElementById('rwSearchEmpty');
       var emptyClearBtn = document.getElementById('rwSearchClearEmpty');
       var searchExpanded = false;
       function applySearch() {
@@ -1488,7 +1488,7 @@
         });
         if (countEl) { countEl.textContent = 'Showing ' + feat + (feat === 1 ? ' Product' : ' Products'); }
         if (allCountEl) { allCountEl.textContent = 'Showing ' + cnt + (cnt === 1 ? ' Product' : ' Products'); }
-        if (emptyEl) { emptyEl.classList.toggle('hidden', !(q && cnt === 0)); emptyEl.classList.toggle('flex', !!(q && cnt === 0)); }
+        if (searchEmptyEl) { searchEmptyEl.classList.toggle('hidden', !(q && cnt === 0)); searchEmptyEl.classList.toggle('flex', !!(q && cnt === 0)); }
         if (searchClear) { searchClear.classList.toggle('is-visible', !!q); }
       }
       if (searchInput) { searchInput.addEventListener('input', applySearch); }
