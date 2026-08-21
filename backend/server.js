@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Rajesh Water - local server with shared review + business store
    Run: node server.js   (serves site + admin, port 3000)
    API:
@@ -333,7 +333,7 @@ function makeWaMessage(o) {
     lines.push('\u2022 ' + it.name + ' ' + it.size + ' \u00D7 ' + it.qty + ' \u2014 \u20B9' + it.lineTotal);
   });
   lines.push('\nTotal: \u20B9' + o.total + '\n');
-  lines.push('Status: ' + STATUS_LABEL[o.status] || 'Order Received');
+  lines.push('Payment: ' + (o.type || 'Cash on Delivery'));
   return lines.join('\n');
 }
 function makeWaCompleteMessage(o) {
@@ -480,66 +480,76 @@ var nonce = 'RW' + Date.now().toString(36) + crypto.randomBytes(2).toString('hex
   send(res, 200, { ok: true, nonce: nonce, deepLink: deepLink });
 }
 
-function handleTcCallback(req, res, payload) {
+async function handleTcCallback(req, res, payload) {
   /* Truecaller posts here (URL must be registered on developer.truecaller.com).
-     ACK fast, then fetch the user profile in the background. */
-  send(res, 200, { ok: true });
+     On Vercel serverless we MUST persist the grant to MongoDB BEFORE acknowledging,
+     otherwise the instance can freeze after the 200 and the grant is lost -> orders 401. */
   var tc = CFG.truecaller || {};
-  if (!tcComplete()) return;
-var nonce = String(payload.requestId || '').trim();
+  if (!tcComplete()) { send(res, 200, { ok: true }); return; }
+  var nonce = String(payload.requestId || '').trim();
   var status = String(payload.status || '');
-  tcHydrate().then(function () {
+  await tcHydrate();
   var pending = TC_PENDING.get(nonce);
   tcLog('callback nonce=' + nonce + ' status=' + status + ' hasToken=' + (!!payload.accessToken) + ' endpoint=' + String(payload.endpoint || '').slice(0, 50));
-  if (!pending) return;
+  if (!pending) { send(res, 200, { ok: true }); return; }
   if (status === 'user_rejected') {
     TC_PENDING.delete(nonce);
     TC_REJECTED.set(pending.phone, { at: Date.now(), reason: 'rejected' });
     tcLog('user rejected profile for +91' + pending.phone);
-    tcPersist();
+    await tcPersist();
+    send(res, 200, { ok: true });
     return;
   }
   if (!payload.accessToken) {
     /* Informational statuses (e.g. flow_invoked) or unknowns — NOT a rejection;
        keep the nonce pending so the real success callback can still arrive. */
     tcLog('ignoring status without token: ' + status);
+    send(res, 200, { ok: true });
     return;
   }
   var accessToken = String(payload.accessToken || '').trim();
   var raw = String(payload.endpoint || '').trim();
-  if (!accessToken || !raw) return;
+  if (!accessToken || !raw) { send(res, 200, { ok: true }); return; }
   var parts = raw.replace(/^https?:\/\//, '').split('/');
-  var g = https.get({
+  https.get({
     host: parts[0],
     path: '/' + parts.slice(1).join('/'),
     headers: { 'Authorization': 'Bearer ' + accessToken, 'Cache-Control': 'no-cache' }
   }, function (resp) {
     var chunks = '';
     resp.on('data', function (c) { chunks += c; });
-    resp.on('end', function () {
-      var profile = null;
-      try { profile = JSON.parse(chunks); } catch (e) {}
-      var nums = (profile && profile.phoneNumbers) || [];
-      var tcPhone = String(Array.isArray(nums) ? (nums[0] || '') : '').replace(/\D/g, '');
-      if (tcPhone.length === 12 && tcPhone.slice(0, 2) === '91') { tcPhone = tcPhone.slice(2); }
-      tcLog('profile http=' + resp.statusCode + ' body=' + chunks.slice(0, 120).replace(/\s+/g, ' ') + ' | parsedPhone=+' + tcPhone);
-      var p = TC_PENDING.get(nonce);
-      if (!p) return;
-      TC_PENDING.delete(nonce);
-      if (tcPhone !== pending.phone) {
-        TC_REJECTED.set(pending.phone, { at: Date.now(), reason: 'mismatch' });
-        tcLog('mismatch: expected +91' + pending.phone + ' got +91' + tcPhone);
-        tcPersist();
-        return;
+    resp.on('end', async function () {
+      try {
+        var profile = null;
+        try { profile = JSON.parse(chunks); } catch (e) {}
+        var nums = (profile && profile.phoneNumbers) || [];
+        var tcPhone = String(Array.isArray(nums) ? (nums[0] || '') : '').replace(/\D/g, '');
+        if (tcPhone.length === 12 && tcPhone.slice(0, 2) === '91') { tcPhone = tcPhone.slice(2); }
+        tcLog('profile http=' + resp.statusCode + ' body=' + chunks.slice(0, 120).replace(/\s+/g, ' ') + ' | parsedPhone=+' + tcPhone);
+        var p = TC_PENDING.get(nonce);
+        if (!p) { send(res, 200, { ok: true }); return; }
+        TC_PENDING.delete(nonce);
+        if (tcPhone !== pending.phone) {
+          TC_REJECTED.set(pending.phone, { at: Date.now(), reason: 'mismatch' });
+          tcLog('mismatch: expected +91' + pending.phone + ' got +91' + tcPhone);
+          await tcPersist();
+          send(res, 200, { ok: true });
+          return;
+        }
+        var token = crypto.randomBytes(24).toString('hex');
+        TC_GRANTS.set(pending.phone, { token: token, exp: Date.now() + 15 * 60 * 1000 });
+        if (TC_GRANTS.size > 2000) { TC_GRANTS.clear(); }
+        tcLog('VERIFIED +91' + pending.phone + ' nonce=' + nonce.slice(0, 12) + '...');
+        await tcPersist();
+        send(res, 200, { ok: true });
+      } catch (e) {
+        tcLog('callback processing error: ' + (e && e.message));
+        send(res, 200, { ok: true });
       }
-      var token = crypto.randomBytes(24).toString('hex');
-      TC_GRANTS.set(pending.phone, { token: token, exp: Date.now() + 15 * 60 * 1000 });
-      if (TC_GRANTS.size > 2000) { TC_GRANTS.clear(); }
-      tcLog('VERIFIED +91' + pending.phone + ' nonce=' + nonce.slice(0, 12) + '...');
-      tcPersist();
     });
-  });
-  g.on('error', function (e) { tcLog('profile fetch error: ' + e.message); });
+  }).on('error', function (e) {
+    tcLog('profile fetch error: ' + e.message);
+    send(res, 200, { ok: true });
   });
 }
 
@@ -596,21 +606,26 @@ async function handleOrderCreate(req, res, payload) {
   var grant = TC_GRANTS.get(phone);
   var vt = String(payload.verificationToken || '');
   var okGrant = !!(grant && grant.token === vt && Date.now() <= grant.exp);
-  if (!okGrant) {
-    if (tcPartial()) {
-      send(res, 401, { ok: false, error: 'Phone verification required before ordering. Truecaller setup incomplete hai server par (truecaller.apiKey missing in data/server-config.json) â€” jab tak verification available nahi, orders place nahi ho sakte.' });
-    } else {
-      send(res, 401, { ok: false, error: 'Phone verification failed. Verify your number with Truecaller and try again.' });
-    }
+  var verified = false;
+  var verificationStatus = 'Not verified';
+
+  if (okGrant) {
+    TC_GRANTS.delete(phone); /* single-use grant — consumed on order creation */
+    tcPersist();
+    verified = true;
+    verificationStatus = 'Verified (Truecaller)';
+  } else if (tcComplete()) {
+    send(res, 401, { ok: false, error: 'Phone verification failed. Verify your number with Truecaller and try again.' });
     return;
+  } else {
+    /* Truecaller incomplete/pending on server — allow order unverified */
+    verified = false;
+    verificationStatus = 'Pending Owner Confirmation';
   }
-TC_GRANTS.delete(phone); /* single-use grant â€” consumed on order creation */
-  tcPersist();
-  var verified = true;
-  var verificationStatus = 'Verified (Truecaller)';
+
   if (!Array.isArray(payload.items) || !payload.items.length) { send(res, 400, { ok: false, error: 'empty order' }); return; }
   if (nonce && NONCES.has(nonce)) {
-    send(res, 409, { ok: false, duplicate: true, error: 'Duplicate submission â€” this order was already placed.' });
+    send(res, 409, { ok: false, duplicate: true, error: 'Duplicate submission — this order was already placed.' });
     return;
   }
   var prices = catalogPrices();
@@ -813,8 +828,7 @@ if (status === 'completed') {
         o.saleSkipped = saleInfo.skipped;
         console.log('[sales] #' + o.id + ' completed \u2014 recorded ' + saleInfo.recorded + ' sale line(s) into business.json' + (saleInfo.skipped.length ? '; skipped unmatched: ' + saleInfo.skipped.join(', ') : '') + '.');
       }
-      writeOrders(d);
-      if (status === 'completed') notifyOwnerWhatsApp(o, makeWaCompleteMessage(o));
+writeOrders(d);
       send(res, 200, { ok: true, status: status, id: id, section: SECTION_LABEL[status] });
       return;
     }
