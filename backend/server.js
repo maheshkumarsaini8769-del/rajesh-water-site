@@ -868,7 +868,7 @@ function recordCompletedOrderSale(o) {
       productId: p.id, product: p.name, size: p.size,
       boxes: boxes, bottles: bottles, bottlesPerBox: bpb,
       pricePerBox: ppb, total: total, cost: cost, profit: total - cost,
-      payment: o.type === 'UPI' ? 'online' : 'cash',
+      payment: 'online',
       status: 'completed', source: 'website-order', notes: 'Order #' + o.id + (o.note ? ' â€” ' + o.note : ''),
       at: Date.now()
     });
