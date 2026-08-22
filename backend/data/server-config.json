@@ -1,5 +1,5 @@
 {
-    "mongodbUri":  "mongodb+srv://maheshkumarsaini8769_db_user:mahesh99830@cluster0.klicsks.mongodb.net/rajesh-water?retryWrites=true&w=majority&appName=Cluster0",
+    "mongodbUri":  "mongodb+srv://maheshkumarsaini8769_db_user:mahesh99830@cluster0.klicsks.mongodb.net/rajesh-water?retryWrites=true\u0026w=majority\u0026appName=Cluster0",
     "whatsapp":  {
                      "enabled":  false,
                      "token":  "",
@@ -7,10 +7,10 @@
                      "owner":  "917742735762"
                  },
     "truecaller":  {
-                       "enabled":  true,
+                       "enabled":  false,
                        "apiKey":  "UAtJ524d9b69f93154f06a596f83e9ebc3e6d",
                        "appName":  "Rajesh Water",
-                       "callbackUrl":  "https://rajesh-water-site-7bzc.vercel.app/api/truecaller/callback"
+                       "callbackUrl":  "https://craps-downloading-surprised-plastic.trycloudflare.com"
                    },
     "waBot":  {
                   "enabled":  true,
