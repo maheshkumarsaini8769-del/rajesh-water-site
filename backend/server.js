@@ -204,6 +204,7 @@ function readConfig() {
     if (process.env.WHATSAPP_OWNER) c.whatsapp.owner = String(process.env.WHATSAPP_OWNER).trim();
     if (String(process.env.WHATSAPP_ENABLED || '').toLowerCase() === 'true') c.whatsapp.enabled = true;
     if (process.env.WA_BOT_OWNER) c.waBot.owner = String(process.env.WA_BOT_OWNER).trim();
+    if (process.env.WA_BOT_HOST) c.waBot.host = String(process.env.WA_BOT_HOST).trim();
     if (String(process.env.WA_BOT_ENABLED || '').toLowerCase() === 'false') c.waBot.enabled = false;
     if (process.env.WA_BOT_PORT) c.waBot.port = Number(process.env.WA_BOT_PORT) || c.waBot.port;
     return c;
@@ -394,9 +395,16 @@ function persistWa(o) {
 }
 function notifyOwnerWhatsApp(o, customText) {
   var wb = CFG.waBot || {};
-  if (wb.enabled && wb.owner && wb.port) {
+  if (wb.enabled && wb.owner) {
     var payload = JSON.stringify({ to: wb.owner, text: customText || makeWaMessage(o) });
-    var req = http.request({ host: 'localhost', port: Number(wb.port) || 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } }, function (r) {
+    var host = wb.host || 'localhost';
+    var port = host === 'localhost' ? (Number(wb.port) || 3001) : 443;
+    var useHttps = host !== 'localhost';
+    var reqFn = useHttps ? https.request : http.request;
+    var reqOpts = useHttps
+      ? { hostname: host, port: 443, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } }
+      : { host: 'localhost', port: Number(wb.port) || 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } };
+    var req = reqFn(reqOpts, function (r) {
       var chunks = '';
       r.on('data', function (c) { chunks += c; });
       r.on('end', function () {
