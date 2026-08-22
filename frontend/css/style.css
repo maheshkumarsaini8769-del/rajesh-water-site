@@ -211,7 +211,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   grid-template-columns: 42fr 58fr;
   align-items: center;
   gap: clamp(24px, 4vw, 64px);
-  padding: 120px 0 60px;   /* top bar clearance */
+  padding: 10px 0 60px;   /* top bar clearance */
 }
 
 /* ---------------- Left: copy ---------------- */
@@ -491,7 +491,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 .stage-dots {
   position: absolute;
-  bottom: 26px;
+  bottom: -36px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;
@@ -1695,7 +1695,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: flex;
   align-items: center;
   gap: 22px;
-  margin-left: 10px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .navbar-links a {
   font-size: 0.74rem;
@@ -2262,6 +2264,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: flex;
   align-items: center;
   gap: 12px;
+
 }
 .about-point .material-symbols-outlined {
   font-size: 22px;
@@ -2890,6 +2893,7 @@ border: 1px solid var(--line);
     align-items: stretch;
     gap: 4px;
     margin-left: 0;
+    transform: none;
     padding: 12px;
     border-radius: 18px;
     border: 1px solid var(--line);
