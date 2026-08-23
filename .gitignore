@@ -22,3 +22,5 @@ backend/tunnel-url.txt
 boot.err
 boot.txt
 tunnel-url.txt
+.vercel
+.env*

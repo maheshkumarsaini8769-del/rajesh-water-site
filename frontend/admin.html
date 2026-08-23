@@ -522,32 +522,21 @@
     if (v) backupDraft();
   }
 
-  /* ---------- login ---------- */
-  function tryUnlock() {
-    var pass = $('pw').value;
-    if (ssGet('rwAdminOk') === '1') { doUnlock(); return; }
-    var d = loadDefaults();
-    var ok = d && d.admin && (d.admin.passcode === pass || d.admin.passcode === 'admin123' && pass === 'admin123');
-    if (!ok) { $('pwErr').textContent = 'Wrong passcode. Try again.'; return; }
-    doUnlock();
-  }
+  /* ---------- login (auto-skip — no PIN required) ---------- */
+  function tryUnlock() { doUnlock(); }
   function doUnlock() {
     ssSet('rwAdminOk', '1');
     $('login').style.display = 'none';
     $('app').style.display = 'flex';
     DATA = clone(loadDefaults());
     if (!DATA || !DATA.brand || !DATA.admin) {
-      var box = $('login');
-      box.style.display = 'flex';
-      $('pwErr').textContent = 'Site data file (data/site-data.js) did not load. Open admin via http://localhost:3000/admin.html';
+      $('pwErr').textContent = 'Site data file (data/site-data.js) did not load.';
       return;
     }
     render();
     restoreDraft();
   }
-  $('pwBtn').addEventListener('click', tryUnlock);
-  $('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryUnlock(); });
-  if (ssGet('rwAdminOk') === '1') doUnlock();
+  doUnlock();
 
   function lockPanel() {
     ssSet('rwAdminOk', '0');
