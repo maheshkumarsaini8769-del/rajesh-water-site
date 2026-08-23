@@ -36,9 +36,6 @@
   ],
   "rewrites": [
     {
-      "handle": "filesystem"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "https://rajesh-water-site-7bzc.vercel.app/api/$1"
     },

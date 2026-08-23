@@ -29,8 +29,8 @@ module.exports = async function handler(req, res) {
 
   const pathname = decodeURIComponent((req.url || '/').split('?')[0]);
 
-  /* Health check — the root of the backend deployment. */
-  if (req.method === 'GET' && (pathname === '/' || pathname === '/health')) {
+  /* Health check — only /health endpoint. Root / is served by appHandler. */
+  if (req.method === 'GET' && pathname === '/health') {
     res.writeHead(200, {
       'Content-Type': 'text/plain; charset=utf-8',
       'Access-Control-Allow-Origin': '*'
