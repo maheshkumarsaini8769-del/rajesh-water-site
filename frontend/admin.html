@@ -1026,8 +1026,19 @@
   async function save() {
     var src = serialize();
     $('saveBtn').disabled = true;
-    $('saveBtn').textContent = 'Savingâ€¦';
+    $('saveBtn').textContent = 'Saving\u2026';
     try {
+      var apiOk = false;
+      try {
+        var resp = await fetch('/api/site-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(DATA)
+        });
+        var res = await resp.json();
+        if (res && res.ok) apiOk = true;
+      } catch (e) { /* API unavailable — continue with local save */ }
+
       if (fileHandle && await fileHandle.queryPermission({ mode: 'readwrite' }) !== 'granted') {
         await fileHandle.requestPermission({ mode: 'readwrite' });
       }
@@ -1045,14 +1056,15 @@
           savedToDisk = true;
           try { localStorage.setItem('rwFileHandle', JSON.stringify(handle)); fileHandle = handle; } catch (e) {}
         }
-        if (!savedToDisk) { fallbackDownload(); return; }
+        if (!savedToDisk && !apiOk) { fallbackDownload(); return; }
         DEFAULTS = clone(DATA);
         setDirty(false);
         clearDraft();
-        toast('Saved to data/site-data.js â€” refresh the site to see changes. âœ“');
+        toast(apiOk ? 'Saved \u2014 website updated live! \u2714' : 'Saved to file \u2014 deploy to update website. \u2714');
       } catch (e) {
         if (e && e.name === 'AbortError') { toast('Save cancelled.', true); }
-        else { fallbackDownload(); }
+        else if (!apiOk) { fallbackDownload(); }
+        else { DEFAULTS = clone(DATA); setDirty(false); clearDraft(); toast('Saved to server \u2014 website updated! \u2714'); }
       }
     } catch (e) {
       fallbackDownload();

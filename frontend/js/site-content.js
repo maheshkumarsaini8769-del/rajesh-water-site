@@ -3,14 +3,19 @@
    Applies window.SITE_DATA (edited via admin.html) to the live
    page: brand, logo, texts, contact numbers, reviews, theme.
    Load this AFTER data/site-data.js, BEFORE inline builders.
+   
+   v2: Fetches live data from /api/site-data on page load so admin
+   changes appear instantly without redeploy.
    ============================================================ */
 (function () {
   "use strict";
 
   var D = window.SITE_DATA || {};
 
-  if (D && Array.isArray(D.products) && D.products.length) {
-    window.PRODUCTS = D.products;
+  function applyProducts(data) {
+    if (data && Array.isArray(data.products) && data.products.length) {
+      window.PRODUCTS = data.products;
+    }
   }
 
   function trust(d) { return d && (d.name || d.tagline) ? d : null; }
@@ -143,6 +148,8 @@
 
   function apply() {
     if (!window.SITE_DATA) return;
+    D = window.SITE_DATA;
+    applyProducts(D);
     applyBrand();
     applyContact();
     applyTexts();
@@ -150,10 +157,33 @@
     applyTheme();
   }
 
+  function applyFromResponse(data) {
+    if (!data || typeof data !== 'object') return;
+    window.SITE_DATA = data;
+    D = data;
+    applyProducts(D);
+    applyBrand();
+    applyContact();
+    applyTexts();
+    applyStage();
+    applyTheme();
+    if (typeof window.renderProducts === 'function') {
+      try { window.renderProducts(); } catch (e) {}
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', apply);
+    document.addEventListener('DOMContentLoaded', function () {
+      apply();
+      fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
+        if (res && res.ok && res.content) applyFromResponse(res.content);
+      }).catch(function () {});
+    });
   } else {
     apply();
+    fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
+      if (res && res.ok && res.content) applyFromResponse(res.content);
+    }).catch(function () {});
   }
 
   window.siteApplyContent = apply;
