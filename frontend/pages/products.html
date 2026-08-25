@@ -11,8 +11,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-  <title>All Products — Rajesh Water | Order Water & Cold Drinks Online</title>
-  <meta name="description" content="Browse all water bottles and cold drinks at Rajesh Water. Bisleri, Kinley, Pepsi, Coke, Sprite - bulk order with fast delivery. Best wholesale prices.">
+  <title>All Water Bottles & Cold Drinks — Rajesh Water | Bulk Order Online</title>
+  <meta name="description" content="Shop all water bottles and cold drinks at Rajesh Water. Order Bisleri, Kinley, Pepsi, Coke, Sprite boxes in bulk with fast delivery and best wholesale prices.">
   <meta name="keywords" content="water bottles, cold drinks, Bisleri, Kinley, Pepsi, Coke, Sprite, Fanta, Mountain Dew, bulk water order, water wholesale price">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://rajesh-water-site-7bzc.vercel.app/pages/products.html">
@@ -176,7 +176,7 @@
 
       <header class="mb-8 text-center flex flex-col items-center gap-3">
         <span class="font-label-caps text-label-caps tracking-widest uppercase text-primary-container bg-primary-container/10 px-4 py-2 rounded-full border border-primary-container/20" data-s="catalog.badge">Full Catalog</span>
-        <h1 class="font-headline-lg text-headline-lg text-primary" data-s="catalog.title">All Products</h1>
+        <h1 class="font-headline-lg text-headline-lg text-primary" data-s="catalog.title">All Water Bottles & Cold Drinks</h1>
         <p class="font-body-md text-text-muted max-w-2xl" data-s="catalog.sub">Every water bottle and cold drink we supply — sealed boxes, wholesale-friendly pricing.</p>
         <span id="productCount" class="font-label-caps text-label-caps text-text-muted uppercase">Showing 32 Products</span>
       </header>
@@ -864,7 +864,7 @@
         }
         searchOverlayResults.innerHTML = hits.map(function (p) {
           return '<button type="button" class="rw-sr-item" data-pid="' + p.id + '" role="option">' +
-            '<img src="' + p.img + '" alt="" loading="lazy">' +
+            '<img src="' + p.img + '" alt="' + p.name + ' ' + p.size + ' box" loading="lazy">' +
             '<span class="rw-sr-meta"><b>' + p.name + ' ' + p.size + '</b><small>₹' + p.price + ' per bottle · ' + p.boxSize + ' per box</small></span>' +
             '<span class="rw-sr-badge">' + p.category + '</span>' +
           '</button>';
@@ -1529,7 +1529,7 @@
           <h2 class="rw-quote-title">Bulk Order</h2>
           <p class="rw-q-sub">Wholesale pricing for bulk supply — no order placed, no payment needed.</p>
           <div class="rw-q-product">
-            <img id="quoteImg" src="" alt="">
+            <img id="quoteImg" src="" alt="Selected product box">
             <div>
               <h3 id="quoteName"></h3>
               <p class="rw-q-pack" id="quoteMeta"></p>
