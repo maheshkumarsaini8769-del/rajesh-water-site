@@ -1129,6 +1129,33 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     });
     return true;
   }
+  if (req.method === 'GET' && pathname === '/api/whatsapp-config') {
+    var wa = CFG.whatsapp || {};
+    send(res, 200, { ok: true, enabled: !!wa.enabled, phoneId: wa.phoneId || '', owner: wa.owner || '917742735762' });
+    return true;
+  }
+  if (req.method === 'POST' && pathname === '/api/whatsapp-config') {
+    var wcb = '';
+    req.on('data', function (chunk) { wcb += chunk; if (wcb.length > 1e6) req.destroy(); });
+    req.on('end', function () {
+      var payload = {};
+      try { payload = JSON.parse(wcb || '{}'); } catch (e) {}
+      if (!payload.token || !payload.phoneId) { send(res, 400, { ok: false, error: 'token and phoneId required' }); return; }
+      try {
+        var cfgPath = require('path').join(__dirname, 'data', 'server-config.json');
+        var cfg = JSON.parse(require('fs').readFileSync(cfgPath, 'utf8'));
+        cfg.whatsapp = cfg.whatsapp || {};
+        cfg.whatsapp.enabled = payload.enabled !== false;
+        cfg.whatsapp.token = payload.token;
+        cfg.whatsapp.phoneId = payload.phoneId;
+        cfg.whatsapp.owner = payload.owner || '917742735762';
+        require('fs').writeFileSync(cfgPath, JSON.stringify(cfg, null, 4));
+        CFG.whatsapp = cfg.whatsapp;
+        send(res, 200, { ok: true });
+      } catch (e) { send(res, 500, { ok: false, error: e.message }); }
+    });
+    return true;
+  }
   if (req.method === 'POST' && pathname === '/api/admin/login') {
     readBody(req, res, function (p) { handleAdminLogin(req, res, p); });
     return true;

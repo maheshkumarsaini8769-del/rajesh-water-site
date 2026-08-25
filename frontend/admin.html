@@ -1032,14 +1032,22 @@
     var json = serialize();
     return '' +
       '<div class="card"><h3>Passcode</h3><div class="grid">' +
-      '<div class="field"><label>Admin passcode</label><input type="text" data-k="admin.passcode" value="' + esc(DATA.admin.passcode) + '"><div class="hint">Default: admin123 â€” change it!</div></div>' +
+      '<div class="field"><label>Admin passcode</label><input type="text" data-k="admin.passcode" value="' + esc(DATA.admin.passcode) + '"><div class="hint">Default: admin123 — change it!</div></div>' +
       '<div class="field"><label>Quick test</label><div class="hint">Save, then open the site with Ctrl+F5. Every text change you made shows there.</div></div>' +
       '</div></div>' +
+      '<div class="card"><h3>WhatsApp Cloud API (Order Notifications)</h3><div class="grid">' +
+      '<div class="field"><label>Enable WhatsApp notifications</label><select id="waEnabled"><option value="true">Enabled</option><option value="false">Disabled</option></select><div class="hint">Owner ke WhatsApp pe order notification jaayega with sound.</div></div>' +
+      '<div class="field"><label>API Token (EAA...)</label><input type="text" id="waToken" placeholder="EAAxxxxx... paste here" autocomplete="off"><div class="hint">Meta Developer → WhatsApp → API Setup → System Users → Generate Token</div></div>' +
+      '<div class="field"><label>Phone Number ID</label><input type="text" id="waPhoneId" placeholder="1234567890" autocomplete="off"><div class="hint">Meta Developer → WhatsApp → API Setup → Phone Number ID</div></div>' +
+      '<div class="field"><label>Owner WhatsApp (with country code)</label><input type="text" id="waOwner" value="917742735762" placeholder="917742735762"><div class="hint">Jis number pe notification jaana chahiye.</div></div>' +
+      '</div><button class="btn small" id="waSaveBtn" style="margin-top:10px">Save WhatsApp Config</button>' +
+      '<div id="waStatus" style="margin-top:8px;font-size:12px;color:#8B98AD"></div>' +
+      '</div>' +
       '<div class="card"><h3>Backup / Restore</h3>' +
       '<div class="row" style="margin-bottom:10px"><button class="btn small" id="expBtn">Export site-data.js</button>' +
       '<button class="btn small ghost" id="impBtn">Import from file</button>' +
       '<button class="btn small danger" id="resetBtn">Reset to factory defaults</button></div>' +
-      '<div class="hint">Export downloads the full content file. Import restores it. Reset wipes all edits back to the original text â€” careful!</div>' +
+      '<div class="hint">Export downloads the full content file. Import restores it. Reset wipes all edits back to the original text — careful!</div>' +
       '<textarea class="backup-code" id="codeBox" readonly>' + esc(json) + '</textarea>' +
       '</div>';
   }
@@ -1137,6 +1145,26 @@
         DATA = clone(loadDefaults());
         setDirty(true);
         render();
+      };
+      (el = $('waEnabled')) && fetch('/api/whatsapp-config').then(function(r){return r.json()}).then(function(d){
+        if(d&&d.ok){el.value=d.enabled?'true':'false';}
+      }).catch(function(){});
+      (el = $('waSaveBtn')).onclick = function () {
+        var cfg = {
+          enabled: $('waEnabled').value === 'true',
+          token: $('waToken').value.trim(),
+          phoneId: $('waPhoneId').value.trim(),
+          owner: $('waOwner').value.trim()
+        };
+        if (!cfg.token || !cfg.phoneId) { $('waStatus').innerHTML = '<span style="color:#f87171">Token and Phone ID are required!</span>'; return; }
+        fetch('/api/whatsapp-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        }).then(function(r){return r.json()}).then(function(d){
+          if(d&&d.ok){ $('waStatus').innerHTML='<span style="color:#4ade80">WhatsApp config saved! Notifications will start working. &#10003;</span>'; }
+          else { $('waStatus').innerHTML='<span style="color:#f87171">Error: '+(d.error||'unknown')+'</span>'; }
+        }).catch(function(e){ $('waStatus').innerHTML='<span style="color:#f87171">Error: '+e.message+'</span>'; });
       };
     }
   }
