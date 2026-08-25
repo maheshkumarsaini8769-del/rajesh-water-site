@@ -108,6 +108,18 @@ var SiteDoc = mongoose.model('SiteDoc', siteDocSchema);
 var tcStateSchema = new mongoose.Schema({ _id: String, data: { type: mongoose.Schema.Types.Mixed, default: {} } }, { strict: false });
 var TcStateDoc = mongoose.model('TcStateDoc', tcStateSchema);
 
+var notifSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  type: { type: String, default: 'order' },
+  orderId: { type: String, default: '' },
+  title: { type: String, default: '' },
+  body: { type: String, default: '' },
+  read: { type: Boolean, default: false },
+  at: { type: Number, default: Date.now }
+}, { strict: false, _id: false });
+var notifDocSchema = new mongoose.Schema({ _id: String, list: { type: [notifSchema], default: [] } }, { strict: false });
+var NotifDoc = mongoose.model('NotifDoc', notifDocSchema);
+
 async function saveTcState(obj) {
   await upsert(TcStateDoc, 'tcstate', { _id: 'tcstate', data: obj || {} });
   markOk();
@@ -115,6 +127,15 @@ async function saveTcState(obj) {
 async function loadTcState() {
   var d = await getDoc(TcStateDoc, 'tcstate');
   return (d && d.data) || null;
+}
+
+async function saveNotifications(list) {
+  await upsert(NotifDoc, 'notifications', { _id: 'notifications', list: list || [] });
+  markOk();
+}
+async function loadNotifications() {
+  var d = await getDoc(NotifDoc, 'notifications');
+  return (d && d.list) || null;
 }
 
 /* ---------- Validation helpers (throw with a readable message) ---------- */
@@ -253,5 +274,6 @@ module.exports = {
   saveBiz: saveBiz, loadBiz: loadBiz,
   saveReviews: saveReviews, loadReviews: loadReviews,
   saveSiteData: saveSiteData, loadSiteData: loadSiteData,
-  saveTcState: saveTcState, loadTcState: loadTcState
+  saveTcState: saveTcState, loadTcState: loadTcState,
+  saveNotifications: saveNotifications, loadNotifications: loadNotifications
 };
