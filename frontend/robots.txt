@@ -1,7 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /pages/
+Allow: /css/
+Allow: /js/
+Allow: /images/
 Disallow: /admin
-Disallow: /api/
 Disallow: /admin.html
+Disallow: /api/
+Disallow: /pages/admin
 
 Sitemap: https://rajesh-water-site-7bzc.vercel.app/sitemap.xml
