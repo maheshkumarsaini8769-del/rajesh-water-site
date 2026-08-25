@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Reviews — Rajesh Water</title>
+  <meta name="description" content="Read what our customers say about Rajesh Water. Real reviews from families, offices and events we supply every week.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://rajesh-water-site-7bzc.vercel.app/pages/reviews.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Customer Reviews — Rajesh Water">
+  <meta property="og:description" content="Real reviews from families, offices and events we supply every week.">
+  <meta property="og:url" content="https://rajesh-water-site-7bzc.vercel.app/pages/reviews.html">
+  <meta property="og:site_name" content="Rajesh Water">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:image" content="https://rajesh-water-site-7bzc.vercel.app/images/bisleri-bottle.webp">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Customer Reviews — Rajesh Water">
+  <meta name="twitter:description" content="Real reviews from families, offices and events we supply every week.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://rajesh-water-site-7bzc.vercel.app/"},
+      {"@type": "ListItem", "position": 2, "name": "Reviews", "item": "https://rajesh-water-site-7bzc.vercel.app/pages/reviews.html"}
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="../css/tailwind.css">
+  <link rel="stylesheet" href="../css/style.css?v=52">
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .rw-review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .rw-review-card { background: rgba(0,27,68,0.45); border: 1px solid #17212E; border-radius: 16px; padding: 24px; transition: border-color 0.3s, box-shadow 0.3s; }
+    .rw-review-card:hover { border-color: #7CEBFF; box-shadow: 0 0 16px rgba(138,243,255,0.12); }
+    .rw-review-stars { color: #facc15; font-size: 1rem; margin-bottom: 8px; }
+    .rw-review-text { color: #bcc9ca; font-size: 0.95rem; line-height: 1.6; margin-bottom: 14px; font-style: italic; }
+    .rw-review-author { display: flex; align-items: center; gap: 10px; }
+    .rw-review-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #38D9FF, #0B5C7C); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+    .rw-review-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
+    .rw-review-meta { color: #6b7c7e; font-size: 0.78rem; }
+    .rw-form-wrap { max-width: 600px; margin: 0 auto 40px; }
+    .rw-form-card { background: rgba(0,27,68,0.45); border: 1px solid #17212E; border-radius: 16px; padding: 28px; }
+    .rw-form-card label { display: block; color: #bcc9ca; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
+    .rw-form-card input, .rw-form-card textarea { width: 100%; background: #05070D; border: 1px solid #17212E; color: #fff; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; margin-bottom: 14px; outline: none; transition: border-color 0.3s; }
+    .rw-form-card input:focus, .rw-form-card textarea:focus { border-color: #8af3ff; }
+    .rw-stars-pick button { background: none; border: none; color: #3d494a; font-size: 1.5rem; cursor: pointer; padding: 2px 4px; transition: color 0.2s; }
+    .rw-stars-pick button.active, .rw-stars-pick button:hover { color: #facc15; }
+    .rw-submit-btn { background: #8af3ff; color: #05070D; border: none; border-radius: 10px; padding: 12px 28px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: box-shadow 0.3s, transform 0.2s; }
+    .rw-submit-btn:hover { box-shadow: 0 0 20px rgba(138,243,255,0.35); transform: translateY(-1px); }
+    .rw-form-err { color: #f87171; font-size: 0.82rem; min-height: 20px; margin-bottom: 8px; }
+    .rw-form-ok { color: #4ade80; font-size: 0.85rem; margin-bottom: 8px; }
+    .rw-sort-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+    .rw-sort-btn { background: transparent; border: 1px solid #17212E; color: #bcc9ca; border-radius: 20px; padding: 8px 18px; font-size: 0.82rem; cursor: pointer; transition: all 0.3s; }
+    .rw-sort-btn.active, .rw-sort-btn:hover { border-color: #8af3ff; color: #fff; }
+  </style>
+</head>
+
+<body class="subpage">
+  <script src="../data/site-data.js"></script>
+  <script src="../js/site-content.js"></script>
+  <script src="../js/site-stats.js"></script>
+
+  <div class="site">
+
+    <nav class="navbar" aria-label="Main navigation">
+      <a class="navbar-brand" href="index.html">
+        <svg class="navbar-logo" viewBox="0 0 24 24" aria-hidden="true">
+          <defs><linearGradient id="rwLogoGrad" x1="4" y1="2" x2="20" y2="23" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#38D9FF"/><stop offset="1" stop-color="#0B5C7C"/></linearGradient></defs>
+          <path d="M12 2.2c3.9 5.3 6.9 9 6.9 12.6a6.9 6.9 0 1 1-13.8 0c0-3.6 3-7.3 6.9-12.6z" fill="url(#rwLogoGrad)"/>
+          <path d="M9.3 16.1a2.9 2.9 0 0 0 2.2 2.7" stroke="#eafcff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="navbar-word"><span class="nb-name">Rajesh Water</span><small>Premium Water Supply</small></span>
+      </a>
+      <div class="navbar-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#deliver">What We Deliver</a>
+        <a href="index.html#bulk">Bulk Supply</a>
+        <a href="index.html#support">Support</a>
+      </div>
+      <button class="navbar-burger" id="navBurger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <main class="py-16 px-4 md:px-8 max-w-6xl mx-auto">
+
+      <header class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Customer Reviews</h1>
+        <p class="text-[#bcc9ca] text-lg max-w-xl mx-auto">Real feedback from families, offices and events we supply every week.</p>
+      </header>
+
+      <div class="rw-form-wrap">
+        <div class="rw-form-card">
+          <h2 class="text-white font-semibold text-lg mb-4">Write a Review</h2>
+          <div class="flex gap-4 mb-3">
+            <div style="flex:1"><label>Your Name *</label><input type="text" id="rvName" placeholder="e.g. Aman Sharma" maxlength="40"></div>
+            <div style="flex:1"><label>Bought (optional)</label><input type="text" id="rvProduct" placeholder="e.g. 1 LITRE Box" maxlength="40"></div>
+          </div>
+          <label>Your Rating *</label>
+          <div class="rw-stars-pick mb-3" id="rvStars">
+            <button type="button" data-s="1">&#9733;</button>
+            <button type="button" data-s="2">&#9733;</button>
+            <button type="button" data-s="3">&#9733;</button>
+            <button type="button" data-s="4">&#9733;</button>
+            <button type="button" data-s="5">&#9733;</button>
+          </div>
+          <label>Your Review *</label>
+          <textarea id="rvText" rows="3" maxlength="500" placeholder="How was the water quality, delivery or service?"></textarea>
+          <div class="rw-form-err" id="rvErr"></div>
+          <div class="rw-form-ok" id="rvOk" style="display:none"></div>
+          <button class="rw-submit-btn" id="rvSubmit" type="button">Submit Review</button>
+        </div>
+      </div>
+
+      <div class="rw-sort-bar" id="sortBar">
+        <button class="rw-sort-btn active" data-sort="top">Top Rated</button>
+        <button class="rw-sort-btn" data-sort="new">Newest</button>
+        <button class="rw-sort-btn" data-sort="all">All</button>
+      </div>
+
+      <div class="rw-review-grid" id="reviewGrid"></div>
+      <p class="text-center text-[#6b7c7e] text-sm mt-8" id="reviewCount"></p>
+
+    </main>
+
+  </div>
+
+  <script>
+  (function () {
+    var grid = document.getElementById('reviewGrid');
+    var countEl = document.getElementById('reviewCount');
+    var sort = 'top';
+    var allData = [];
+
+    function initials(name) {
+      return name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+    }
+    function stars(n) {
+      var s = '';
+      for (var i = 1; i <= 5; i++) s += i <= n ? '\u2605' : '\u2606';
+      return s;
+    }
+
+    function allReviews() {
+      var base = (window.SITE_DATA && window.SITE_DATA.reviews && window.SITE_DATA.reviews.grid) || [];
+      var server = (window.RW_SERVER_REVIEWS && window.RW_SERVER_REVIEWS.length) ? window.RW_SERVER_REVIEWS : [];
+      var users = (window.RW_USER_REVIEWS && window.RW_USER_REVIEWS.length) ? window.RW_USER_REVIEWS : [];
+      return server.concat(users).concat(base);
+    }
+
+    function render() {
+      allData = allReviews();
+      if (sort === 'top') {
+        allData.sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); });
+      } else if (sort === 'new') {
+        allData.sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+      }
+      grid.innerHTML = allData.map(function (r) {
+        return '<div class="rw-review-card">' +
+          '<div class="rw-review-stars">' + stars(r.rating) + '</div>' +
+          '<p class="rw-review-text">\u201c' + (r.text || '') + '\u201d</p>' +
+          '<div class="rw-review-author">' +
+            '<div class="rw-review-avatar">' + initials(r.name || '?') + '</div>' +
+            '<div><div class="rw-review-name">' + (r.name || '') + '</div>' +
+            '<div class="rw-review-meta">' + (r.product || '') + (r.date ? ' \u00b7 ' + r.date : '') + '</div></div>' +
+          '</div></div>';
+      }).join('');
+      countEl.textContent = allData.length + ' reviews';
+    }
+
+    document.getElementById('sortBar').addEventListener('click', function (e) {
+      var btn = e.target.closest('.rw-sort-btn');
+      if (!btn) return;
+      document.querySelectorAll('.rw-sort-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      sort = btn.getAttribute('data-sort');
+      render();
+    });
+
+    var pickRating = 0;
+    document.getElementById('rvStars').addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      pickRating = Number(btn.getAttribute('data-s'));
+      document.querySelectorAll('#rvStars button').forEach(function (b, i) {
+        b.classList.toggle('active', i < pickRating);
+      });
+    });
+
+    document.getElementById('rvSubmit').addEventListener('click', function () {
+      var name = document.getElementById('rvName').value.trim();
+      var text = document.getElementById('rvText').value.trim();
+      var product = document.getElementById('rvProduct').value.trim();
+      var errEl = document.getElementById('rvErr');
+      var okEl = document.getElementById('rvOk');
+      errEl.textContent = '';
+      okEl.style.display = 'none';
+      if (!name || !text || !pickRating) { errEl.textContent = 'Please fill name, rating and review text.'; return; }
+      var review = { name: name, text: text, rating: pickRating, product: product, date: new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }), at: Date.now() };
+      var existing = JSON.parse(localStorage.getItem('rw_user_reviews') || '[]');
+      existing.unshift(review);
+      localStorage.setItem('rw_user_reviews', JSON.stringify(existing));
+      window.RW_USER_REVIEWS = existing;
+      fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ review: review }) }).catch(function () {});
+      document.getElementById('rvName').value = '';
+      document.getElementById('rvText').value = '';
+      document.getElementById('rvProduct').value = '';
+      pickRating = 0;
+      document.querySelectorAll('#rvStars button').forEach(function (b) { b.classList.remove('active'); });
+      okEl.textContent = 'Thanks! Aapka review website par dikh raha hai. \u2713';
+      okEl.style.display = 'block';
+      render();
+    });
+
+    try {
+      var saved = JSON.parse(localStorage.getItem('rw_user_reviews') || '[]');
+      if (saved.length) window.RW_USER_REVIEWS = saved;
+    } catch (e) {}
+
+    fetch('/api/reviews').then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (list) {
+        if (Array.isArray(list) && list.length) { window.RW_SERVER_REVIEWS = list; render(); }
+      }).catch(function () {});
+
+    render();
+  })();
+  </script>
+
+</body>
+</html>

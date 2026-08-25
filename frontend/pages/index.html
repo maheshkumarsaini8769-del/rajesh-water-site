@@ -120,6 +120,15 @@
     .rw-nav-active { color: #ffffff; border-bottom: 2px solid #ffffff; padding-bottom: 0.25rem; }
     .rw-nav-inactive { color: #bcc9ca; transition: color 0.3s; }
     .rw-nav-inactive:hover { color: #ffffff; }
+    .rw-review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .rw-review-card { background: rgba(0,27,68,0.45); border: 1px solid #17212E; border-radius: 16px; padding: 24px; transition: border-color 0.3s, box-shadow 0.3s; }
+    .rw-review-card:hover { border-color: #7CEBFF; box-shadow: 0 0 16px rgba(138,243,255,0.12); }
+    .rw-review-stars { color: #facc15; font-size: 1rem; margin-bottom: 8px; }
+    .rw-review-text { color: #bcc9ca; font-size: 0.95rem; line-height: 1.6; margin-bottom: 14px; font-style: italic; }
+    .rw-review-author { display: flex; align-items: center; gap: 10px; }
+    .rw-review-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #38D9FF, #0B5C7C); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+    .rw-review-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
+    .rw-review-meta { color: #6b7c7e; font-size: 0.78rem; }
   </style>
 
 
@@ -848,10 +857,9 @@
         </form>
       </div>
 
-      <div class="round-carousel" id="roundCarousel" aria-hidden="true">
-        <div class="round-carousel-tilt">
-          <div class="round-carousel-ring" id="rcRing"></div>
-        </div>
+      <div class="rw-review-grid" id="reviewGrid"></div>
+      <div class="text-center mt-10">
+        <a href="reviews.html" class="inline-block px-8 py-3 rounded-full border border-[#17212E] text-[#bcc9ca] hover:text-white hover:border-[#8af3ff] transition-all font-semibold text-sm tracking-wide">View All Reviews &rarr;</a>
       </div>
     </div>
   </section>
@@ -2155,184 +2163,60 @@
   <script src="../js/main.js?v=6"></script>
 
 <script>
-  /* ---------- Round Carousel (reviews) — vanilla port of Originkit RoundCarousel ---------- */
+  /* ---------- Review Grid (top 6 on homepage) ---------- */
   (function () {
-    var wrap = document.getElementById('roundCarousel');
-    var ring = document.getElementById('rcRing');
-    if (!wrap || !ring) { return; }
+    var grid = document.getElementById('reviewGrid');
+    if (!grid) return;
 
-    function reviewFaces() {
-      var base = (window.SITE_DATA && window.SITE_DATA.reviews && window.SITE_DATA.reviews.carousel) || [
-        { name: 'Aman Sharma', rating: 5, text: 'Regular monthly supply, always on time and the bottles are sealed and clean.', meta: '500 ML Box · WhatsApp order' },
-        { name: 'Priya Verma', rating: 5, text: 'Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.', meta: '2 LITRE Box · Family event' },
-        { name: 'Hotel Rajput Palace', rating: 4, text: 'Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.', meta: 'Bulk Supply · Weekly' },
-        { name: 'Rohit Mehta', rating: 5, text: 'Messaged on WhatsApp in the morning, boxes reached by afternoon. Smooth and quick.', meta: '1 LITRE Box · Same day' },
-        { name: 'Sneha Kulkarni', rating: 4, text: 'Cold drink boxes for our office pantry at a fair price. Will order again next month.', meta: 'Cold Drinks · Office' }
+    function allReviews() {
+      var base = (window.SITE_DATA && window.SITE_DATA.reviews && window.SITE_DATA.reviews.grid) || [
+        { name: 'Aman Sharma', rating: 5, text: 'Regular monthly supply, always on time and the bottles are sealed and clean.', product: '500 ML Box', date: 'Aug 2026' },
+        { name: 'Priya Verma', rating: 5, text: 'Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.', product: '2 LITRE Box', date: 'Jul 2026' },
+        { name: 'Hotel Rajput Palace', rating: 4, text: 'Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.', product: 'Bulk Supply', date: 'Jun 2026' },
+        { name: 'Rohit Mehta', rating: 5, text: 'Messaged on WhatsApp in the morning, boxes reached by afternoon. Smooth and quick.', product: '1 LITRE Box', date: 'Jul 2026' },
+        { name: 'Sneha Kulkarni', rating: 4, text: 'Cold drink boxes for our office pantry at a fair price. Will order again next month.', product: 'Cold Drinks', date: 'Jun 2026' }
       ];
-      var users = (window.RW_USER_REVIEWS && window.RW_USER_REVIEWS.length) ? window.RW_USER_REVIEWS : [];
       var server = (window.RW_SERVER_REVIEWS && window.RW_SERVER_REVIEWS.length) ? window.RW_SERVER_REVIEWS : [];
-      return server.map(function (r) {
-        return { name: r.name, rating: r.rating, text: r.text, meta: (r.product || 'Website') + ' · New' };
-      }).concat(users.map(function (r) {
-        return { name: r.name, rating: r.rating, text: r.text, meta: (r.product || 'Website') + ' · New' };
-      })).concat(base);
-    }
-    var REVIEW_FACES = reviewFaces();
-    var SPACING = 3, SPEED = 3, SENSITIVITY = 5, CORNER = 22, INNER_DIM = 0.35;
-    var DIR_SIGN = 1; /* right */
-
-    var count = REVIEW_FACES.length;
-    var angle = 360 / count;
-    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    var rotY = 0, vel = 0, last = 0, raf = null;
-    var drag = { active: false, x: 0 };
-    var faces = [];
-
-    function sizePx() {
-      var w = wrap.clientWidth || 300;
-      return Math.min(300, Math.max(170, w * 0.62));
-    }
-
-    function stars(n) {
-      var s = '';
-      for (var i = 1; i <= 5; i++) { s += i <= n ? '★' : '☆'; }
-      return s;
+      var users = (window.RW_USER_REVIEWS && window.RW_USER_REVIEWS.length) ? window.RW_USER_REVIEWS : [];
+      return server.concat(users).concat(base);
     }
 
     function initials(name) {
       return name.split(' ').map(function (w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
     }
 
-    function faceContent(f, dim) {
-      var inner = document.createElement('div');
-      inner.className = dim ? 'rc-face rc-face--dim' : 'rc-face';
-      var av = document.createElement('div');
-      av.className = 'rc-avatar';
-      av.textContent = initials(f.name);
-      var st = document.createElement('div');
-      st.className = 'rc-stars';
-      st.setAttribute('aria-label', f.rating + ' out of 5 stars');
-      st.textContent = stars(f.rating);
-      var q = document.createElement('p');
-      q.className = 'rc-quote';
-      q.textContent = '“' + f.text + '”';
-      var foot = document.createElement('div');
-      var nm = document.createElement('div');
-      nm.className = 'rc-name';
-      nm.textContent = f.name;
-      var meta = document.createElement('div');
-      meta.className = 'rc-meta';
-      meta.textContent = f.meta;
-      foot.appendChild(nm);
-      foot.appendChild(meta);
-      inner.appendChild(av);
-      inner.appendChild(st);
-      inner.appendChild(q);
-      inner.appendChild(foot);
-      return inner;
+    function stars(n) {
+      var s = '';
+      for (var i = 1; i <= 5; i++) s += i <= n ? '\u2605' : '\u2606';
+      return s;
     }
 
-    function build() {
-      REVIEW_FACES = reviewFaces();
-      count = REVIEW_FACES.length;
-      angle = 360 / count;
-      var size = sizePx();
-      var factor = 1 + SPACING * 0.15;
-      var radius = (size * factor) / (2 * Math.tan(Math.PI / count));
-
-      ring.innerHTML = '';
-      ring.style.width = size + 'px';
-      ring.style.height = size + 'px';
-      faces = [];
-      for (var i = 0; i < count; i++) {
-        (function (idx) {
-          var holder = document.createElement('div');
-          holder.style.cssText = 'position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(' + (idx * angle) + 'deg) translateZ(' + radius + 'px);';
-          var front = document.createElement('div');
-          front.className = 'round-carousel-face';
-          front.appendChild(faceContent(REVIEW_FACES[idx]));
-          var back = document.createElement('div');
-          back.className = 'round-carousel-face round-carousel-face--back';
-          back.style.filter = 'brightness(' + INNER_DIM + ')';
-          back.appendChild(faceContent(REVIEW_FACES[idx]));
-          holder.appendChild(front);
-          holder.appendChild(back);
-          ring.appendChild(holder);
-          faces.push(front);
-        })(i);
-      }
-      apply();
-      return radius;
+    function render() {
+      var all = allReviews();
+      all.sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); });
+      var top = all.slice(0, 6);
+      grid.innerHTML = top.map(function (r) {
+        return '<div class="rw-review-card">' +
+          '<div class="rw-review-stars">' + stars(r.rating) + '</div>' +
+          '<p class="rw-review-text">\u201c' + (r.text || '') + '\u201d</p>' +
+          '<div class="rw-review-author">' +
+            '<div class="rw-review-avatar">' + initials(r.name || '?') + '</div>' +
+            '<div><div class="rw-review-name">' + (r.name || '') + '</div>' +
+            '<div class="rw-review-meta">' + (r.product || '') + (r.date ? ' \u00b7 ' + r.date : '') + '</div></div>' +
+          '</div></div>';
+      }).join('');
     }
 
-    function apply() {
-      var radius = sizePx() * 1.45 / (2 * Math.tan(Math.PI / count));
-      ring.style.transform = 'translateZ(' + (-radius) + 'px) rotateY(' + rotY + 'deg)';
-    }
+    render();
+    window.addEventListener('rw:reviews-updated', render);
 
-    function tick(now) {
-      var dt = last ? (now - last) / 1000 : 0;
-      last = now;
-      var f = Math.min(dt, 0.1);
-      if (!drag.active) {
-        if (Math.abs(vel) > 0.01) {
-          rotY += vel * f;
-          vel *= 0.94;
-        } else {
-          rotY += SPEED * 6 * DIR_SIGN * f;
+    fetch('/api/reviews').then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (list) {
+        if (Array.isArray(list) && list.length) {
+          window.RW_SERVER_REVIEWS = list;
+          render();
         }
-      }
-      apply();
-      raf = requestAnimationFrame(tick);
-    }
-
-    wrap.addEventListener('pointerdown', function (e) {
-      try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
-      drag.active = true;
-      drag.x = e.clientX;
-      vel = 0;
-    });
-    wrap.addEventListener('pointermove', function (e) {
-      if (!drag.active) { return; }
-      var dx = e.clientX - drag.x;
-      drag.x = e.clientX;
-      var k = 0.3 * SENSITIVITY;
-      rotY += dx * k;
-      vel = dx * k * 60;
-    });
-    function endDrag() { drag.active = false; }
-    wrap.addEventListener('pointerup', endDrag);
-    wrap.addEventListener('pointercancel', endDrag);
-
-    var resizeT = null;
-    function onResize() {
-      if (resizeT) { clearTimeout(resizeT); }
-      resizeT = setTimeout(function () { build(); }, 120);
-    }
-    window.addEventListener('resize', onResize);
-
-    build();
-    try {
-      window.addEventListener('rw:reviews-updated', function () { build(); });
-    } catch (e) {}
-    try {
-      if (window.fetch) {
-        fetch('/api/reviews').then(function (r) { return r.ok ? r.json() : []; })
-          .then(function (list) {
-            if (Array.isArray(list) && list.length) {
-              window.RW_SERVER_REVIEWS = list;
-              if (window.RW_USER_REVIEWS && window.RW_USER_REVIEWS.length) {
-                window.RW_SERVER_REVIEWS = window.RW_SERVER_REVIEWS.filter(function (s) {
-                  return !window.RW_USER_REVIEWS.some(function (u) { return u.name === s.name && u.text === s.text; });
-                });
-              }
-              build();
-            }
-          }).catch(function () {});
-      }
-    } catch (e) {}
-    if (!reduced) { raf = requestAnimationFrame(tick); }
+      }).catch(function () {});
   })();
 </script>
 
