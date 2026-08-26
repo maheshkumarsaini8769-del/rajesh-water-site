@@ -828,16 +828,16 @@
   var phoneVerified = false;
   var phoneVerifyToken = '';
   var VERIFY_DEFAULT_NOTE = coVerifyNote ? coVerifyNote.textContent : '';
-  var rwTcStrict = true;
+  var rwTcStrict = false;
   function rwApplyTcMode() {
-    if (rwTcStrict) return;
+    if (!rwTcStrict) return;
     rwSetVerify('Verification required', 'is-err');
     if (coVerifyNote) { coVerifyNote.textContent = 'Truecaller verification required before ordering \u2014 setup abhi incomplete hai (owner ko data/server-config.json me truecaller.appId + truecaller.sdkUrl add karne hain). Verification ke bina order place NAHI ho sakta.'; }
   }
   fetch('/api/orders/config')
     .then(function (r) { return r.json().catch(function () { return {}; }); })
     .catch(function () { return {}; })
-    .then(function (cfg) { if (cfg && cfg.truecallerPendingMode) { rwTcStrict = false; rwApplyTcMode(); } });
+    .then(function (cfg) { if (cfg && cfg.truecallerConfigured && !cfg.truecallerPendingMode) { rwTcStrict = true; rwApplyTcMode(); } });
   function rwMobile() { return (coMobile.value || '').replace(/\D/g, ''); }
   function rwSetVerify(text, cls) {
     if (coVerifyStatus) { coVerifyStatus.textContent = text; coVerifyStatus.className = 'co-verify-status' + (cls ? ' ' + cls : ''); }
