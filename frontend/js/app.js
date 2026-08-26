@@ -963,10 +963,13 @@
             if (suEta) { suEta.textContent = d.order.eta || '\u2014'; }
             if (suWaNote) {
               if (d.whatsappConfigured) {
-                suWaNote.style.display = 'none';
+                suWaNote.style.display = '';
+                suWaNote.textContent = 'Order placed! Owner ko WhatsApp notification gaya hai. Aapka order confirm hone pe team aapko contact karegi.';
+                suWaNote.style.color = '#4ade80';
               } else {
                 suWaNote.style.display = '';
-                suWaNote.textContent = 'Owner WhatsApp notification API is not configured yet (server-side setup needed in data/server-config.json). Your order is saved \u2014 the team will contact you on +91' + d.order.phone + '.';
+                suWaNote.textContent = 'Order saved! WhatsApp notification abhi available nahi hai (wa-bot offline). Team aapko contact karegi on +91' + d.order.phone + '.';
+                suWaNote.style.color = '#fbbf24';
               }
             }
             cart = Object.create(null);

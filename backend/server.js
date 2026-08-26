@@ -410,8 +410,8 @@ req.on('error', function (e) { o.notified = false; o.notifyError = 'WA_NETWORK_E
   req.end(payload);
 }
 
-/* Owner WhatsApp notification via the local wa-bot (node wa-bot.js). Falls back to the
-   official WhatsApp Business Cloud API when waBot is disabled but whatsapp is configured. */
+/* Owner WhatsApp notification via the local wa-bot (node wa-bot.js).
+   No Cloud API — only wa-bot tunnel. Token-free, no Meta setup needed. */
 function persistWa(o) {
   var d = readOrders();
   var t = null;
@@ -448,9 +448,8 @@ function notifyOwnerWhatsApp(o, customText) {
     req.end(payload);
     return;
   }
-  if ((CFG.whatsapp || {}).enabled) { sendWhatsApp(o); return; }
   o.notified = false; o.notifyError = 'NO_OWNER_WA_CHANNEL';
-  console.log('[wa] no owner WhatsApp channel configured (waBot.owner set karo data/server-config.json me)');
+  console.log('[wa] wa-bot not configured (waBot.owner set karo data/server-config.json me)');
 }
 
 function readBody(req, res, cb, max) {
@@ -711,7 +710,7 @@ writeOrders(d);
   var itemSummary = items.map(function (it) { return it.name + ' ' + it.size + ' x' + it.qty; }).join(', ');
   pushNotification('order', order.id, 'New Order #' + order.id, name + ' — ₹' + total + ' — ' + itemSummary + ' — ' + city, phone);
   notifyOwnerWhatsApp(order);
-  send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.whatsapp || {}).enabled && (CFG.whatsapp || {}).token && (CFG.whatsapp || {}).phoneId && (CFG.whatsapp || {}).owner) });
+  send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.waBot || {}).enabled && (CFG.waBot || {}).owner) });
 }
 
 async function handleOrderComplete(req, res, payload) {
@@ -1136,10 +1135,10 @@ writeBiz(cur);
     return true;
   }
 if (req.method === 'GET' && pathname === '/api/orders/config') {
-    var waCfg = CFG.whatsapp || {};
+    var wb = CFG.waBot || {};
     send(res, 200, {
       ok: true,
-      whatsappConfigured: !!(waCfg.enabled && waCfg.token && waCfg.phoneId && waCfg.owner),
+      whatsappConfigured: !!(wb.enabled && wb.owner),
       truecallerConfigured: tcComplete(),
       truecallerPendingMode: tcPartial()
     });

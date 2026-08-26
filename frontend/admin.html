@@ -1212,13 +1212,19 @@ function loadAdminBiz() {
       '</div><button class="btn small" id="pwChangeBtn" style="margin-top:10px">Change Passcode</button>' +
       '<div id="pwChangeStatus" style="margin-top:8px;font-size:12px;color:#8B98AD"></div>' +
       '<div class="hint">Default: admin123 — change it for security!</div></div>' +
-      '<div class="card"><h3>WhatsApp Cloud API (Order Notifications)</h3><div class="grid">' +
-      '<div class="field"><label>Enable WhatsApp notifications</label><select id="waEnabled"><option value="true">Enabled</option><option value="false">Disabled</option></select><div class="hint">Owner ke WhatsApp pe order notification jaayega with sound.</div></div>' +
-      '<div class="field"><label>API Token (EAA...)</label><input type="text" id="waToken" placeholder="EAAxxxxx... paste here" autocomplete="off"><div class="hint">Meta Developer → WhatsApp → API Setup → System Users → Generate Token</div></div>' +
-      '<div class="field"><label>Phone Number ID</label><input type="text" id="waPhoneId" placeholder="1234567890" autocomplete="off"><div class="hint">Meta Developer → WhatsApp → API Setup → Phone Number ID</div></div>' +
-      '<div class="field"><label>Owner WhatsApp (with country code)</label><input type="text" id="waOwner" value="917742735762" placeholder="917742735762"><div class="hint">Jis number pe notification jaana chahiye.</div></div>' +
-      '</div><button class="btn small" id="waSaveBtn" style="margin-top:10px">Save WhatsApp Config</button>' +
+      '<div class="card"><h3>WhatsApp Order Notifications (wa-bot tunnel)</h3>' +
+      '<div class="hint" style="margin-bottom:12px">Orders website pe place hote hi owner ke WhatsApp pe notification jaata hai via <b>wa-bot tunnel</b>. Koi token/Cloud API ki zaroorat nahi.</div>' +
+      '<div id="waBotStatus" style="margin-bottom:12px;padding:12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line)">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span id="waBotDot" style="width:10px;height:10px;border-radius:50%;background:#666"></span> <b id="waBotLabel">Checking...</b></div>' +
+        '<div id="waBotDetail" style="font-size:12px;color:var(--muted)"></div>' +
+      '</div>' +
+      '<div class="grid">' +
+      '<div class="field"><label>Owner WhatsApp (with country code)</label><input type="text" id="waOwner" value="917742735762" placeholder="917742735762"><div class="hint">Jis number pe order notification jaana chahiye.</div></div>' +
+      '</div>' +
+      '<div style="margin-top:12px"><button class="btn small" id="waSaveBtn">Save Owner Number</button> ' +
+      '<a href="/wa" target="_blank" class="btn small ghost" style="text-decoration:none">Open QR Scanner</a></div>' +
       '<div id="waStatus" style="margin-top:8px;font-size:12px;color:#8B98AD"></div>' +
+      '<div class="hint" style="margin-top:12px">QR Scanner se ek baar WhatsApp scan karo. Uske baad sab orders automatically WhatsApp pe jaayenge.</div>' +
       '</div>' +
       '<div class="card"><h3>Backup / Restore</h3>' +
       '<div class="row" style="margin-bottom:10px"><button class="btn small" id="expBtn">Export site-data.js</button>' +
@@ -1363,25 +1369,39 @@ function loadAdminBiz() {
         $('pwOld').value = ''; $('pwNew').value = ''; $('pwConfirm').value = '';
         statusEl.innerHTML = '<span style="color:#4ade80">Passcode changed successfully! &#10003;</span>';
       };
-      (el = $('waEnabled')) && fetch('/api/whatsapp-config').then(function(r){return r.json()}).then(function(d){
-        if(d&&d.ok){el.value=d.enabled?'true':'false';}
+      /* wa-bot status check */
+      var waBotDot = $('waBotDot'), waBotLabel = $('waBotLabel'), waBotDetail = $('waBotDetail');
+      if (waBotDot) {
+        fetch('/api/orders/config').then(function(r){return r.json()}).then(function(d){
+          if (d && d.ok) {
+            var configured = d.whatsappConfigured;
+            waBotDot.style.background = configured ? '#4ade80' : '#f87171';
+            waBotLabel.textContent = configured ? 'WhatsApp Connected' : 'WhatsApp Not Connected';
+            waBotDetail.textContent = configured ? 'Orders will be sent to owner WhatsApp automatically.' : 'Open QR Scanner to connect WhatsApp. Scan QR code with owner phone.';
+          }
+        }).catch(function(){
+          waBotDot.style.background = '#fbbf24';
+          waBotLabel.textContent = 'Cannot check status';
+          waBotDetail.textContent = 'Server reachable nahi hai.';
+        });
+      }
+      (el = $('waOwner')) && fetch('/api/orders/config').then(function(r){return r.json()}).then(function(d){
+        /* owner number is from site-data, just show current */
       }).catch(function(){});
       (el = $('waSaveBtn')).onclick = function () {
-        var cfg = {
-          enabled: $('waEnabled').value === 'true',
-          token: $('waToken').value.trim(),
-          phoneId: $('waPhoneId').value.trim(),
-          owner: $('waOwner').value.trim()
-        };
-        if (!cfg.token || !cfg.phoneId) { $('waStatus').innerHTML = '<span style="color:#f87171">Token and Phone ID are required!</span>'; return; }
-        fetch('/api/whatsapp-config', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cfg)
-        }).then(function(r){return r.json()}).then(function(d){
-          if(d&&d.ok){ $('waStatus').innerHTML='<span style="color:#4ade80">WhatsApp config saved! Notifications will start working. &#10003;</span>'; }
-          else { $('waStatus').innerHTML='<span style="color:#f87171">Error: '+(d.error||'unknown')+'</span>'; }
-        }).catch(function(e){ $('waStatus').innerHTML='<span style="color:#f87171">Error: '+e.message+'</span>'; });
+        var owner = ($('waOwner').value || '').trim();
+        if (!owner) { $('waStatus').innerHTML = '<span style="color:#f87171">Owner number required!</span>'; return; }
+        /* Save owner number to site-data via existing API */
+        fetch('/api/site-data').then(function(r){return r.json()}).then(function(d){
+          if (d && d.ok && d.content) {
+            var sd = d.content;
+            if (sd.contact) { sd.contact.whatsapp = owner; sd.contact.phone = owner; }
+            return fetch('/api/site-data', { method: 'POST', headers: adminAuthHeaders(), body: JSON.stringify(sd) });
+          }
+        }).then(function(r){return r&&r.json?r.json():null}).then(function(d){
+          if (d && d.ok) { $('waStatus').innerHTML = '<span style="color:#4ade80">Owner number saved! &#10003;</span>'; }
+          else { $('waStatus').innerHTML = '<span style="color:#f87171">Save failed.</span>'; }
+        }).catch(function(e){ $('waStatus').innerHTML = '<span style="color:#f87171">Error: '+e.message+'</span>'; });
       };
     }
   }
