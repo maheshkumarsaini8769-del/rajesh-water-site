@@ -961,13 +961,46 @@
             if (suName) { suName.textContent = d.order.name; }
             if (suTotal) { suTotal.textContent = money(d.order.total); }
             if (suEta) { suEta.textContent = d.order.eta || '\u2014'; }
+
+            /* Build WhatsApp message with full order details */
+            var items = d.order.items || [];
+            var itemLines = items.map(function (it) { return '- ' + it.name + ' (' + it.size + ') x ' + it.qty + ' = ' + money(it.lineTotal || (it.qty * it.price)); }).join('%0A');
+            var waMsg = '*New Order ' + d.order.id + '*%0A%0A' +
+              '*Customer:* ' + (d.order.name || '') + '%0A' +
+              '*Phone:* ' + (d.order.phone || '') + '%0A' +
+              '*Address:* ' + (d.order.address || '') + '%0A' +
+              '*City:* ' + (d.order.city || '') + ' - ' + (d.order.pincode || '') + '%0A' +
+              (d.order.note ? '*Note:* ' + d.order.note + '%0A' : '') +
+              '%0A*Items:*%0A' + itemLines + '%0A%0A' +
+              '*Total:* ' + money(d.order.total) + '%0A' +
+              '*Payment:* ' + (d.order.type || 'COD');
+
+            var ownerPhone = d.ownerPhone || '';
+            var waLink = ownerPhone ? ('https://wa.me/' + ownerPhone + '?text=' + waMsg) : '';
+
+            /* Show WhatsApp button on success screen */
+            var waBtn = document.getElementById('suWaBtn');
+            if (waBtn) {
+              if (waLink) {
+                waBtn.style.display = '';
+                waBtn.onclick = function () { window.open(waLink, '_blank'); };
+              } else {
+                waBtn.style.display = 'none';
+              }
+            }
+
+            /* Auto-open WhatsApp (mobile only) */
+            if (waLink && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+              setTimeout(function () { window.open(waLink, '_blank'); }, 500);
+            }
+
             if (suWaNote) {
               suWaNote.style.display = '';
-              if (d.whatsappConfigured) {
-                suWaNote.textContent = 'Order placed! Owner ko WhatsApp notification bhej diya gaya hai. Team aapko contact karegi.';
+              if (waLink) {
+                suWaNote.textContent = 'Order placed! Neeche WhatsApp button se owner ko order details bhejo.';
                 suWaNote.style.color = '#4ade80';
               } else {
-                suWaNote.textContent = 'Order saved! Team aapko contact karegi on +91' + d.order.phone + '.';
+                suWaNote.textContent = 'Order saved! Team aapko contact karegi.';
                 suWaNote.style.color = '#fbbf24';
               }
             }
