@@ -104,7 +104,15 @@
     var a = t.closest('a');
     if (a) {
       var href = a.getAttribute('href') || '';
-      if (href.indexOf('wa.me') !== -1) { if (S['wa'] === undefined) S.wa = 0; bump('wa'); rec('wa'); return; }
+      if (href.indexOf('wa.me') !== -1) {
+        if (S['wa'] === undefined) S.wa = 0; bump('wa'); rec('wa');
+        try {
+          var page = /products\.html/.test(location.pathname) ? 'products' : 'home';
+          var prodId = (a.closest('.rw-product-card') || {}).getAttribute && a.closest('.rw-product-card').getAttribute('data-id') || '';
+          fetch('/api/track/whatsapp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: page, productId: prodId, source: 'website' }) }).catch(function () {});
+        } catch (e) {}
+        return;
+      }
       if (href.indexOf('tel:') === 0) { if (S.tel === undefined) S.tel = 0; bump('tel'); rec('tel'); return; }
     }
     var add = t.closest('.rw-add-btn');

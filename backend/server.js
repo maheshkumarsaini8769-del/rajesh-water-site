@@ -949,6 +949,75 @@ function handleAdminOrderDelete(req, res, payload) {
   send(res, 404, { ok: false, error: 'order not found' });
 }
 
+function handleDashboard(req, res) {
+  if (!db.state().on) { send(res, 200, { ok: true, mongo: false, stats: null }); return; }
+  Promise.all([db.loadOrders(), db.loadBiz(), db.loadEvents()]).then(function (parts) {
+    var ordersDoc = parts[0] || { orders: [] };
+    var bizDoc = parts[1] || { products: [], sales: [], pendingOrders: [] };
+    var events = parts[2] || [];
+    var now = Date.now();
+    var today = new Date().toISOString().slice(0, 10);
+    var weekAgo = new Date(now - 7 * 86400000).toISOString().slice(0, 10);
+    var monthStart = new Date(now - 30 * 86400000).toISOString().slice(0, 10);
+    var allOrders = ordersDoc.orders || [];
+    var sales = bizDoc.sales || [];
+    var products = bizDoc.products || [];
+    var pending = allOrders.filter(function (o) { return o.status === 'received' || o.status === 'confirmed' || o.status === 'preparing' || o.status === 'out'; });
+    var completed = allOrders.filter(function (o) { return o.status === 'completed'; });
+    var cancelled = allOrders.filter(function (o) { return o.status === 'cancelled'; });
+    var todaySales = sales.filter(function (s) { return s.date === today; });
+    var weekSales = sales.filter(function (s) { return s.date >= weekAgo; });
+    var monthSales = sales.filter(function (s) { return s.date >= monthStart; });
+    var totalRevenue = sales.reduce(function (sum, s) { return sum + (Number(s.total) || 0); }, 0);
+    var totalProfit = sales.reduce(function (sum, s) { return sum + (Number(s.profit) || 0); }, 0);
+    var whatsappClicks = events.filter(function (e) { return e.type === 'whatsapp_click'; }).length;
+    var todayWhatsapp = events.filter(function (e) { return e.type === 'whatsapp_click' && e.at && new Date(e.at).toISOString().slice(0, 10) === today; }).length;
+    var lowStock = products.filter(function (p) { return (Number(p.stockBottles) || 0) > 0 && (Number(p.stockBottles) || 0) < (Number(p.minStock) || 15); });
+    var outOfStock = products.filter(function (p) { return (Number(p.stockBottles) || 0) === 0 && (Number(p.minStock) || 15) > 0; });
+    var customers = {};
+    allOrders.forEach(function (o) { if (o.phone) customers[o.phone] = (customers[o.phone] || 0) + 1; });
+    var topProducts = {};
+    sales.forEach(function (s) { var k = s.product || s.name || 'Unknown'; topProducts[k] = (topProducts[k] || 0) + (Number(s.boxes) || 0); });
+    var topList = Object.keys(topProducts).map(function (k) { return { name: k, quantity: topProducts[k] }; }).sort(function (a, b) { return b.quantity - a.quantity; }).slice(0, 5);
+    send(res, 200, {
+      ok: true, mongo: true,
+      stats: {
+        totalOrders: allOrders.length, pendingOrders: pending.length, completedOrders: completed.length, cancelledOrders: cancelled.length,
+        totalSales: sales.length, todaySales: todaySales.length, weekSales: weekSales.length, monthSales: monthSales.length,
+        totalRevenue: totalRevenue, totalProfit: totalProfit,
+        totalCustomers: Object.keys(customers).length, totalProducts: products.length,
+        lowStock: lowStock.length, outOfStock: outOfStock.length,
+        whatsappClicks: whatsappClicks, todayWhatsapp: todayWhatsapp,
+        topProducts: topList, recentOrders: allOrders.slice(-5).reverse()
+      }
+    });
+  }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); });
+}
+
+function handleArchive(req, res, payload) {
+  var period = String(payload.period || '').slice(0, 7);
+  if (!period || !/^\d{4}-\d{2}$/.test(period)) { send(res, 400, { ok: false, error: 'period required (YYYY-MM)' }); return; }
+  if (!db.state().on) { send(res, 503, { ok: false, error: 'MongoDB not connected' }); return; }
+  db.loadArchives().then(function (existing) {
+    var list = existing || [];
+    var already = list.find(function (a) { return a.period === period; });
+    if (already) { send(res, 200, { ok: true, archive: already, existed: true }); return; }
+    return db.loadOrders().then(function (ordersDoc) {
+      return db.loadBiz().then(function (bizDoc) {
+        var allOrders = (ordersDoc && ordersDoc.orders) || [];
+        var allSales = (bizDoc && bizDoc.sales) || [];
+        var eligibleOrders = allOrders.filter(function (o) { return o.date && o.date.slice(0, 7) === period; });
+        var eligibleSales = allSales.filter(function (s) { return s.date && s.date.slice(0, 7) === period; });
+        var totalSales = eligibleSales.reduce(function (sum, s) { return sum + (Number(s.total) || 0); }, 0);
+        var archive = { period: period, status: 'completed', recordCount: eligibleSales.length + eligibleOrders.length, totalSales: totalSales, totalOrders: eligibleOrders.length, sales: eligibleSales, orders: eligibleOrders, createdAt: Date.now() };
+        return db.addArchive(archive).then(function () {
+          send(res, 200, { ok: true, archive: archive, existed: false });
+        });
+      });
+    });
+  }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); });
+}
+
 function handleApi(req, res, pathname) {
   if (req.method === 'GET' && pathname === '/api/reviews') {
     send(res, 200, readReviews());
@@ -995,6 +1064,7 @@ function handleApi(req, res, pathname) {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/biz') {
+    if (!requireAdmin(req, res)) return;
     var bb = '';
     req.on('data', function (chunk) { bb += chunk; if (bb.length > 4e6) req.destroy(); });
     req.on('end', function () {
@@ -1018,6 +1088,7 @@ writeBiz(cur);
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/site-data') {
+    if (!requireAdmin(req, res)) return;
     var sdb = '';
     req.on('data', function (chunk) { sdb += chunk; if (sdb.length > 3e6) req.destroy(); });
     req.on('end', function () {
@@ -1105,12 +1176,14 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/notifications') {
+    if (!requireAdmin(req, res)) return;
     var list = readNotifications();
     var unread = list.filter(function (n) { return !n.read; }).length;
     send(res, 200, { ok: true, notifications: list.slice(0, 100), unread: unread });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/notifications/read') {
+    if (!requireAdmin(req, res)) return;
     var nb = '';
     req.on('data', function (chunk) { nb += chunk; if (nb.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1130,6 +1203,7 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/notifications/reply') {
+    if (!requireAdmin(req, res)) return;
     var rb = '';
     req.on('data', function (chunk) { rb += chunk; if (rb.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1155,11 +1229,13 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/whatsapp-config') {
+    if (!requireAdmin(req, res)) return;
     var wa = CFG.whatsapp || {};
     send(res, 200, { ok: true, enabled: !!wa.enabled, phoneId: wa.phoneId || '', owner: wa.owner || '917742735762' });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/whatsapp-config') {
+    if (!requireAdmin(req, res)) return;
     var wcb = '';
     req.on('data', function (chunk) { wcb += chunk; if (wcb.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1185,6 +1261,12 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     readBody(req, res, function (p) { handleAdminLogin(req, res, p); });
     return true;
   }
+  if (req.method === 'POST' && pathname === '/api/admin/logout') {
+    var tok = String(req.headers['x-admin-token'] || '');
+    if (tok) ADMIN_TOKENS.delete(tok);
+    send(res, 200, { ok: true });
+    return true;
+  }
   if (req.method === 'POST' && pathname === '/api/admin/orders/status') {
     readBody(req, res, function (p) { handleAdminOrderStatus(req, res, p); });
     return true;
@@ -1195,6 +1277,52 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
   }
 if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
     readBody(req, res, function (p) { handleAdminOrderDelete(req, res, p); });
+    return true;
+  }
+  /* ---- Analytics / Event Tracking ---- */
+  if (req.method === 'POST' && pathname === '/api/track') {
+    if (!requireAdmin(req, res)) return;
+    readBody(req, res, function (p) {
+      var evt = { type: String(p.type || '').slice(0, 40), page: String(p.page || '').slice(0, 100), productId: String(p.productId || '').slice(0, 60), source: String(p.source || '').slice(0, 60), ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim().slice(0, 45), ua: String(req.headers['user-agent'] || '').slice(0, 200), at: Date.now() };
+      if (!evt.type) { send(res, 400, { ok: false, error: 'type required' }); return; }
+      if (db.state().on) { db.addEvent(evt).then(function () { send(res, 200, { ok: true }); }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); }); }
+      else { send(res, 200, { ok: true }); }
+    });
+    return true;
+  }
+  if (req.method === 'GET' && pathname === '/api/track') {
+    if (!requireAdmin(req, res)) return;
+    if (db.state().on) { db.loadEvents().then(function (events) { send(res, 200, { ok: true, events: events || [] }); }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); }); }
+    else { send(res, 200, { ok: true, events: [] }); }
+    return true;
+  }
+  /* ---- WhatsApp Click Tracking (public) ---- */
+  if (req.method === 'POST' && pathname === '/api/track/whatsapp') {
+    readBody(req, res, function (p) {
+      var evt = { type: 'whatsapp_click', page: String(p.page || '').slice(0, 100), productId: String(p.productId || '').slice(0, 60), source: String(p.source || '').slice(0, 60), ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim().slice(0, 45), ua: String(req.headers['user-agent'] || '').slice(0, 200), at: Date.now() };
+      if (db.state().on) { db.addEvent(evt).then(function () { send(res, 200, { ok: true }); }).catch(function () { send(res, 200, { ok: true }); }); }
+      else { send(res, 200, { ok: true }); }
+    });
+    return true;
+  }
+  /* ---- Archives (admin) ---- */
+  if (req.method === 'GET' && pathname === '/api/archives') {
+    if (!requireAdmin(req, res)) return;
+    if (db.state().on) { db.loadArchives().then(function (list) { send(res, 200, { ok: true, archives: list || [] }); }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); }); }
+    else { send(res, 200, { ok: true, archives: [] }); }
+    return true;
+  }
+  if (req.method === 'POST' && pathname === '/api/admin/archive') {
+    if (!requireAdmin(req, res)) return;
+    readBody(req, res, function (p) {
+      handleArchive(req, res, p);
+    });
+    return true;
+  }
+  /* ---- Dashboard Stats (admin) ---- */
+  if (req.method === 'GET' && pathname === '/api/admin/dashboard') {
+    if (!requireAdmin(req, res)) return;
+    handleDashboard(req, res);
     return true;
   }
   if (req.method === 'POST') {

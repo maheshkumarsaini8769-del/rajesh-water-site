@@ -40,7 +40,7 @@
   .wrap { display: flex; min-height: 100vh; }
 
   /* ===== Sidebar ===== */
-  .side { width: 236px; flex-shrink: 0; background: #080D16; border-right: 1px solid rgba(124,235,255,.10); display: flex; flex-direction: column; }
+  .side { width: 236px; flex-shrink: 0; background: #080D16; border-right: 1px solid rgba(124,235,255,.10); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
   .side-close { display: none; }
   .side .brand { padding: 18px 16px; border-bottom: 1px solid rgba(124,235,255,.10); display: flex; align-items: center; gap: 10px; }
   .side .brand .dot { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7CEBFF, #38D9FF 45%, #0B5C7C); box-shadow: 0 0 14px rgba(56,217,255,.45); flex-shrink: 0; }
@@ -326,7 +326,7 @@
   #sideBack { display: none; }
   @media (max-width: 760px) {
     .side {
-      display: flex; position: fixed; top: 0; left: 0; bottom: 0; width: 268px; z-index: 70;
+      display: flex; position: fixed; top: 0; left: 0; bottom: 0; width: 268px; z-index: 70; height: auto;
       transform: translateX(-105%); transition: transform .3s var(--ease); box-shadow: 0 0 30px rgba(0,0,0,.5);
     }
     .wrap.nav-open .side { transform: none; }
@@ -722,29 +722,58 @@ function loadAdminBiz() {
     if (v) backupDraft();
   }
 
-  /* ---------- login (password required) ---------- */
+  /* ---------- login (server-side auth) ---------- */
   var DEFAULT_PW = 'admin123';
   function tryUnlock() { doUnlock(); }
   function doUnlock() {
     var pw = ($('pw').value || '').trim();
-    var stored = lsGet('rw_admin_pw') || DEFAULT_PW;
-    if (pw !== stored) {
-      $('pwErr').textContent = 'Wrong passcode. Try again.';
-      $('pw').value = '';
-      $('pw').focus();
-      return;
+    if (!pw) { $('pwErr').textContent = 'Enter passcode.'; return; }
+    $('pwBtn').disabled = true;
+    $('pwBtn').textContent = 'Logging in...';
+    $('pwErr').textContent = '';
+    fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin: pw })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res && res.ok && res.token) {
+        lsSet('rw_admin_tok', res.token);
+        $('login').style.display = 'none';
+        $('app').style.display = 'flex';
+        DATA = clone(loadDefaults());
+        if (!DATA || !DATA.brand || !DATA.admin) {
+          $('pwErr').textContent = 'Site data file (data/site-data.js) did not load.';
+          return;
+        }
+        loadAdminBiz();
+        render();
+        restoreDraft();
+      } else {
+        $('pwErr').textContent = (res && res.error) || 'Wrong passcode. Try again.';
+        $('pw').value = '';
+        $('pw').focus();
+      }
+    }).catch(function () {
+      $('pwErr').textContent = 'Server unavailable. Check connection.';
+    }).finally(function () {
+      $('pwBtn').disabled = false;
+      $('pwBtn').textContent = 'Unlock';
+    });
+  }
+  function doLogout() {
+    var tok = lsGet('rw_admin_tok') || '';
+    if (tok) {
+      fetch('/api/admin/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': tok }
+      }).catch(function () {});
     }
-    ssSet('rwAdminOk', '1');
-    $('login').style.display = 'none';
-    $('app').style.display = 'flex';
-    DATA = clone(loadDefaults());
-    if (!DATA || !DATA.brand || !DATA.admin) {
-      $('pwErr').textContent = 'Site data file (data/site-data.js) did not load.';
-      return;
-    }
-    loadAdminBiz();
-    render();
-    restoreDraft();
+    lsDel('rw_admin_tok');
+    ssDel('rwAdminOk');
+    $('app').style.display = 'none';
+    $('login').style.display = '';
+    $('pw').value = '';
+    $('pwErr').textContent = '';
   }
   $('pwBtn').addEventListener('click', doUnlock);
   $('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') doUnlock(); });
@@ -764,6 +793,9 @@ function loadAdminBiz() {
   $('lockBtn').addEventListener('click', lockPanel);
 
   /* ---------- helpers ---------- */
+  function adminAuthHeaders() {
+    return { 'Content-Type': 'application/json', 'x-admin-token': lsGet('rw_admin_tok') || '' };
+  }
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -1057,7 +1089,7 @@ function loadAdminBiz() {
 
   function starRow(r) {
     var stars = '';
-    for (var si = 1; si <= 5; si++) { stars += si <= r.rating ? 'â˜…' : 'â˜†'; }
+    for (var si = 1; si <= 5; si++) { stars += si <= r.rating ? '★' : '☆'; }
     return stars;
   }
   function oneLineReview(r, buttonsHtml, idx, source) {
@@ -1092,8 +1124,8 @@ function loadAdminBiz() {
         '<div class="sub">Reviews from the site (all visitors) â€” website par turant dikhte hain. Keep = permanently circle me save karo (site data me). Delete = website se hata do.</div>';
       newReviews.forEach(function (r, i) {
         out += oneLineReview(r,
-          '<button class="btn small" data-act="keep" data-i="' + i + '">âœ“ Keep</button>' +
-          '<button class="btn small danger" data-act="rmrev" data-i="' + i + '">âœ• Delete</button>');
+          '<button class="btn small" data-act="keep" data-i="' + i + '">✓ Keep</button>' +
+          '<button class="btn small danger" data-act="rmrev" data-i="' + i + '">✗ Delete</button>');
       });
       out += '</div>';
     } else {
@@ -1139,7 +1171,7 @@ function loadAdminBiz() {
     }).join('');
     return '' +
       '<div class="card"><h3>Product Catalog <span class="pill ok">' + DATA.products.length + ' items</span></h3>' +
-      '<div class="sub">Price in â‚¹ per bottle. boxSize = bottles per box. minBoxes = minimum cartons for delivery. Max boxes limits how many cartons a customer can pick (default 40). Featured items appear on the home page. Image = file path under /images (e.g. <span class="kbd">../images/bisleri.webp</span>).</div>' +
+      '<div class="sub">Price in ₹ per bottle. boxSize = bottles per box. minBoxes = minimum cartons for delivery. Max boxes limits how many cartons a customer can pick (default 40). Featured items appear on the home page. Image = file path under /images (e.g. <span class="kbd">../images/bisleri.webp</span>).</div>' +
       '<div style="overflow-x:auto"><table class="ptable"><thead><tr>' +
       '<th></th><th>Image</th><th>Name</th><th>Label</th><th>Size</th><th>Category</th><th>Price</th><th>Per box</th><th>Min boxes</th><th>Max boxes</th><th>Badge</th><th>Featured</th><th></th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
@@ -1234,7 +1266,7 @@ function loadAdminBiz() {
               var r = nrList[i];
               var exists = DATA.reviews.carousel.some(function (x) { return x.name === r.name && x.text === r.text; });
               if (!exists) {
-                DATA.reviews.carousel.push({ name: r.name, rating: r.rating, text: r.text, meta: (r.product || 'Website review') + ' Â· ' + (r.date || 'New') });
+                DATA.reviews.carousel.push({ name: r.name, rating: r.rating, text: r.text, meta: (r.product || 'Website review') + ' · ' + (r.date || 'New') });
                 setDirty(true);
               }
             }
@@ -1434,7 +1466,7 @@ function loadAdminBiz() {
     a.href = URL.createObjectURL(blob);
     a.download = 'site-data-backup.js';
     a.click();
-    toast('Backup file downloaded. âœ“');
+    toast('Backup file downloaded. ✓');
   }
   function doImport() {
     var inp = document.createElement('input');
@@ -1453,7 +1485,7 @@ function loadAdminBiz() {
           DATA = parsed;
           setDirty(true);
           render();
-          toast('Imported ' + f.name + '. Press Save to write it to disk. âœ“');
+          toast('Imported ' + f.name + '. Press Save to write it to disk. ✓');
         } catch (e) {
           toast('That file does not look like a site-data.js file.', true);
         }

@@ -120,6 +120,33 @@ var notifSchema = new mongoose.Schema({
 var notifDocSchema = new mongoose.Schema({ _id: String, list: { type: [notifSchema], default: [] } }, { strict: false });
 var NotifDoc = mongoose.model('NotifDoc', notifDocSchema);
 
+/* ---------- Analytics / Event Tracking ---------- */
+var eventSchema = new mongoose.Schema({
+  type: { type: String, required: true, index: true },
+  page: { type: String, default: '' },
+  productId: { type: String, default: '' },
+  source: { type: String, default: '' },
+  ip: { type: String, default: '' },
+  ua: { type: String, default: '' },
+  at: { type: Number, default: Date.now }
+}, { strict: false, _id: false });
+var eventDocSchema = new mongoose.Schema({ _id: String, events: { type: [eventSchema], default: [] } }, { strict: false });
+var EventDoc = mongoose.model('EventDoc', eventDocSchema);
+
+/* ---------- Archive ---------- */
+var archiveSchema = new mongoose.Schema({
+  period: { type: String, required: true },
+  status: { type: String, default: 'completed' },
+  recordCount: { type: Number, default: 0 },
+  totalSales: { type: Number, default: 0 },
+  totalOrders: { type: Number, default: 0 },
+  sales: { type: Array, default: [] },
+  orders: { type: Array, default: [] },
+  createdAt: { type: Number, default: Date.now }
+}, { strict: false, _id: false });
+var archiveDocSchema = new mongoose.Schema({ _id: String, archives: { type: [archiveSchema], default: [] } }, { strict: false });
+var ArchiveDoc = mongoose.model('ArchiveDoc', archiveDocSchema);
+
 async function saveTcState(obj) {
   await upsert(TcStateDoc, 'tcstate', { _id: 'tcstate', data: obj || {} });
   markOk();
@@ -136,6 +163,42 @@ async function saveNotifications(list) {
 async function loadNotifications() {
   var d = await getDoc(NotifDoc, 'notifications');
   return (d && d.list) || null;
+}
+
+/* ---------- Analytics Events ---------- */
+async function saveEvents(list) {
+  await upsert(EventDoc, 'events', { _id: 'events', events: list || [] });
+  markOk();
+}
+async function loadEvents() {
+  var d = await getDoc(EventDoc, 'events');
+  return (d && d.events) || null;
+}
+async function addEvent(evt) {
+  var d = await getDoc(EventDoc, 'events');
+  var events = (d && d.events) || [];
+  events.unshift(evt);
+  if (events.length > 5000) events = events.slice(0, 5000);
+  await upsert(EventDoc, 'events', { _id: 'events', events: events });
+  markOk();
+}
+
+/* ---------- Archives ---------- */
+async function saveArchives(list) {
+  await upsert(ArchiveDoc, 'archives', { _id: 'archives', archives: list || [] });
+  markOk();
+}
+async function loadArchives() {
+  var d = await getDoc(ArchiveDoc, 'archives');
+  return (d && d.archives) || null;
+}
+async function addArchive(archive) {
+  var d = await getDoc(ArchiveDoc, 'archives');
+  var list = (d && d.archives) || [];
+  var existing = list.findIndex(function (a) { return a.period === archive.period; });
+  if (existing >= 0) { list[existing] = archive; } else { list.push(archive); }
+  await upsert(ArchiveDoc, 'archives', { _id: 'archives', archives: list });
+  markOk();
 }
 
 /* ---------- Validation helpers (throw with a readable message) ---------- */
@@ -275,5 +338,7 @@ module.exports = {
   saveReviews: saveReviews, loadReviews: loadReviews,
   saveSiteData: saveSiteData, loadSiteData: loadSiteData,
   saveTcState: saveTcState, loadTcState: loadTcState,
-  saveNotifications: saveNotifications, loadNotifications: loadNotifications
+  saveNotifications: saveNotifications, loadNotifications: loadNotifications,
+  saveEvents: saveEvents, loadEvents: loadEvents, addEvent: addEvent,
+  saveArchives: saveArchives, loadArchives: loadArchives, addArchive: addArchive
 };

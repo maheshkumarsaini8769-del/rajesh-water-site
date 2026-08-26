@@ -41,7 +41,7 @@ window.SITE_DATA = {
   "featured": {
     "title": "Featured Boxes",
     "sub": "Our bestselling water and cold drink boxes, ready for home, office and events. Minimum order of 48 bottles required for delivery.",
-    "viewAll": "View All Products â†’"
+    "viewAll": "View All Products →"
   },
   "deliver": {
     "eyebrow": "What We Deliver",
@@ -93,10 +93,10 @@ window.SITE_DATA = {
     "sub": "Questions about an order, delivery or bulk supply? Reach us directly.",
     "c1t": "WhatsApp Support",
     "c1d": "Fastest way to reach us â€” order help, delivery status or queries.",
-    "c1l": "Chat on WhatsApp â†’",
+    "c1l": "Chat on WhatsApp →",
     "c2t": "Call Us",
     "c2d": "Speak to our supply team directly for urgent requirements.",
-    "c2l": "+91 77427 35762 â†’",
+    "c2l": "+91 77427 35762 →",
     "c3t": "Delivery Hours",
     "c3d": "Every day, 8:00 AM â€“ 8:00 PM. Bulk orders can schedule earlier slots.",
     "c3l": "7 days a week"
@@ -151,31 +151,31 @@ window.SITE_DATA = {
         "name": "Aman Sharma",
         "rating": 5,
         "text": "Regular monthly supply, always on time and the bottles are sealed and clean.",
-        "meta": "500 ML Box Â· WhatsApp order"
+        "meta": "500 ML Box · WhatsApp order"
       },
       {
         "name": "Priya Verma",
         "rating": 5,
         "text": "Ordered for a family function â€” the 2 LITRE boxes worked perfectly for 150+ guests.",
-        "meta": "2 LITRE Box Â· Family event"
+        "meta": "2 LITRE Box · Family event"
       },
       {
         "name": "Hotel Rajput Palace",
         "rating": 4,
         "text": "Consistent bulk delivery for our restaurant. Sturdy packaging that stores well.",
-        "meta": "Bulk Supply Â· Weekly"
+        "meta": "Bulk Supply · Weekly"
       },
       {
         "name": "Rohit Mehta",
         "rating": 5,
         "text": "Messaged on WhatsApp in the morning, boxes reached by afternoon. Smooth and quick.",
-        "meta": "1 LITRE Box Â· Same day"
+        "meta": "1 LITRE Box · Same day"
       },
       {
         "name": "Sneha Kulkarni",
         "rating": 4,
         "text": "Cold drink boxes for our office pantry at a fair price. Will order again next month.",
-        "meta": "Cold Drinks Â· Office"
+        "meta": "Cold Drinks · Office"
       }
     ]
   },
