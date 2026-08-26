@@ -164,9 +164,9 @@ function writeNotifications(list) {
   try { fs.writeFileSync(NOTIF_FILE, JSON.stringify(list, null, 2)); } catch (e) {}
   if (db.state().on) db.saveNotifications(list).catch(function (err) { db.markError('notifications', err); });
 }
-function pushNotification(type, orderId, title, body) {
+function pushNotification(type, orderId, title, body, phone) {
   var list = readNotifications();
-  var n = { id: 'n' + Date.now() + Math.floor(Math.random() * 1000), type: type, orderId: orderId, title: title, body: body, read: false, at: Date.now() };
+  var n = { id: 'n' + Date.now() + Math.floor(Math.random() * 1000), type: type, orderId: orderId, title: title, body: body, phone: phone || '', read: false, at: Date.now() };
   list.unshift(n);
   if (list.length > 200) list = list.slice(0, 200);
   writeNotifications(list);
@@ -709,7 +709,7 @@ async function handleOrderCreate(req, res, payload) {
   if (nonce) { NONCES.add(nonce); if (NONCES.size > 5000) NONCES.clear(); }
 writeOrders(d);
   var itemSummary = items.map(function (it) { return it.name + ' ' + it.size + ' x' + it.qty; }).join(', ');
-  pushNotification('order', order.id, 'New Order #' + order.id, name + ' — ₹' + total + ' — ' + itemSummary + ' — ' + city);
+  pushNotification('order', order.id, 'New Order #' + order.id, name + ' — ₹' + total + ' — ' + itemSummary + ' — ' + city, phone);
   notifyOwnerWhatsApp(order);
   send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.whatsapp || {}).enabled && (CFG.whatsapp || {}).token && (CFG.whatsapp || {}).phoneId && (CFG.whatsapp || {}).owner) });
 }
@@ -1126,6 +1126,31 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
       writeNotifications(list);
       var unread = list.filter(function (n) { return !n.read; }).length;
       send(res, 200, { ok: true, unread: unread });
+    });
+    return true;
+  }
+  if (req.method === 'POST' && pathname === '/api/notifications/reply') {
+    var rb = '';
+    req.on('data', function (chunk) { rb += chunk; if (rb.length > 1e6) req.destroy(); });
+    req.on('end', function () {
+      var payload = {};
+      try { payload = JSON.parse(rb || '{}'); } catch (e) {}
+      var phone = String(payload.phone || '').replace(/\D/g, '');
+      var message = String(payload.message || '').trim();
+      if (!phone || !message) { send(res, 400, { ok: false, error: 'phone and message required' }); return; }
+      if (!/^[6-9]\d{9}$/.test(phone)) { send(res, 400, { ok: false, error: 'invalid phone' }); return; }
+      var wa = CFG.whatsapp || {};
+      var waBot = CFG.waBot || {};
+      var sent = false;
+      if (waBot.enabled) {
+        var http = require('http');
+        var postData = JSON.stringify({ to: '91' + phone, text: message });
+        var req2 = http.request({ hostname: '127.0.0.1', port: waBot.port || 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) } }, function (res2) { sent = true; });
+        req2.on('error', function () {});
+        req2.write(postData);
+        req2.end();
+      }
+      send(res, 200, { ok: true, sent: sent });
     });
     return true;
   }

@@ -838,7 +838,7 @@
     var topP = null, topB = 0;
     S.sales.forEach(function (r) {
       if (r.status === 'cancelled' || r.date < d7) return;
-      var p = matchProduct(r.productId);
+      var p = productById(r.productId);
       var b = num(r.boxes) * (p ? boxBottles(p) : 1) + num(r.bottles);
       if (b > topB) { topB = b; topP = p; }
     });
@@ -1028,7 +1028,7 @@
   function rCash() {
     var html = '<div class="card"><h3>Cash Sale Entry</h3><p class="sub">Manual sale — customer didn\u2019t order via the website. Stock deducts immediately.</p>' +
       '<div class="grid">' +
-      '<div class="field full"><label>Product <b>*</b></label><select id="csProd">' + selectProducts() + '</select></div>' +
+      '<div class="field full"><label>Product <b>*</b></label><div class="combo-wrap"><input type="text" id="csProdInput" placeholder="Type to search product..." autocomplete="off"><div class="combo-dropdown" id="csProdDropdown" style="display:none"></div><input type="hidden" id="csProd"></div></div>' +
       '<div class="field"><label>Boxes</label><input type="number" id="csBoxes" min="0" value="0"></div>' +
       '<div class="field"><label>Loose bottles</label><input type="number" id="csBottles" min="0" value="0"></div>' +
       '<div class="field"><label>Selling price per box (₹)</label><input type="number" id="csPrice" min="0" value="0"></div>' +
@@ -2249,9 +2249,34 @@
       };
     }
     if (tab === 'biz-cash') {
-      var csSel = $('csProd');
+      var csInput = $('csProdInput');
+      var csHidden = $('csProd');
+      var csDropdown = $('csProdDropdown');
+      function renderComboOptions(filter) {
+        var f = norm(filter || '');
+        var html = '';
+        S.products.forEach(function (p) {
+          var label = p.name + ' ' + p.size;
+          if (f && norm(label).indexOf(f) === -1) return;
+          html += '<div class="combo-item" data-pid="' + p.id + '">' + esc(label) + ' — ₹' + p.price + '/box</div>';
+        });
+        if (!html) html = '<div class="combo-item" style="color:#5a6b6e">No products found</div>';
+        csDropdown.innerHTML = html;
+      }
+      csInput.addEventListener('focus', function () { renderComboOptions(csInput.value); csDropdown.style.display = 'block'; });
+      csInput.addEventListener('input', function () { renderComboOptions(csInput.value); csDropdown.style.display = 'block'; csHidden.value = ''; });
+      csDropdown.addEventListener('click', function (e) {
+        var item = e.target.closest('.combo-item');
+        if (!item) return;
+        var pid = item.getAttribute('data-pid');
+        if (!pid) return;
+        var p = productById(pid);
+        if (p) { csInput.value = p.name + ' ' + p.size; csHidden.value = pid; csCalc(); }
+        csDropdown.style.display = 'none';
+      });
+      document.addEventListener('click', function (e) { if (!e.target.closest('.combo-wrap')) csDropdown.style.display = 'none'; });
       function csCalc() {
-        var p = productById(csSel.value);
+        var p = productById(csHidden.value);
         var boxes = num($('csBoxes').value), bottles = num($('csBottles').value);
         if (p) {
           $('csPrice').value = p.price;
@@ -2266,11 +2291,11 @@
           $('csAmt').textContent = 'Total: ' + money(total);
         } else { $('csStockLine').textContent = ''; $('csCostLine').textContent = 'Select a product.'; $('csAmt').textContent = 'Total: ₹0'; }
       }
-      csSel.addEventListener('change', csCalc);
+      csInput.addEventListener('change', csCalc);
       ['csBoxes', 'csBottles', 'csPrice'].forEach(function (id) { $(id).addEventListener('input', csCalc); });
       csCalc();
       $('csSave').onclick = function () {
-        var pid = csSel.value;
+        var pid = csHidden.value;
         if (!pid) { toast('Select a product first.', true); return; }
         var res = recordSale({
           productId: pid, boxes: $('csBoxes').value, bottles: $('csBottles').value,

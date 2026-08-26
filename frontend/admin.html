@@ -394,6 +394,20 @@
   .notif-item-body { color: #8b9da0; font-size: 11px; line-height: 1.4; }
   .notif-item-time { color: #5a6b6e; font-size: 10px; margin-top: 3px; }
   .notif-empty { color: #5a6b6e; text-align: center; padding: 30px 16px; font-size: 12px; }
+  .notif-reply-btn { background: none; border: 1px solid #38D9FF; color: #38D9FF; font-size: 10px; padding: 2px 8px; border-radius: 6px; cursor: pointer; margin-left: 8px; transition: all 0.2s; }
+  .notif-reply-btn:hover { background: rgba(56,217,255,0.15); }
+  .notif-reply-box { display: flex; gap: 6px; margin-top: 6px; }
+  .notif-reply-input { flex: 1; background: #0a0f18; border: 1px solid #1e2d3d; color: #fff; border-radius: 6px; padding: 6px 10px; font-size: 11px; outline: none; }
+  .notif-reply-input:focus { border-color: #38D9FF; }
+  .notif-reply-send { background: #38D9FF; color: #000; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .notif-reply-send:hover { background: #5ce6ff; }
+  .combo-wrap { position: relative; }
+  .combo-wrap input[type="text"] { width: 100%; background: #0a0f18; border: 1px solid #1e2d3d; color: #fff; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none; }
+  .combo-wrap input[type="text"]:focus { border-color: #38D9FF; }
+  .combo-dropdown { position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: #0d1117; border: 1px solid #1e2d3d; border-radius: 0 0 6px 6px; z-index: 100; }
+  .combo-item { padding: 8px 12px; color: #bcc9ca; font-size: 12px; cursor: pointer; border-bottom: 1px solid #1e2d3d15; }
+  .combo-item:hover { background: rgba(56,217,255,0.1); color: #fff; }
+  .combo-item.selected { background: rgba(56,217,255,0.15); color: #38D9FF; }
   @keyframes notif-ring { 0%,100% { transform: rotate(0); } 20%,60% { transform: rotate(12deg); } 40%,80% { transform: rotate(-12deg); } }
   .notif-bell.has-new svg { animation: notif-ring 0.6s ease; }
 </style>
@@ -528,9 +542,14 @@ function loadAdminBiz() {
   function renderNotifs(list) {
     if (!list || !list.length) { notifList.innerHTML = '<div class="notif-empty">No notifications yet</div>'; return; }
     notifList.innerHTML = list.slice(0, 50).map(function (n) {
+      var replyBtn = n.orderId ? '<button class="notif-reply-btn" data-nid="' + n.id + '" data-phone="' + (n.phone || '') + '" type="button">Reply</button>' : '';
       return '<div class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + n.id + '" data-order="' + (n.orderId || '') + '">' +
-        '<div class="notif-item-title">' + (n.title || 'Notification') + '</div>' +
+        '<div class="notif-item-title">' + (n.title || 'Notification') + replyBtn + '</div>' +
         '<div class="notif-item-body">' + (n.body || '') + '</div>' +
+        '<div class="notif-reply-box" id="replyBox-' + n.id + '" style="display:none">' +
+          '<input type="text" class="notif-reply-input" id="replyInput-' + n.id + '" placeholder="Type reply message...">' +
+          '<button class="notif-reply-send" data-nid="' + n.id + '" data-phone="' + (n.phone || '') + '" type="button">Send</button>' +
+        '</div>' +
         '<div class="notif-item-time">' + timeAgo(n.at) + '</div>' +
         '</div>';
     }).join('');
@@ -597,6 +616,45 @@ function loadAdminBiz() {
 
   if (notifList) {
     notifList.addEventListener('click', function (e) {
+      var replyBtn = e.target.closest('.notif-reply-btn');
+      if (replyBtn) {
+        e.stopPropagation();
+        var nid = replyBtn.getAttribute('data-nid');
+        var box = document.getElementById('replyBox-' + nid);
+        if (box) { box.style.display = box.style.display === 'none' ? 'flex' : 'none'; }
+        return;
+      }
+      var sendBtn = e.target.closest('.notif-reply-send');
+      if (sendBtn) {
+        e.stopPropagation();
+        var rNid = sendBtn.getAttribute('data-nid');
+        var rPhone = sendBtn.getAttribute('data-phone');
+        var input = document.getElementById('replyInput-' + rNid);
+        var msg = (input ? input.value : '').trim();
+        if (!msg) return;
+        sendBtn.textContent = 'Sending...';
+        sendBtn.disabled = true;
+        fetch('/api/notifications/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nid: rNid, phone: rPhone, message: msg })
+        }).then(function (r) { return r.json(); }).then(function (d) {
+          if (d && d.ok) {
+            if (input) input.value = '';
+            var box2 = document.getElementById('replyBox-' + rNid);
+            if (box2) box2.style.display = 'none';
+            sendBtn.textContent = 'Sent!';
+            setTimeout(function () { sendBtn.textContent = 'Send'; sendBtn.disabled = false; }, 1500);
+          } else {
+            sendBtn.textContent = 'Failed';
+            setTimeout(function () { sendBtn.textContent = 'Send'; sendBtn.disabled = false; }, 2000);
+          }
+        }).catch(function () {
+          sendBtn.textContent = 'Error';
+          setTimeout(function () { sendBtn.textContent = 'Send'; sendBtn.disabled = false; }, 2000);
+        });
+        return;
+      }
       var item = e.target.closest('.notif-item');
       if (!item) return;
       var nid = item.getAttribute('data-nid');
