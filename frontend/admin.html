@@ -957,7 +957,7 @@ function loadAdminBiz() {
         '<div class="grid">' + field('Button 1 label', 'hero.cta1') + field('Button 2 label', 'hero.cta2') + '</div>',
         '<div class="grid">' + field('Trust point 1', 'hero.trust1') + field('Trust point 2', 'hero.trust2') + field('Trust point 3', 'hero.trust3') + '</div>'
       ]) +
-      section('Animation Images (hero spin + floating bottles)', stageImagesField()) +
+      section('Animation Images (hero spin + floating bottles)', [stageImagesField()]) +
       section('Featured Boxes (first product strip)', [
         '<div class="grid">' + field('Heading', 'featured.title') + field('Button text', 'featured.viewAll') + '</div>',
         field('Subtitle', 'featured.sub', { area: true, full: true })
