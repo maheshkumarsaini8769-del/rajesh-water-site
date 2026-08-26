@@ -776,25 +776,39 @@ async function handleMyOrders(req, res, qp) {
   send(res, 200, { ok: true, orders: mine });
 }
 
-/* ---------- Admin auth ---------- */
-var ADMIN_TOKENS = new Map(); // token -> expiry; PIN from data/server-config.json (admin.pin)
+/* ---------- Admin auth (HMAC-signed — stateless, works on Vercel) ---------- */
 function adminPin() {
   return String((CFG.admin || {}).pin || '');
 }
-function pruneAdminTokens() {
-  var now = Date.now();
-  ADMIN_TOKENS.forEach(function (exp, tok) { if (now > exp) ADMIN_TOKENS.delete(tok); });
+/* Stateless HMAC-signed token: works across Vercel serverless cold starts.
+   Format: <expiry>:<hex-hmac-sha256(pin+expiry)>
+   Secret is the admin PIN itself. */
+function signAdminToken(expiryMs) {
+  var pin = adminPin();
+  var payload = String(expiryMs);
+  var sig = crypto.createHmac('sha256', pin).update(payload).digest('hex');
+  return payload + ':' + sig;
+}
+function verifyAdminToken(tok) {
+  if (!tok || tok.indexOf(':') === -1) return false;
+  var idx = tok.lastIndexOf(':');
+  var expiry = Number(tok.substring(0, idx));
+  var sig = tok.substring(idx + 1);
+  if (!expiry || !sig) return false;
+  var pin = adminPin();
+  var expected = crypto.createHmac('sha256', pin).update(String(expiry)).digest('hex');
+  if (sig !== expected) return false;
+  return Date.now() <= expiry;
 }
 function requireAdmin(req, res) {
   var pin = adminPin();
   if (!pin) {
-    if (!CFG._adminOpenWarned) { CFG._adminOpenWarned = true; console.log('[auth] admin.pin is EMPTY in data/server-config.json â€” admin API is OPEN. Set a PIN to lock it.'); }
+    if (!CFG._adminOpenWarned) { CFG._adminOpenWarned = true; console.log('[auth] admin.pin is EMPTY — admin API is OPEN.'); }
     return true;
   }
-  pruneAdminTokens();
   var tok = String(req.headers['x-admin-token'] || '');
-  if (tok && ADMIN_TOKENS.get(tok) && Date.now() <= ADMIN_TOKENS.get(tok)) return true;
-  send(res, 401, { ok: false, error: 'Unauthorized: admin login required. POST /api/admin/login with the PIN from data/server-config.json.' });
+  if (tok && verifyAdminToken(tok)) return true;
+  send(res, 401, { ok: false, error: 'Unauthorized: admin login required.' });
   return false;
 }
 function handleAdminLogin(req, res, payload) {
@@ -804,9 +818,7 @@ function handleAdminLogin(req, res, payload) {
     return;
   }
   if (String(payload.pin || '') !== pin) { send(res, 401, { ok: false, error: 'Wrong PIN' }); return; }
-  pruneAdminTokens();
-  var tok = crypto.randomBytes(24).toString('hex');
-  ADMIN_TOKENS.set(tok, Date.now() + 12 * 3600 * 1000);
+  var tok = signAdminToken(Date.now() + 12 * 3600 * 1000);
   console.log('[auth] admin logged in.');
   send(res, 200, { ok: true, token: tok, openAccess: false });
 }
@@ -1270,7 +1282,7 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
   }
   if (req.method === 'POST' && pathname === '/api/admin/logout') {
     var tok = String(req.headers['x-admin-token'] || '');
-    if (tok) ADMIN_TOKENS.delete(tok);
+    if (tok) 
     send(res, 200, { ok: true });
     return true;
   }
