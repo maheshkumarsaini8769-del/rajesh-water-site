@@ -654,8 +654,9 @@ async function handleOrderCreate(req, res, payload) {
     verified = true;
     verificationStatus = 'Verified (Truecaller)';
   } else if (tcComplete()) {
-    send(res, 401, { ok: false, error: 'Phone verification failed. Verify your number with Truecaller and try again.' });
-    return;
+    /* Truecaller configured but user didn't verify — allow order, mark unverified */
+    verified = false;
+    verificationStatus = 'Pending Owner Confirmation';
   } else {
     /* Truecaller incomplete/pending on server — allow order unverified */
     verified = false;
