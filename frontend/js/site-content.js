@@ -4,8 +4,8 @@
    page: brand, logo, texts, contact numbers, reviews, theme.
    Load this AFTER data/site-data.js, BEFORE inline builders.
    
-   v2: Fetches live data from /api/site-data on page load so admin
-   changes appear instantly without redeploy.
+   v3: Static data instant + background fetch for live updates.
+   No blocking API call on load.
    ============================================================ */
 (function () {
   "use strict";
@@ -93,7 +93,7 @@
   function applyTexts() {
     document.querySelectorAll('[data-s]').forEach(function (el) {
       var key = el.getAttribute('data-s');
-      if (key === 'support.c2l') return; /* owned by applyContact (phone formatting) */
+      if (key === 'support.c2l') return;
       var parts = key.split('.');
       var node = D;
       for (var i = 0; i < parts.length && node; i++) node = node[parts[i]];
@@ -133,8 +133,6 @@
     else document.documentElement.classList.remove('rw-anim-off');
   }
 
-  /* Animated showcase images (hero spin + floating bottle scene) —
-     empty value = use the default delivery-*.webp baked into the page */
   function applyStage() {
     var si = (D.hero && D.hero.stageImg) || [];
     for (var i = 0; i < 5; i++) {
@@ -158,18 +156,7 @@
     }
   }
 
-  function apply() {
-    if (!window.SITE_DATA) return;
-    D = window.SITE_DATA;
-    applyProducts(D);
-    applyBrand();
-    applyContact();
-    applyTexts();
-    applyStage();
-    applyTheme();
-  }
-
-  function applyFromResponse(data) {
+  function applyAll(data) {
     if (!data || typeof data !== 'object') return;
     window.SITE_DATA = data;
     D = data;
@@ -184,20 +171,32 @@
     }
   }
 
+  function applyStatic() {
+    if (!window.SITE_DATA) return;
+    D = window.SITE_DATA;
+    applyProducts(D);
+    applyBrand();
+    applyContact();
+    applyTexts();
+    applyStage();
+    applyTheme();
+  }
+
+  /* Apply static data immediately, then fetch live in background */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      apply();
+      applyStatic();
       fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
-        if (res && res.ok && res.content) applyFromResponse(res.content);
+        if (res && res.ok && res.content) applyAll(res.content);
       }).catch(function () {});
     });
   } else {
-    apply();
+    applyStatic();
     fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
-      if (res && res.ok && res.content) applyFromResponse(res.content);
+      if (res && res.ok && res.content) applyAll(res.content);
     }).catch(function () {});
   }
 
-  window.siteApplyContent = apply;
+  window.siteApplyContent = applyStatic;
   window.siteContentApplied = true;
 })();
