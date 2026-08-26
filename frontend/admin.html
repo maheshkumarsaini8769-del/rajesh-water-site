@@ -736,8 +736,8 @@ function loadAdminBiz() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin: pw })
     }).then(function (r) { return r.json(); }).then(function (res) {
-      if (res && res.ok && res.token) {
-        lsSet('rw_admin_tok', res.token);
+      if (res && res.ok && (res.token || res.openAccess)) {
+        if (res.token) lsSet('rw_admin_tok', res.token);
         $('login').style.display = 'none';
         $('app').style.display = 'flex';
         DATA = clone(loadDefaults());
