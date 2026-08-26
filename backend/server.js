@@ -489,7 +489,8 @@ function tcComplete() {
 }
 function tcPartial() {
   var t = CFG.truecaller || {};
-  return !!(t.enabled && !t.apiKey);
+  /* If Truecaller is not enabled or not fully configured, allow orders without verification */
+  return !t.enabled || !t.apiKey;
 }
 
 async function handleTcBegin(req, res, payload) {
