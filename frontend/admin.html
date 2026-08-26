@@ -450,6 +450,7 @@
       <button data-tab="home"><span class="ic">&#9679;</span> Site Stats</button>
       <button data-tab="brand"><span class="ic">&#9733;</span> Brand &amp; Logo</button>
       <button data-tab="homepage"><span class="ic">&#9776;</span> Homepage Texts</button>
+      <button data-tab="homeimg"><span class="ic">&#128247;</span> Homepage Images</button>
       <button data-tab="reviews"><span class="ic">&#9734;</span> Reviews</button>
       <button data-tab="products"><span class="ic">&#9650;</span> Site Products</button>
       <button data-tab="contact"><span class="ic">&#9993;</span> Contact &amp; WhatsApp</button>
@@ -692,7 +693,7 @@ function loadAdminBiz() {
   var $ = function (id) { return document.getElementById(id); };
 
   var TAB_TITLES = {
-    home: 'Site Stats', brand: 'Brand & Logo', homepage: 'Homepage Texts', reviews: 'Reviews',
+    home: 'Site Stats', brand: 'Brand & Logo', homepage: 'Homepage Texts', homeimg: 'Homepage Images', reviews: 'Reviews',
     products: 'Site Products', contact: 'Contact & WhatsApp', theme: 'Colors & Motion', settings: 'Settings & Backup',
     'biz-dash': 'Dashboard', 'biz-today': "Today's Sales", 'biz-products': 'Products (Inventory Master)', 'biz-inventory': 'Inventory',
     'biz-stock': 'Add Stock', 'biz-cash': 'Cash Sales', 'biz-orders': 'Online Orders',
@@ -872,6 +873,7 @@ function loadAdminBiz() {
     if (tab === 'home') html = rHome();
     else if (tab === 'brand') html = rBrand();
     else if (tab === 'homepage') html = rHomepage();
+    else if (tab === 'homeimg') html = rHomeImg();
     else if (tab === 'reviews') html = rReviews();
     else if (tab === 'products') html = rProducts();
     else if (tab === 'contact') html = rContact();
@@ -1012,20 +1014,55 @@ function loadAdminBiz() {
   function section(title, fields) {
     return '<div class="card"><h3>' + title + '</h3>' + fields.join('') + '</div>';
   }
+  function rHomeImg() {
+    var d = DATA;
+    var out = '<div class="card"><h3>Hero Animation Images (spinning showcase + floating bottles)</h3>' +
+      '<div class="hint" style="margin-bottom:12px">Ye 5 images home page ke <b>spinning showcase</b> aur <b>floating bottle scene</b> me animate hoti hain. Upload karne par dono jagah use hongi. Save ke baad site refresh karein.</div>' +
+      stageImagesField() + '</div>';
+    out += '<div class="card"><h3>What We Deliver Section Images</h3>' +
+      '<div class="hint" style="margin-bottom:12px">Delivery section me dikhne wali bottle images. Inhe change karne se website pe turant dikhega.</div>' +
+      '<div class="grid">';
+    var deliverImgs = ['delivery-1.webp', 'delivery-2.webp', 'delivery-3.webp', 'delivery-4.webp', 'delivery-5.webp'];
+    for (var i = 0; i < deliverImgs.length; i++) {
+      out += '<div class="field"><label>Delivery image ' + (i + 1) + '</label>' +
+        '<div class="row"><span class="pill ok">Default: ' + deliverImgs[i] + '</span></div>' +
+        '<div class="hint">Current: ../images/' + deliverImgs[i] + '</div></div>';
+    }
+    out += '</div></div>';
+    out += '<div class="card"><h3>About Section - Bottle Visual</h3>' +
+      '<div class="hint" style="margin-bottom:12px">About section me dikhne wali bottle image.</div>' +
+      '<div class="field"><label>Bottle image</label>' +
+      '<div class="row"><span class="pill ok">Default: bisleri-bottle.webp</span></div>' +
+      '<div class="hint">Current: ../images/bisleri-bottle.webp</div></div></div>';
+    return out;
+  }
 
   function starRow(r) {
     var stars = '';
     for (var si = 1; si <= 5; si++) { stars += si <= r.rating ? 'â˜…' : 'â˜†'; }
     return stars;
   }
-  function oneLineReview(r, buttonsHtml) {
+  function oneLineReview(r, buttonsHtml, idx, source) {
+    var replyHtml = '';
+    if (r.reply) {
+      replyHtml = '<div style="background:rgba(56,217,255,0.08);border-left:3px solid #38D9FF;padding:8px 12px;margin-top:8px;border-radius:0 6px 6px 0;font-size:12px"><b style="color:#38D9FF">Owner reply:</b> <span style="color:var(--text)">' + esc(r.reply) + '</span></div>';
+    }
     return '<div class="card" style="background:var(--panel2);border-radius:10px;padding:12px 16px;margin-bottom:8px">' +
       '<div class="row" style="justify-content:space-between;gap:12px;flex-wrap:wrap">' +
       '<span style="flex:1;min-width:0"><b>' + esc(r.name) + '</b> <span style="color:var(--warn)">' + starRow(r) + '</span>' +
-      (r.meta || r.product ? ' <span class="hint" style="display:inline">Â· ' + esc(r.meta || r.product) + '</span>' : '') +
-      '<span class="hint" style="display:block;margin-top:3px">â€œ' + esc(r.text) + 'â€</span></span>' +
-      '<span class="row" style="flex-shrink:0">' + buttonsHtml + '</span>' +
-      '</div></div>';
+      (r.meta || r.product ? ' <span class="hint" style="display:inline">· ' + esc(r.meta || r.product) + '</span>' : '') +
+      '<span class="hint" style="display:block;margin-top:3px">"' + esc(r.text) + '"</span>' +
+      (r.date ? '<span class="hint" style="display:inline">· ' + esc(r.date) + '</span>' : '') +
+      '</span>' +
+      '<span class="row" style="flex-shrink:0;align-items:flex-start">' + buttonsHtml + '</span>' +
+      '</div>' + replyHtml +
+      '<div class="reply-box" id="replyBox-' + source + '-' + idx + '" style="display:none;margin-top:8px">' +
+        '<div style="display:flex;gap:6px">' +
+          '<input type="text" class="notif-reply-input" id="replyInput-' + source + '-' + idx + '" placeholder="Type your reply to this review..." style="flex:1;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px">' +
+          '<button class="notif-reply-send" data-source="' + source + '" data-idx="' + idx + '" style="background:#38D9FF;color:#000;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer">Send</button>' +
+        '</div>' +
+      '</div>' +
+      '</div>';
   }
   function rReviews() {
     var g = DATA.reviews.grid, c = DATA.reviews.carousel;
@@ -1048,12 +1085,18 @@ function loadAdminBiz() {
     out += '<div class="card"><h3>Review Cards</h3>' +
       '<div class="sub">Only for viewing and deleting â€” edits aap site-data.js me nahi, yahaan se nahi ho sakte.</div>';
     g.forEach(function (r, i) {
-      out += oneLineReview(r, '<button class="btn small danger" data-act="rmgrid" data-i="' + i + '">âœ• Delete</button>');
+      out += oneLineReview(r,
+        '<button class="btn small reply-toggle-btn" data-source="grid" data-idx="' + i + '">' + (r.reply ? '\u2713 Replied' : '\u21a9 Reply') + '</button>' +
+        '<button class="btn small danger" data-act="rmgrid" data-i="' + i + '">\u2716 Delete</button>',
+        i, 'grid');
     });
     out += '</div>';
     out += '<div class="card"><h3>Round Carousel (rotating circle)</h3>';
     c.forEach(function (r, i) {
-      out += oneLineReview(r, '<button class="btn small danger" data-act="rmcar" data-i="' + i + '">âœ• Delete</button>');
+      out += oneLineReview(r,
+        '<button class="btn small reply-toggle-btn" data-source="carousel" data-idx="' + i + '">' + (r.reply ? '\u2713 Replied' : '\u21a9 Reply') + '</button>' +
+        '<button class="btn small danger" data-act="rmcar" data-i="' + i + '">\u2716 Delete</button>',
+        i, 'carousel');
     });
     out += '</div>';
     return out;
@@ -1196,8 +1239,35 @@ function loadAdminBiz() {
             return;
           }
           render();
-          toast(act === 'keep' ? 'Review kept â€” added to the rotating circle. âœ“' : 'Review deleted.');
+          toast(act === 'keep' ? 'Review kept — added to the rotating circle. ✓' : 'Review deleted.');
         });
+      });
+      $('content').querySelectorAll('.reply-toggle-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var source = b.getAttribute('data-source');
+          var idx = Number(b.getAttribute('data-idx'));
+          var box = document.getElementById('replyBox-' + source + '-' + idx);
+          if (box) { box.style.display = box.style.display === 'none' ? 'block' : 'none'; }
+        });
+      });
+      $('content').querySelectorAll('.notif-reply-send[data-source]').forEach(function (b) {
+        if (!b.closest('#content .card h3') && !b.hasAttribute('data-nid')) {
+          b.addEventListener('click', function () {
+            var source = b.getAttribute('data-source');
+            var idx = Number(b.getAttribute('data-idx'));
+            var input = document.getElementById('replyInput-' + source + '-' + idx);
+            if (!input) return;
+            var text = input.value.trim();
+            if (!text) return;
+            var arr = source === 'grid' ? DATA.reviews.grid : DATA.reviews.carousel;
+            if (idx >= 0 && idx < arr.length) {
+              arr[idx].reply = text;
+              setDirty(true);
+              render();
+              toast('Reply saved! Website par dikhega. ✓');
+            }
+          });
+        }
       });
     }
     if (tab === 'brand' && (el = $('logoClear'))) {

@@ -33,6 +33,7 @@
     all.sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); });
     var top = all.slice(0, 6);
     grid.innerHTML = top.map(function (r) {
+      var replyHtml = r.reply ? '<div class="rw-review-reply"><span class="rw-review-reply-label">Owner reply:</span> ' + (r.reply || '') + '</div>' : '';
       return '<div class="rw-review-card">' +
         '<div class="rw-review-stars">' + stars(r.rating) + '</div>' +
         '<p class="rw-review-text">\u201c' + (r.text || '') + '\u201d</p>' +
@@ -40,7 +41,7 @@
           '<div class="rw-review-avatar">' + initials(r.name || '?') + '</div>' +
           '<div><div class="rw-review-name">' + (r.name || '') + '</div>' +
           '<div class="rw-review-meta">' + (r.product || '') + (r.date ? ' \u00b7 ' + r.date : '') + '</div></div>' +
-        '</div></div>';
+        '</div>' + replyHtml + '</div>';
     }).join('');
   }
 

@@ -123,10 +123,17 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
+  <link rel="preconnect" href="https://fonts.googleapis.com" media="print" onload="this.media='all'">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin media="print" onload="this.media='all'">
 
   <link rel="stylesheet" href="../css/tailwind.css">
-  <link rel="stylesheet" href="../css/style.min.css?v=53">
+  <link rel="stylesheet" href="../css/style.min.css?v=54">
+
+  <link rel="preload" href="../js/products.js" as="script">
+  <link rel="preload" href="../js/app.js?v=1" as="script">
+  <link rel="preload" href="../js/main.js?v=6" as="script">
+  <link rel="prefetch" href="products.html">
+  <link rel="prefetch" href="pages/reviews.html">
 
   <style>
     .shop-close { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: rgba(8, 22, 38, 0.5); color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: color 0.3s, border-color 0.3s; }
@@ -137,8 +144,8 @@
     .bulk-actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-top: 30px; }
   </style>
 
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     .rw-glass { background: rgba(0, 27, 68, 0.55); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid #17212E; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1); }
     .rw-input { background-color: #05070D; border: 1px solid #17212E; color: #ffffff; transition: all 0.3s ease; }
@@ -172,6 +179,8 @@
     .rw-review-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #38D9FF, #0B5C7C); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
     .rw-review-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
     .rw-review-meta { color: #6b7c7e; font-size: 0.78rem; }
+    .rw-review-reply { background: rgba(56,217,255,0.08); border-left: 3px solid #38D9FF; padding: 8px 12px; margin-top: 10px; border-radius: 0 6px 6px 0; font-size: 0.82rem; color: #bcc9ca; }
+    .rw-review-reply-label { color: #38D9FF; font-weight: 600; margin-right: 4px; }
   </style>
 
 

@@ -87,6 +87,8 @@
     .rw-review-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #38D9FF, #0B5C7C); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
     .rw-review-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
     .rw-review-meta { color: #6b7c7e; font-size: 0.78rem; }
+    .rw-review-reply { background: rgba(56,217,255,0.08); border-left: 3px solid #38D9FF; padding: 8px 12px; margin-top: 10px; border-radius: 0 6px 6px 0; font-size: 0.82rem; color: #bcc9ca; }
+    .rw-review-reply-label { color: #38D9FF; font-weight: 600; margin-right: 4px; }
     .rw-form-wrap { max-width: 600px; margin: 0 auto 40px; }
     .rw-form-card { background: rgba(0,27,68,0.45); border: 1px solid #17212E; border-radius: 16px; padding: 28px; }
     .rw-form-card label { display: block; color: #bcc9ca; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
@@ -214,6 +216,7 @@
         allData.sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
       }
       grid.innerHTML = allData.map(function (r) {
+        var replyHtml = r.reply ? '<div class="rw-review-reply"><span class="rw-review-reply-label">Owner reply:</span> ' + (r.reply || '') + '</div>' : '';
         return '<div class="rw-review-card">' +
           '<div class="rw-review-stars">' + stars(r.rating) + '</div>' +
           '<p class="rw-review-text">\u201c' + (r.text || '') + '\u201d</p>' +
@@ -221,7 +224,7 @@
             '<div class="rw-review-avatar">' + initials(r.name || '?') + '</div>' +
             '<div><div class="rw-review-name">' + (r.name || '') + '</div>' +
             '<div class="rw-review-meta">' + (r.product || '') + (r.date ? ' \u00b7 ' + r.date : '') + '</div></div>' +
-          '</div></div>';
+          '</div>' + replyHtml + '</div>';
       }).join('');
       countEl.textContent = allData.length + ' reviews';
     }

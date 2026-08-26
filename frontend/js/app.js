@@ -8,6 +8,7 @@
   var KEY = 'rajesh-water-cart';
   var BUSINESS = (window.SITE_DATA && window.SITE_DATA.contact) ? { name: (window.SITE_DATA.brand && window.SITE_DATA.brand.name) ? window.SITE_DATA.brand.name.toUpperCase() : 'RAJESH WATER', whatsapp: window.SITE_DATA.contact.whatsapp || '917742735762' } : { name: 'RAJESH WATER', whatsapp: '917742735762' };
   var MIN_ORDER = 48;
+  function esc(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s || '')); return d.innerHTML; }
   var MAX_CARTONS = 40;
   var fmt = new Intl.NumberFormat('en-IN');
 
@@ -1014,6 +1015,7 @@
     grid.innerHTML = REVIEWS.map(function (r, i) {
       var stars = '';
       for (var si = 1; si <= 5; si++) { stars += si <= r.rating ? '\u2605' : '\u2606'; }
+      var replyHtml = r.reply ? '<div class="review-reply"><span class="review-reply-label">Owner reply:</span> ' + esc(r.reply) + '</div>' : '';
       return '<article class="review-card" style="animation-delay:' + (i * 130) + 'ms">' +
         '<div class="review-stars" aria-label="' + r.rating + ' out of 5 stars">' + stars + '</div>' +
         '<p class="review-text">\u201C' + r.text + '\u201D</p>' +
@@ -1023,6 +1025,7 @@
           (r.date ? '<span class="review-meta"> \u00B7 ' + r.date + '</span>' : '') +
           (r.demo ? '<span class="review-demo-chip">Demo</span>' : '') +
         '</div>' +
+        replyHtml +
       '</article>';
     }).join('');
   }
