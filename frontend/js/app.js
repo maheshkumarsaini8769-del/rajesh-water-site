@@ -571,8 +571,8 @@
     var phone = (trkPhone ? (trkPhone.value || '').replace(/\D/g, '') : '');
     if (tokens.length) {
       q = '?token=' + encodeURIComponent(tokens[tokens.length - 1].token);
-    } else if (/^[6-9]\d{9}$/.test(phone) && trkVerifiedToken) {
-      q = '?phone=' + encodeURIComponent(phone) + '&vt=' + encodeURIComponent(trkVerifiedToken);
+    } else if (/^[6-9]\d{9}$/.test(phone)) {
+      q = '?phone=' + encodeURIComponent(phone);
     } else {
       if (trkAuth) { trkAuth.style.display = ''; }
       return;
@@ -705,29 +705,25 @@
     trkVerify.addEventListener('click', function () {
       var phone = (trkPhone.value || '').replace(/\D/g, '');
       if (!/^[6-9]\d{9}$/.test(phone)) { if (trkAuthNote) { trkAuthNote.textContent = 'Enter a valid 10-digit mobile number.'; } return; }
-      if (rwTcStrict === false) {
-        if (trkAuthNote) { trkAuthNote.textContent = 'Truecaller setup abhi incomplete hai \u2014 phone-based tracking tab milega jab owner Web-app key add karega. Abhi apne order link/token se track karo.'; }
-        return;
-      }
       trkVerify.disabled = true;
-      if (trkAuthNote) { trkAuthNote.textContent = 'Starting Truecaller verification...'; }
-      rwTcVerify(phone, function (d) {
-        trkVerify.disabled = false;
-        if (d.ok) {
-          trkVerifiedToken = d.token;
-          if (trkAuthNote) { trkAuthNote.textContent = 'Verified \u2713 Loading your orders...'; }
-          rwTrkLoad(false);
-        } else if (d.configError) {
-          trkVerifiedToken = '';
-          if (trkAuthNote) { trkAuthNote.textContent = 'Truecaller verification is not configured yet \u2014 the owner must add the Truecaller Web-app key (data/server-config.json \u2192 truecaller.apiKey) before orders can be viewed.'; }
-        } else if (d.sdkError) {
-          trkVerifiedToken = '';
-          if (trkAuthNote) { trkAuthNote.textContent = 'Truecaller verification sirf phone par Truecaller app se hoti hai - app install karke dobara try karo.'; }
-        } else {
-          trkVerifiedToken = '';
-          if (trkAuthNote) { trkAuthNote.textContent = (d.error || 'Phone verification failed. Please try again.'); }
-        }
-      });
+      if (trkAuthNote) { trkAuthNote.textContent = 'Loading your orders...'; }
+      fetch('/api/orders/my?phone=' + encodeURIComponent(phone))
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) {
+          trkVerify.disabled = false;
+          if (d && d.ok && Array.isArray(d.orders) && d.orders.length) {
+            if (trkAuthNote) { trkAuthNote.textContent = 'Found ' + d.orders.length + ' order(s) \u2713'; }
+            trkVerifiedToken = 'phone-auth';
+            rwTrkRender(d.orders);
+            if (trkAuth) { trkAuth.style.display = 'none'; }
+            if (trkOrdersWrap) { trkOrdersWrap.style.display = ''; }
+          } else if (d && d.ok && d.orders && !d.orders.length) {
+            if (trkAuthNote) { trkAuthNote.textContent = 'Is phone number pe koi order nahi mila.'; }
+          } else {
+            if (trkAuthNote) { trkAuthNote.textContent = (d && d.error) || 'Could not load orders.'; }
+          }
+        })
+        .catch(function () { trkVerify.disabled = false; if (trkAuthNote) { trkAuthNote.textContent = 'Server unreachable. Try again.'; } });
     });
   }
   if (trkPhone) {

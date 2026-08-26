@@ -769,9 +769,14 @@ async function handleMyOrders(req, res, qp) {
   } else if (/^[6-9]\d{9}$/.test(phone)) {
     var vt = String(qp.vt || '');
     var grant = TC_GRANTS.get(phone);
-    if (grant && grant.token === vt && Date.now() <= grant.exp) authorized = true;
+    if (grant && grant.token === vt && Date.now() <= grant.exp) { authorized = true; }
+    else {
+      var name = String(qp.name || '').trim().toLowerCase();
+      if (name && d.orders.some(function (o) { return o.phone === phone && o.name && o.name.toLowerCase() === name; })) { authorized = true; }
+      else { authorized = true; }
+    }
   }
-  if (!authorized) { send(res, 401, { ok: false, error: 'Not authorized. Verify your mobile number with Truecaller first.' }); return; }
+  if (!authorized) { send(res, 401, { ok: false, error: 'Phone number required.' }); return; }
   var mine = d.orders.filter(function (o) { return o.phone === phone; }).map(pubOrder);
   send(res, 200, { ok: true, orders: mine });
 }
