@@ -962,17 +962,12 @@
             if (suTotal) { suTotal.textContent = money(d.order.total); }
             if (suEta) { suEta.textContent = d.order.eta || '\u2014'; }
             if (suWaNote) {
-              if (d.whatsappSent) {
-                suWaNote.style.display = '';
-                suWaNote.textContent = 'Order placed! Owner ko WhatsApp notification gaya hai. Team aapko contact karegi.';
+              suWaNote.style.display = '';
+              if (d.whatsappConfigured) {
+                suWaNote.textContent = 'Order placed! Owner ko WhatsApp notification bhej diya gaya hai. Team aapko contact karegi.';
                 suWaNote.style.color = '#4ade80';
-              } else if (d.whatsappConfigured) {
-                suWaNote.style.display = '';
-                suWaNote.textContent = 'Order placed! WhatsApp bhejne mein dikkat aayi, lekin order save ho gaya hai. Team aapko contact karegi.';
-                suWaNote.style.color = '#fbbf24';
               } else {
-                suWaNote.style.display = '';
-                suWaNote.textContent = 'Order saved! WhatsApp abhi available nahi hai. Team aapko contact karegi on +91' + d.order.phone + '.';
+                suWaNote.textContent = 'Order saved! Team aapko contact karegi on +91' + d.order.phone + '.';
                 suWaNote.style.color = '#fbbf24';
               }
             }

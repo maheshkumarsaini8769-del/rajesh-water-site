@@ -715,8 +715,8 @@ async function handleOrderCreate(req, res, payload) {
 writeOrders(d);
   var itemSummary = items.map(function (it) { return it.name + ' ' + it.size + ' x' + it.qty; }).join(', ');
   pushNotification('order', order.id, 'New Order #' + order.id, name + ' \u2014 \u20B9' + total + ' \u2014 ' + itemSummary + ' \u2014 ' + city, phone);
-  var waSent = await notifyOwnerWhatsApp(order);
-  send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.waBot || {}).enabled && (CFG.waBot || {}).owner), whatsappSent: waSent });
+  send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.waBot || {}).enabled && (CFG.waBot || {}).owner) });
+  notifyOwnerWhatsApp(order).then(function (ok) { if (ok) console.log('[order] WA sent for ' + order.id); else console.log('[order] WA failed for ' + order.id); }).catch(function () {});
 }
 
 async function handleOrderComplete(req, res, payload) {
