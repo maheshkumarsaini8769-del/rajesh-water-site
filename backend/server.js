@@ -411,7 +411,7 @@ req.on('error', function (e) { o.notified = false; o.notifyError = 'WA_NETWORK_E
 }
 
 /* Owner WhatsApp notification via the local wa-bot (node wa-bot.js).
-   No Cloud API — only wa-bot tunnel. Token-free, no Meta setup needed. */
+   Returns a promise — resolves true/false. */
 function persistWa(o) {
   var d = readOrders();
   var t = null;
@@ -419,37 +419,43 @@ function persistWa(o) {
   if (t) { t.notified = o.notified; t.notifyError = o.notifyError; writeOrders(d); }
 }
 function notifyOwnerWhatsApp(o, customText) {
-  var wb = CFG.waBot || {};
-  if (wb.enabled && wb.owner) {
-    var payload = JSON.stringify({ to: wb.owner, text: customText || makeWaMessage(o) });
-    var host = wb.host || 'localhost';
-    var port = host === 'localhost' ? (Number(wb.port) || 3001) : 443;
-    var useHttps = host !== 'localhost';
-    var reqFn = useHttps ? https.request : http.request;
-    var reqOpts = useHttps
-      ? { hostname: host, port: 443, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } }
-      : { host: 'localhost', port: Number(wb.port) || 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } };
-    var req = reqFn(reqOpts, function (r) {
-      var chunks = '';
-      r.on('data', function (c) { chunks += c; });
-      r.on('end', function () {
-        var okB = r.statusCode >= 200 && r.statusCode < 300;
-        o.notified = okB;
-        o.notifyError = okB ? null : 'WA_BOT_HTTP_' + r.statusCode;
-        if (!okB) console.log('[wa] bot returned ' + r.statusCode + ': ' + chunks.slice(0, 160));
-        persistWa(o);
+  return new Promise(function (resolve) {
+    var wb = CFG.waBot || {};
+    if (wb.enabled && wb.owner) {
+      var payload = JSON.stringify({ to: wb.owner, text: customText || makeWaMessage(o) });
+      var host = wb.host || 'localhost';
+      var port = host === 'localhost' ? (Number(wb.port) || 3001) : 443;
+      var useHttps = host !== 'localhost';
+      var reqFn = useHttps ? https.request : http.request;
+      var reqOpts = useHttps
+        ? { hostname: host, port: 443, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } }
+        : { host: 'localhost', port: Number(wb.port) || 3001, path: '/send', method: 'POST', headers: { 'Content-Type': 'application/json' } };
+      var req = reqFn(reqOpts, function (r) {
+        var chunks = '';
+        r.on('data', function (c) { chunks += c; });
+        r.on('end', function () {
+          var okB = r.statusCode >= 200 && r.statusCode < 300;
+          o.notified = okB;
+          o.notifyError = okB ? null : 'WA_BOT_HTTP_' + r.statusCode;
+          if (!okB) console.log('[wa] bot returned ' + r.statusCode + ': ' + chunks.slice(0, 160));
+          persistWa(o);
+          resolve(okB);
+        });
       });
-    });
-    req.on('error', function (e) {
-      o.notified = false; o.notifyError = 'WA_BOT_OFFLINE';
-      console.log('[wa] owner bot offline (' + e.message + ') - order ' + o.id + ' ka message nahi gaya. Bot start rakho: node wa-bot.js');
-      persistWa(o);
-    });
-    req.end(payload);
-    return;
-  }
-  o.notified = false; o.notifyError = 'NO_OWNER_WA_CHANNEL';
-  console.log('[wa] wa-bot not configured (waBot.owner set karo data/server-config.json me)');
+      req.on('error', function (e) {
+        o.notified = false; o.notifyError = 'WA_BOT_OFFLINE';
+        console.log('[wa] owner bot offline (' + e.message + ') - order ' + o.id + ' ka message nahi gaya.');
+        persistWa(o);
+        resolve(false);
+      });
+      req.setTimeout(5000, function () { req.destroy(); o.notified = false; o.notifyError = 'WA_BOT_TIMEOUT'; persistWa(o); resolve(false); });
+      req.end(payload);
+    } else {
+      o.notified = false; o.notifyError = 'NO_OWNER_WA_CHANNEL';
+      console.log('[wa] wa-bot not configured');
+      resolve(false);
+    }
+  });
 }
 
 function readBody(req, res, cb, max) {
@@ -708,9 +714,9 @@ async function handleOrderCreate(req, res, payload) {
   if (nonce) { NONCES.add(nonce); if (NONCES.size > 5000) NONCES.clear(); }
 writeOrders(d);
   var itemSummary = items.map(function (it) { return it.name + ' ' + it.size + ' x' + it.qty; }).join(', ');
-  pushNotification('order', order.id, 'New Order #' + order.id, name + ' — ₹' + total + ' — ' + itemSummary + ' — ' + city, phone);
-  notifyOwnerWhatsApp(order);
-  send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.waBot || {}).enabled && (CFG.waBot || {}).owner) });
+  pushNotification('order', order.id, 'New Order #' + order.id, name + ' \u2014 \u20B9' + total + ' \u2014 ' + itemSummary + ' \u2014 ' + city, phone);
+  var waSent = await notifyOwnerWhatsApp(order);
+  send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.waBot || {}).enabled && (CFG.waBot || {}).owner), whatsappSent: waSent });
 }
 
 async function handleOrderComplete(req, res, payload) {

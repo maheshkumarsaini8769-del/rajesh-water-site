@@ -1508,7 +1508,7 @@
     if (ordWatchTimer) return;
     primeAlertGestures();
     ordWatchTick();
-    ordWatchTimer = setInterval(ordWatchTick, 8000);
+    ordWatchTimer = setInterval(ordWatchTick, 3000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) ordWatchTick(); });
   }
 
