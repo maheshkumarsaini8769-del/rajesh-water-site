@@ -1016,24 +1016,42 @@ function loadAdminBiz() {
   }
   function rHomeImg() {
     var d = DATA;
-    var out = '<div class="card"><h3>Hero Animation Images (spinning showcase + floating bottles)</h3>' +
-      '<div class="hint" style="margin-bottom:12px">Ye 5 images home page ke <b>spinning showcase</b> aur <b>floating bottle scene</b> me animate hoti hain. Upload karne par dono jagah use hongi. Save ke baad site refresh karein.</div>' +
-      stageImagesField() + '</div>';
-    out += '<div class="card"><h3>What We Deliver Section Images</h3>' +
-      '<div class="hint" style="margin-bottom:12px">Delivery section me dikhne wali bottle images. Inhe change karne se website pe turant dikhega.</div>' +
-      '<div class="grid">';
-    var deliverImgs = ['delivery-1.webp', 'delivery-2.webp', 'delivery-3.webp', 'delivery-4.webp', 'delivery-5.webp'];
-    for (var i = 0; i < deliverImgs.length; i++) {
-      out += '<div class="field"><label>Delivery image ' + (i + 1) + '</label>' +
-        '<div class="row"><span class="pill ok">Default: ' + deliverImgs[i] + '</span></div>' +
-        '<div class="hint">Current: ../images/' + deliverImgs[i] + '</div></div>';
+    var heroImgs = (d.hero && d.hero.stageImg) || [];
+    var delImgs = (d.hero && d.hero.deliverImg) || [];
+    var aboutImg = (d.about && d.about.bottleImg) || '';
+    var defaults = ['delivery-1.webp', 'delivery-2.webp', 'delivery-3.webp', 'delivery-4.webp', 'delivery-5.webp'];
+
+    var out = '<div class="card"><h3>Hero Spinning Showcase (top carousel)</h3>' +
+      '<div class="hint" style="margin-bottom:12px">Ye 5 images hero section ke <b>spinning carousel</b> me dikhti hain. Upload karein, Save karein, site refresh karein.</div><div class="grid">';
+    for (var i = 0; i < 5; i++) {
+      var v = heroImgs[i] || '';
+      out += '<div class="field"><label>Hero image ' + (i + 1) + '</label>' +
+        '<div class="row">' + (v ? '<img class="img-thumb on" src="' + esc(v) + '" alt="hero ' + (i + 1) + '">' : '<img class="img-thumb" src="../images/' + defaults[i] + '" alt="default ' + (i + 1) + '" style="opacity:0.5">') + '</div>' +
+        '<input type="file" accept="image/*" data-file="hero.stageImg.' + i + '">' +
+        '<button type="button" class="btn ghost small" data-clear="hero.stageImg.' + i + '"' + (v ? '' : ' disabled') + '>Use default</button>' +
+        '</div>';
     }
     out += '</div></div>';
+
+    out += '<div class="card"><h3>What We Deliver Section (bottle scene)</h3>' +
+      '<div class="hint" style="margin-bottom:12px">Delivery section me dikhne wali 5 bottle images. Upload karne pe website pe change ho jayengi.</div><div class="grid">';
+    for (var i = 0; i < 5; i++) {
+      var v = delImgs[i] || '';
+      out += '<div class="field"><label>Deliver image ' + (i + 1) + '</label>' +
+        '<div class="row">' + (v ? '<img class="img-thumb on" src="' + esc(v) + '" alt="deliver ' + (i + 1) + '">' : '<img class="img-thumb" src="../images/' + defaults[i] + '" alt="default ' + (i + 1) + '" style="opacity:0.5">') + '</div>' +
+        '<input type="file" accept="image/*" data-file="hero.deliverImg.' + i + '">' +
+        '<button type="button" class="btn ghost small" data-clear="hero.deliverImg.' + i + '"' + (v ? '' : ' disabled') + '>Use default</button>' +
+        '</div>';
+    }
+    out += '</div></div>';
+
     out += '<div class="card"><h3>About Section - Bottle Visual</h3>' +
-      '<div class="hint" style="margin-bottom:12px">About section me dikhne wali bottle image.</div>' +
+      '<div class="hint" style="margin-bottom:12px">About section me dikhne wali badi bottle image.</div>' +
       '<div class="field"><label>Bottle image</label>' +
-      '<div class="row"><span class="pill ok">Default: bisleri-bottle.webp</span></div>' +
-      '<div class="hint">Current: ../images/bisleri-bottle.webp</div></div></div>';
+      '<div class="row">' + (aboutImg ? '<img class="img-thumb on" src="' + esc(aboutImg) + '" alt="about bottle">' : '<img class="img-thumb" src="../images/bisleri-bottle.webp" alt="default bottle" style="opacity:0.5">') + '</div>' +
+      '<input type="file" accept="image/*" data-file="about.bottleImg">' +
+      '<button type="button" class="btn ghost small" data-clear="about.bottleImg"' + (aboutImg ? '' : ' disabled') + '>Use default</button>' +
+      '</div></div>';
     return out;
   }
 

@@ -35,7 +35,8 @@ window.SITE_DATA = {
     "trust1": "Fast Delivery",
     "trust2": "Quality Checked",
     "trust3": "Bulk Orders",
-    "stageImg": ["", "", "", "", ""]
+    "stageImg": ["", "", "", "", ""],
+    "deliverImg": ["", "", "", "", ""]
   },
   "featured": {
     "title": "Featured Boxes",
@@ -79,7 +80,8 @@ window.SITE_DATA = {
     "btn1": "Order on WhatsApp",
     "btn2": "View Products",
     "visualTitle": "Every drop, accounted for.",
-    "visualSub": "Min. order 4 boxes Â· Sealed boxes Â· Cold & fresh delivery"
+    "visualSub": "Min. order 4 boxes · Sealed boxes · Cold & fresh delivery",
+    "bottleImg": ""
   },
   "slot": {
     "title": "Pure. Packed. Delivered Fresh.",

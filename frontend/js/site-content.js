@@ -140,9 +140,21 @@
     for (var i = 0; i < 5; i++) {
       var src = si[i];
       if (!src) continue;
-      document.querySelectorAll('.spin[data-i="' + i + '"] img, .drink[data-i="' + i + '"] img').forEach(function (im) {
+      document.querySelectorAll('.spin[data-i="' + i + '"] img').forEach(function (im) {
         im.src = src;
       });
+    }
+    var di = (D.hero && D.hero.deliverImg) || [];
+    for (var i = 0; i < 5; i++) {
+      var src = di[i];
+      if (!src) continue;
+      document.querySelectorAll('.drink[data-i="' + i + '"] img').forEach(function (im) {
+        im.src = src;
+      });
+    }
+    var bi = (D.about && D.about.bottleImg) || '';
+    if (bi) {
+      document.querySelectorAll('.about-bottle').forEach(function (im) { im.src = bi; });
     }
   }
 
