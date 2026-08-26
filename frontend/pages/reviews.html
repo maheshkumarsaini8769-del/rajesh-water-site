@@ -72,44 +72,16 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="../css/tailwind.css">
-  <link rel="stylesheet" href="../css/style.min.css?v=53">
+  <link rel="stylesheet" href="../css/style.css?v=55">
 
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-  <style>
-    .rw-review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .rw-review-card { background: rgba(0,27,68,0.45); border: 1px solid #17212E; border-radius: 16px; padding: 24px; transition: border-color 0.3s, box-shadow 0.3s; }
-    .rw-review-card:hover { border-color: #7CEBFF; box-shadow: 0 0 16px rgba(138,243,255,0.12); }
-    .rw-review-stars { color: #facc15; font-size: 1rem; margin-bottom: 8px; }
-    .rw-review-text { color: #bcc9ca; font-size: 0.95rem; line-height: 1.6; margin-bottom: 14px; font-style: italic; }
-    .rw-review-author { display: flex; align-items: center; gap: 10px; }
-    .rw-review-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #38D9FF, #0B5C7C); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
-    .rw-review-name { color: #fff; font-weight: 600; font-size: 0.9rem; }
-    .rw-review-meta { color: #6b7c7e; font-size: 0.78rem; }
-    .rw-review-reply { background: rgba(56,217,255,0.08); border-left: 3px solid #38D9FF; padding: 8px 12px; margin-top: 10px; border-radius: 0 6px 6px 0; font-size: 0.82rem; color: #bcc9ca; }
-    .rw-review-reply-label { color: #38D9FF; font-weight: 600; margin-right: 4px; }
-    .rw-form-wrap { max-width: 600px; margin: 0 auto 40px; }
-    .rw-form-card { background: rgba(0,27,68,0.45); border: 1px solid #17212E; border-radius: 16px; padding: 28px; }
-    .rw-form-card label { display: block; color: #bcc9ca; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
-    .rw-form-card input, .rw-form-card textarea { width: 100%; background: #05070D; border: 1px solid #17212E; color: #fff; border-radius: 10px; padding: 10px 14px; font-size: 0.9rem; margin-bottom: 14px; outline: none; transition: border-color 0.3s; }
-    .rw-form-card input:focus, .rw-form-card textarea:focus { border-color: #8af3ff; }
-    .rw-stars-pick button { background: none; border: none; color: #3d494a; font-size: 1.5rem; cursor: pointer; padding: 2px 4px; transition: color 0.2s; }
-    .rw-stars-pick button.active, .rw-stars-pick button:hover { color: #facc15; }
-    .rw-submit-btn { background: #8af3ff; color: #05070D; border: none; border-radius: 10px; padding: 12px 28px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: box-shadow 0.3s, transform 0.2s; }
-    .rw-submit-btn:hover { box-shadow: 0 0 20px rgba(138,243,255,0.35); transform: translateY(-1px); }
-    .rw-form-err { color: #f87171; font-size: 0.82rem; min-height: 20px; margin-bottom: 8px; }
-    .rw-form-ok { color: #4ade80; font-size: 0.85rem; margin-bottom: 8px; }
-    .rw-sort-bar { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
-    .rw-sort-btn { background: transparent; border: 1px solid #17212E; color: #bcc9ca; border-radius: 20px; padding: 8px 18px; font-size: 0.82rem; cursor: pointer; transition: all 0.3s; }
-    .rw-sort-btn.active, .rw-sort-btn:hover { border-color: #8af3ff; color: #fff; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 </head>
 
 <body class="subpage">
-  <script src="../data/site-data.js"></script>
-  <script src="../js/site-content.js"></script>
-  <script src="../js/site-stats.js"></script>
+  <script src="../data/site-data.js" defer></script>
+  <script src="../js/site-content.js" defer></script>
+  <script src="../js/site-stats.js" defer></script>
 
   <div class="site">
 
