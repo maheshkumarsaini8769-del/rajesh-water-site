@@ -440,7 +440,7 @@
       <button data-tab="biz-inventory"><span class="ic">&#9783;</span> Inventory</button>
       <button data-tab="biz-stock"><span class="ic">&#10133;</span> Add Stock</button>
       <button data-tab="biz-cash"><span class="ic">&#10004;</span> Cash Sales</button>
-      <button data-tab="biz-orders"><span class="ic">&#9993;</span> Online Orders</button>
+      <button data-tab="biz-orders"><span class="ic">&#9993;</span> Online Orders <span class="pill err" id="ordBadge" style="display:none;font-size:10px;padding:1px 6px;margin-left:4px">0</span></button>
       <button data-tab="biz-sales"><span class="ic">&#9776;</span> Sales History</button>
       <button data-tab="biz-purchases"><span class="ic">&#8617;</span> Purchases</button>
       <button data-tab="biz-reports"><span class="ic">&#9670;</span> Profit &amp; Reports</button>
@@ -495,6 +495,7 @@
 <div id="toast"></div>
 
 <script src="data/site-data.js"></script>
+<script src="js/admin-orders.js"></script>
 <script>
 /* Defer heavy admin-biz.js until after login */
 function loadAdminBiz() {
@@ -748,6 +749,7 @@ function loadAdminBiz() {
         loadAdminBiz();
         render();
         restoreDraft();
+        startOrdBadgePoll();
       } else {
         $('pwErr').textContent = (res && res.error) || 'Wrong passcode. Try again.';
         $('pw').value = '';
@@ -779,6 +781,31 @@ function loadAdminBiz() {
   $('pw').addEventListener('keydown', function (e) { if (e.key === 'Enter') doUnlock(); });
   /* check if already logged in this session */
   if (ssGet('rwAdminOk') === '1') { doUnlock(); }
+
+  /* Orders badge polling — lightweight, runs independently of admin-biz.js */
+  var _ordBadgeTimer = null;
+  function startOrdBadgePoll() {
+    function poll() {
+      var tok = lsGet('rw_admin_tok') || '';
+      if (!tok) return;
+      fetch('/api/admin/orders', { headers: { 'x-admin-token': tok } }).then(function (r) {
+        if (r.status === 401) return;
+        return r.json();
+      }).then(function (d) {
+        if (!d || !d.ok || !Array.isArray(d.orders)) return;
+        var pending = 0;
+        d.orders.forEach(function (o) { if (o.status === 'received') pending++; });
+        var badge = $('ordBadge');
+        if (badge) {
+          if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+          else { badge.style.display = 'none'; }
+        }
+      }).catch(function () {});
+    }
+    poll();
+    clearInterval(_ordBadgeTimer);
+    _ordBadgeTimer = setInterval(poll, 15000);
+  }
 
   function lockPanel() {
     ssSet('rwAdminOk', '0');
@@ -892,6 +919,13 @@ function loadAdminBiz() {
     if (!DATA) return;
     var tab = (ssGet('rwTab') || 'biz-dash');
     var content = $('content');
+    /* Orders tab uses lightweight module — no need to wait for heavy BIZ */
+    if (tab === 'biz-orders') {
+      content.innerHTML = '<div id="ordBox"></div>';
+      if (window.RWOrders) window.RWOrders.init($('ordBox'));
+      $('tabTitle').textContent = 'Online Orders';
+      return;
+    }
     if (tab.indexOf('biz-') === 0) {
       if (window.BIZ && window.BIZ.render) {
         window.BIZ.render(tab);
