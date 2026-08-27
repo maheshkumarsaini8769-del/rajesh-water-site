@@ -410,6 +410,7 @@
   .combo-item.selected { background: rgba(56,217,255,0.15); color: #38D9FF; }
   @keyframes notif-ring { 0%,100% { transform: rotate(0); } 20%,60% { transform: rotate(12deg); } 40%,80% { transform: rotate(-12deg); } }
   .notif-bell.has-new svg { animation: notif-ring 0.6s ease; }
+  @keyframes notifSlideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
 </style>
 </head>
 <body>
@@ -560,24 +561,34 @@ function loadAdminBiz() {
 
   function playNotifSound() {
     try {
-      if (!notifAudio) {
-        notifAudio = new Audio('data:audio/wav;base64,UklGRl9vT19teleXAVlbm9tZQ=');
-        notifAudio.volume = 0.6;
-      }
       var ctx = new (window.AudioContext || window.webkitAudioContext)();
-      var osc = ctx.createOscillator();
-      var gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
+      var now = ctx.currentTime;
+      function beep(start, freq, dur, vol) {
+        var o = ctx.createOscillator();
+        var g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sine';
+        o.frequency.setValueAtTime(freq, now + start);
+        g.gain.setValueAtTime(vol, now + start);
+        g.gain.exponentialRampToValueAtTime(0.01, now + start + dur);
+        o.start(now + start);
+        o.stop(now + start + dur);
+      }
+      beep(0, 880, 0.15, 0.5);
+      beep(0.18, 1100, 0.15, 0.5);
+      beep(0.36, 1320, 0.2, 0.5);
+      beep(0.6, 1100, 0.15, 0.4);
+      beep(0.78, 880, 0.25, 0.4);
     } catch (e) {}
+  }
+
+  function showNotifToast(title, body) {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;background:linear-gradient(135deg,#0D1421,#111A29);border:1px solid rgba(56,217,255,.3);border-left:4px solid #38D9FF;border-radius:12px;padding:14px 18px;max-width:340px;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 20px rgba(56,217,255,.15);animation:notifSlideIn .35s cubic-bezier(.22,1,.36,1);font-family:inherit;cursor:pointer';
+    t.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">&#128230;</span><b style="color:#F4F8FC;font-size:13px">' + title + '</b></div><div style="color:#C2CCDA;font-size:12px;line-height:1.5">' + body + '</div><div style="color:#5E6B7D;font-size:10px;margin-top:6px">Click to view</div>';
+    t.addEventListener('click', function () { t.remove(); notifDropdown.style.display = 'block'; fetchNotifs(); });
+    document.body.appendChild(t);
+    setTimeout(function () { if (t.parentNode) { t.style.opacity = '0'; t.style.transform = 'translateX(100px)'; t.style.transition = 'all .3s ease'; setTimeout(function () { t.remove(); }, 300); } }, 6000);
   }
 
   function fetchNotifs() {
@@ -592,7 +603,13 @@ function loadAdminBiz() {
         notifBadge.style.display = 'none';
         notifBell.classList.remove('has-new');
       }
-      if (unread > lastNotifCount && lastNotifCount > 0) { playNotifSound(); }
+      if (unread > lastNotifCount) {
+        playNotifSound();
+        if (lastNotifCount >= 0 && d.notifications && d.notifications.length) {
+          var newest = d.notifications[0];
+          if (newest && !newest.read) showNotifToast(newest.title || 'New Order', newest.body || '');
+        }
+      }
       lastNotifCount = unread;
       renderNotifs(d.notifications || []);
     }).catch(function () {});
@@ -669,7 +686,7 @@ function loadAdminBiz() {
   }
 
   fetchNotifs();
-  setInterval(fetchNotifs, 5000);
+  setInterval(fetchNotifs, 3000);
   function lsDel(k) { delete memStore[k]; try { localStorage.removeItem(k); } catch (e) {} }
 
   function backupDraft() {
