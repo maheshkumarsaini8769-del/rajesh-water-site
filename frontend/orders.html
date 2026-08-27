@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajesh Water — Orders</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%2300aeef'/></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#05070D;--panel:#0D1421;--panel2:#111A29;--panel3:#151F31;--line:rgba(124,235,255,.12);--text:#F4F8FC;--soft:#C2CCDA;--muted:#7E8CA0;--acc:#38D9FF;--acc2:#0B5C7C;--ok:#35E0A1;--oksoft:rgba(53,224,161,.12);--err:#FF5C7A;--errsoft:rgba(255,92,122,.12);--warn:#FFC857;--warnsoft:rgba(255,200,87,.12);--r-sm:10px;--r-md:16px;--ease:cubic-bezier(.22,1,.36,1)}
+html{color-scheme:dark}
+body{background:var(--bg);color:var(--text);font-family:"Inter Tight","Inter",system-ui,sans-serif;font-size:14px;min-height:100vh}
+a{color:var(--acc);text-decoration:none}
+.top{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:12px;padding:14px 20px;background:rgba(5,7,13,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top h1{font-size:18px;font-weight:700;flex:1}
+.top .pill{background:var(--acc2);color:var(--acc);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.top .refresh{background:transparent;border:1px solid var(--line);color:var(--soft);padding:6px 14px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;transition:all .2s}
+.top .refresh:hover{border-color:var(--acc);color:var(--acc)}
+.top .back{background:transparent;border:1px solid var(--line);color:var(--soft);padding:6px 14px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;text-decoration:none;display:inline-block;transition:all .2s}
+.top .back:hover{border-color:var(--acc);color:var(--acc)}
+.filters{display:flex;gap:8px;padding:12px 20px;flex-wrap:wrap}
+.filters button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.filters button.on{background:var(--acc2);border-color:var(--acc);color:var(--acc)}
+.filters button:hover{border-color:var(--acc);color:var(--acc)}
+.list{padding:0 20px 40px}
+.ocard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:12px;overflow:hidden;transition:border-color .2s}
+.ocard:hover{border-color:rgba(124,235,255,.25)}
+.ocard-head{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;flex-wrap:wrap}
+.ocard-head .id{font-weight:700;font-size:15px}
+.ocard-head .badge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.badge-pending{background:var(--warnsoft);color:var(--warn)}
+.badge-confirmed{background:rgba(56,217,255,.12);color:var(--acc)}
+.badge-completed{background:var(--oksoft);color:var(--ok)}
+.badge-cancelled{background:var(--errsoft);color:var(--err)}
+.ocard-head .date{color:var(--muted);font-size:12px;flex:1}
+.ocard-head .total{font-weight:800;font-size:17px;color:var(--ok)}
+.ocard-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
+.ocard.open .ocard-body{display:block}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.detail-item label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:2px}
+.detail-item span{color:var(--text);font-size:14px}
+.detail-item a{color:var(--acc)}
+.detail-full{grid-column:1/-1}
+table.items{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+table.items th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);font-weight:600}
+table.items td{padding:6px 8px;border-bottom:1px solid rgba(124,235,255,.06)}
+table.items .money{text-align:right;font-weight:600;color:var(--ok)}
+.ocard-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.ocard-actions button{padding:8px 16px;border-radius:var(--r-sm);border:0;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.btn-confirm{background:var(--ok);color:#000}.btn-confirm:hover{opacity:.85}
+.btn-complete{background:var(--acc);color:#000}.btn-complete:hover{opacity:.85}
+.btn-cancel{background:var(--errsoft);color:var(--err);border:1px solid rgba(255,92,122,.3)}.btn-cancel:hover{background:var(--err);color:#fff}
+.btn-call{background:var(--panel3);color:var(--acc);border:1px solid var(--line)}.btn-call:hover{border-color:var(--acc)}
+.status-hist{margin-top:10px;font-size:12px;color:var(--muted)}
+.status-hist div{padding:3px 0}
+.status-hist .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot-pending{background:var(--warn)}.dot-confirmed{background:var(--acc)}.dot-completed{background:var(--ok)}.dot-cancelled{background:var(--err)}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .icon{font-size:48px;margin-bottom:12px}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+.login-box{max-width:360px;margin:80px auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:30px;text-align:center}
+.login-box h2{margin-bottom:6px}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:16px}
+.login-box input{width:100%;padding:10px 14px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:15px;text-align:center;margin-bottom:12px;outline:none}
+.login-box input:focus{border-color:var(--acc)}
+.login-box button{width:100%;padding:10px;border-radius:var(--r-sm);border:0;background:var(--acc);color:#000;font-weight:700;font-size:15px;cursor:pointer}
+.login-box .err{color:var(--err);font-size:12px;margin-top:8px;min-height:18px}
+@media(max-width:600px){.detail-grid{grid-template-columns:1fr}.ocard-head{gap:6px}.top{padding:10px 14px}.list{padding:0 10px 30px}.filters{padding:10px 14px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="/admin" class="back">&larr; Admin</a>
+  <h1>Orders</h1>
+  <span class="pill" id="countPill">0</span>
+  <button class="refresh" id="refreshBtn" type="button">&#8635; Refresh</button>
+</div>
+<div class="filters" id="filters">
+  <button class="on" data-f="all">All</button>
+  <button data-f="PENDING">Pending</button>
+  <button data-f="CONFIRMED">Confirmed</button>
+  <button data-f="COMPLETED">Completed</button>
+  <button data-f="CANCELLED">Cancelled</button>
+</div>
+<div class="list" id="list"><div class="loading">Loading orders...</div></div>
+<div class="login-box" id="loginBox" style="display:none">
+  <h2>Admin Login</h2>
+  <p>Enter admin PIN to view orders</p>
+  <input type="password" id="pinInput" placeholder="PIN" maxlength="10">
+  <button id="pinBtn" type="button">Login</button>
+  <div class="err" id="pinErr"></div>
+</div>
+<script>
+(function(){
+"use strict";
+var TOKEN_KEY='rw_admin_tok';
+var token=localStorage.getItem(TOKEN_KEY)||'';
+var orders=[];
+var filter='all';
+var listEl=document.getElementById('list');
+var countPill=document.getElementById('countPill');
+var loginBox=document.getElementById('loginBox');
+var pinInput=document.getElementById('pinInput');
+var pinBtn=document.getElementById('pinBtn');
+var pinErr=document.getElementById('pinErr');
+var refreshBtn=document.getElementById('refreshBtn');
+var SEC_TXT={received:'PENDING',confirmed:'CONFIRMED',preparing:'CONFIRMED',out:'CONFIRMED',delivered:'CONFIRMED',completed:'COMPLETED',cancelled:'CANCELLED'};
+var SEC_CLS={received:'badge-pending',confirmed:'badge-confirmed',preparing:'badge-confirmed',out:'badge-confirmed',delivered:'badge-confirmed',completed:'badge-completed',cancelled:'badge-cancelled'};
+var SEC_DOT={received:'dot-pending',confirmed:'dot-confirmed',completed:'dot-completed',cancelled:'dot-cancelled'};
+var ORD_LABEL={received:'Order Placed',confirmed:'Confirmed',preparing:'Preparing',out:'Out for Delivery',delivered:'Delivered',completed:'Completed',cancelled:'Cancelled',complete_requested:'Customer Requested Completion'};
+function secOf(o){return SEC_TXT[o.status]||'PENDING'}
+function money(n){return'\u20B9'+Math.round(Number(n)||0).toLocaleString('en-IN')}
+function fmtDate(ts){try{return new Date(ts).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch(e){return''}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function fetchOrders(){
+  fetch('/api/admin/orders',{headers:{'x-admin-token':token}})
+  .then(function(r){
+    if(r.status===401)return null;
+    return r.json().catch(function(){return null});
+  })
+  .then(function(d){
+    if(!d){showLogin();return}
+    if(d.needLogin){showLogin();return}
+    if(d.ok){orders=d.orders||[];render()}
+    else{listEl.innerHTML='<div class="empty"><div class="icon">&#9888;</div>Could not load orders.</div>'}
+  })
+  .catch(function(){listEl.innerHTML='<div class="empty"><div class="icon">&#9888;</div>Server unreachable.</div>'});
+}
+
+function showLogin(){
+  listEl.style.display='none';
+  document.getElementById('filters').style.display='none';
+  loginBox.style.display='';
+  pinInput.focus();
+}
+function doLogin(){
+  var pin=pinInput.value.trim();
+  if(!pin){pinErr.textContent='Enter PIN';return}
+  pinErr.textContent='';
+  pinBtn.disabled=true;
+  fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:pin})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d&&d.ok&&d.token){token=d.token;localStorage.setItem(TOKEN_KEY,token);loginBox.style.display='none';listEl.style.display='';document.getElementById('filters').style.display='';fetchOrders()}
+    else{pinErr.textContent=(d&&d.error)||'Wrong PIN';pinInput.value='';pinInput.focus()}
+  })
+  .catch(function(){pinErr.textContent='Server unreachable'})
+  .finally(function(){pinBtn.disabled=false});
+}
+pinBtn.addEventListener('click',doLogin);
+pinInput.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+
+function render(){
+  var filtered=filter==='all'?orders:orders.filter(function(o){return secOf(o)===filter});
+  var counts={PENDING:0,CONFIRMED:0,COMPLETED:0,CANCELLED:0};
+  orders.forEach(function(o){var s=secOf(o);counts[s]=(counts[s]||0)+1});
+  countPill.textContent=orders.length+' orders';
+  if(!filtered.length){listEl.innerHTML='<div class="empty"><div class="icon">&#128230;</div>No '+(filter==='all'?'':filter.toLowerCase()+' ')+'orders found.</div>';return}
+  listEl.innerHTML=filtered.map(function(o,i){return cardHtml(o,i)}).join('');
+  listEl.querySelectorAll('.ocard-head').forEach(function(h){
+    h.addEventListener('click',function(){h.closest('.ocard').classList.toggle('open')});
+  });
+  listEl.querySelectorAll('[data-confirm]').forEach(function(b){
+    b.addEventListener('click',function(e){e.stopPropagation();setOrderStatus(b.getAttribute('data-confirm'),'confirmed')});
+  });
+  listEl.querySelectorAll('[data-complete]').forEach(function(b){
+    b.addEventListener('click',function(e){e.stopPropagation();setOrderStatus(b.getAttribute('data-complete'),'completed')});
+  });
+  listEl.querySelectorAll('[data-cancel]').forEach(function(b){
+    b.addEventListener('click',function(e){e.stopPropagation();if(confirm('Cancel this order?'))setOrderStatus(b.getAttribute('data-cancel'),'cancelled')});
+  });
+}
+
+function cardHtml(o,i){
+  var sec=secOf(o);
+  var items=(o.items||[]).map(function(it){
+    return '<tr><td>'+esc(it.name)+' '+esc(it.size)+'</td><td style="text-align:center">'+it.qty+'</td><td style="text-align:center">'+(it.boxes||0)+' box'+((it.boxes||0)===1?'':'es')+' + '+(it.bottles||0)+'</td><td class="money">'+money(it.price)+'</td><td class="money">'+money(it.lineTotal)+'</td></tr>';
+  }).join('');
+  var actions='';
+  if(sec==='PENDING'){
+    actions='<button class="btn-confirm" data-confirm="'+esc(o.id)+'">Confirm Order</button><a class="btn-call" href="tel:+91'+esc(o.phone)+'">Call Customer</a><button class="btn-cancel" data-cancel="'+esc(o.id)+'">Reject</button>';
+  }else if(sec==='CONFIRMED'){
+    actions='<button class="btn-complete" data-complete="'+esc(o.id)+'">Mark Completed</button><a class="btn-call" href="tel:+91'+esc(o.phone)+'">Call Customer</a><button class="btn-cancel" data-cancel="'+esc(o.id)+'">Cancel</button>';
+  }else if(sec==='COMPLETED'){
+    actions='<a class="btn-call" href="tel:+91'+esc(o.phone)+'">Call Customer</a><span style="color:var(--ok);font-size:12px">&#10003; Sale recorded</span>';
+  }
+  var hist=(o.statusHistory||[]).map(function(h){
+    return '<div><span class="dot '+(SEC_DOT[h.status]||'dot-pending')+'"></span>'+fmtDate(h.at)+' — '+esc(ORD_LABEL[h.status]||h.status)+'</div>';
+  }).join('');
+  return '<div class="ocard">'+
+    '<div class="ocard-head">'+
+      '<span class="id">#'+esc(o.id)+'</span>'+
+      '<span class="badge '+(SEC_CLS[sec]||'badge-pending')+'">'+sec+'</span>'+
+      '<span class="date">'+fmtDate(o.createdAt)+'</span>'+
+      '<span class="total">'+money(o.total)+'</span>'+
+    '</div>'+
+    '<div class="ocard-body">'+
+      '<div class="detail-grid">'+
+        '<div class="detail-item"><label>Customer</label><span>'+esc(o.name)+'</span></div>'+
+        '<div class="detail-item"><label>Phone</label><a href="tel:+91'+esc(o.phone)+'">+91 '+esc(o.phone)+'</a></div>'+
+        '<div class="detail-item detail-full"><label>Address</label><span>'+esc(o.address)+', '+esc(o.city)+' — '+esc(o.pincode)+'</span></div>'+
+        (o.note?'<div class="detail-item detail-full"><label>Note</label><span>'+esc(o.note)+'</span></div>':'')+
+        '<div class="detail-item"><label>Payment</label><span>'+esc(o.type||'COD')+' — '+esc(o.paymentStatus||'Pending')+'</span></div>'+
+        '<div class="detail-item"><label>Verified</label><span>'+(o.verified?'&#10003; Yes':'&#10007; No — '+esc(o.verificationStatus||'Not verified'))+'</span></div>'+
+        '<div class="detail-item"><label>ETA</label><span>'+esc(o.eta||'—')+'</span></div>'+
+        '<div class="detail-item"><label>WhatsApp</label><span>'+(o.notified?'&#10003; Sent':o.notifyError?'&#10007; Failed: '+esc(o.notifyError):'Pending')+'</span></div>'+
+      '</div>'+
+      '<table class="items"><thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:center">Box + loose</th><th style="text-align:right">Rate</th><th style="text-align:right">Total</th></tr></thead><tbody>'+items+'</tbody></table>'+
+      (hist?'<div class="status-hist"><label style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-top:12px;margin-bottom:4px">Status History</label>'+hist+'</div>':'')+
+      (actions?'<div class="ocard-actions">'+actions+'</div>':'')+
+    '</div>'+
+  '</div>';
+}
+
+function setOrderStatus(id,status){
+  fetch('/api/admin/orders/status',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':token},body:JSON.stringify({id:id,status:status})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d&&d.ok){fetchOrders()}
+    else{alert((d&&d.error)||'Failed')}
+  })
+  .catch(function(){alert('Server unreachable')});
+}
+
+document.getElementById('filters').addEventListener('click',function(e){
+  var btn=e.target.closest('button');if(!btn)return;
+  filter=btn.getAttribute('data-f');
+  document.querySelectorAll('#filters button').forEach(function(b){b.classList.toggle('on',b===btn)});
+  render();
+});
+refreshBtn.addEventListener('click',function(){fetchOrders()});
+
+if(token){fetchOrders()}else{showLogin()}
+setInterval(function(){if(token)fetchOrders()},10000);
+})();
+</script>
+</body>
+</html>

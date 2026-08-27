@@ -833,7 +833,7 @@
   fetch('/api/orders/config')
     .then(function (r) { return r.json().catch(function () { return {}; }); })
     .catch(function () { return {}; })
-    .then(function (cfg) { if (cfg && cfg.truecallerConfigured && !cfg.truecallerPendingMode) { rwTcStrict = true; rwApplyTcMode(); } });
+    .then(function (cfg) { });
   function rwMobile() { return (coMobile.value || '').replace(/\D/g, ''); }
   function rwSetVerify(text, cls) {
     if (coVerifyStatus) { coVerifyStatus.textContent = text; coVerifyStatus.className = 'co-verify-status' + (cls ? ' ' + cls : ''); }
