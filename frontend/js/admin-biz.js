@@ -830,7 +830,7 @@
       '<button class="btn" id="qaCash">Cash Sale</button>' +
       '<button class="btn" id="qaOnline">Online Sale</button>' +
       '<button class="btn ghost" id="qaInventory">View Inventory</button>' +
-      '<a class="btn ghost" href="admin/orders.html" id="qaOrders">View Orders</a>' +
+      '<a class="btn ghost" href="/orders.html" target="_blank" id="qaOrders">View Orders</a>' +
       '<button class="btn ghost" id="qaReports">View Reports</button>' +
       '</div>';
 
