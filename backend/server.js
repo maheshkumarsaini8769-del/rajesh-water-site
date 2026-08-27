@@ -1195,6 +1195,12 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     handleMyOrders(req, res, parts.query || {}).catch(function (e) { tcLog('my orders error: ' + (e && e.message)); });
     return true;
   }
+  if (req.method === 'GET' && pathname === '/api/orders/all') {
+    var d = readOrders();
+    var list = d.orders.map(adminOrderJson);
+    send(res, 200, { ok: true, seq: d.seq, orders: list });
+    return true;
+  }
   if (req.method === 'GET' && pathname === '/api/admin/orders') {
     handleAdminOrders(req, res);
     return true;
