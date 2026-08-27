@@ -10,7 +10,7 @@
   var refreshTimer = null;
   var box = null;
 
-  var SEC_TXT = { received: 'PENDING', confirmed: 'CONFIRMED', completed: 'COMPLETED', cancelled: 'CANCELLED' };
+  var SEC_TXT = { PENDING: 'PENDING', CONFIRMED: 'CONFIRMED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
   var SEC_CLS = { PENDING: 'warn', CONFIRMED: 'blu', COMPLETED: 'ok', CANCELLED: 'err' };
   var SEC_CLR = { PENDING: '#FFC857', CONFIRMED: '#38D9FF', COMPLETED: '#35E0A1', CANCELLED: '#FF5C7A' };
   var SEC_BG = { PENDING: 'rgba(255,200,87,.06)', CONFIRMED: 'rgba(56,217,255,.06)', COMPLETED: 'rgba(53,224,161,.06)', CANCELLED: 'rgba(255,92,122,.06)' };
@@ -97,15 +97,15 @@
 
       var actions = '';
       if (sec === 'PENDING') {
-        actions = '<button class="ord-btn ord-btn-ok" data-confirm="' + esc(o.id) + '">Confirm</button>' +
-          '<button class="ord-btn ord-btn-cancel" data-cancel="' + esc(o.id) + '">Reject</button>';
+        actions = '<button data-confirm="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#35E0A1;color:#000">Confirm</button>' +
+          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Reject</button>';
       } else if (sec === 'CONFIRMED') {
-        actions = '<button class="ord-btn ord-btn-complete" data-complete="' + esc(o.id) + '">Complete</button>' +
-          '<button class="ord-btn ord-btn-cancel" data-cancel="' + esc(o.id) + '">Cancel</button>';
+        actions = '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#38D9FF;color:#000">Complete</button>' +
+          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Cancel</button>';
       } else if (sec === 'COMPLETED') {
-        actions = '<span style="color:var(--ok);font-size:12px;font-weight:600">&#10003; Sale recorded</span>';
+        actions = '<span style="color:#35E0A1;font-size:12px;font-weight:600">&#10003; Sale recorded</span>';
       } else {
-        actions = o.rejectReason ? '<span style="color:var(--err);font-size:12px">Reason: ' + esc(o.rejectReason) + '</span>' : '';
+        actions = o.rejectReason ? '<span style="color:#FF5C7A;font-size:12px">Reason: ' + esc(o.rejectReason) + '</span>' : '';
       }
 
       html += '<div class="ord-card" data-oid="' + esc(o.id) + '" style="background:' + SEC_BG[sec] + ';border-left:4px solid ' + SEC_CLR[sec] + ';border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:all .2s">' +
@@ -113,12 +113,11 @@
         '<b style="font-size:15px">#' + esc(o.id) + '</b>' +
         '<span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:' + (SEC_BG[sec]) + ';color:' + SEC_CLR[sec] + ';border:1px solid ' + SEC_CLR[sec] + '33">' + SEC_TXT[sec] + '</span>' +
         '<span style="flex:1;color:var(--text);font-weight:600">' + esc(o.name) + '</span>' +
-        '<span style="color:var(--muted);font-size:13px">' + esc(o.phone) + '</span>' +
+        '<span style="color:var(--acc);font-size:13px;font-weight:600">' + esc(o.phone) + '</span>' +
         '<span style="color:var(--muted);font-size:12px">' + fmtDate(o.createdAt) + '</span>' +
         '<b style="color:var(--ok);font-size:16px">' + money(o.total) + '</b>' +
-        '<span style="color:var(--muted);font-size:12px;transition:transform .2s" class="arrow">&#9654;</span>' +
         '</div>' +
-        '<div class="ord-body" style="display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px">' +
+        '<div class="ord-body" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
         '<div><div style="color:var(--muted);font-size:11px;text-transform:uppercase">Address</div><div style="font-size:13px">' + esc(o.address) + ', ' + esc(o.city) + ' ' + esc(o.pincode) + '</div></div>' +
         '<div><div style="color:var(--muted);font-size:11px;text-transform:uppercase">Payment</div><div style="font-size:13px">' + esc(o.type || 'COD') + '</div></div>' +
@@ -135,9 +134,6 @@
 
   function bindEvents() {
     if (!box) return;
-    box.querySelectorAll('.ord-head').forEach(function (h) {
-      h.addEventListener('click', function () { h.closest('.ord-card').querySelector('.ord-body').style.display = h.closest('.ord-card').querySelector('.ord-body').style.display === 'none' ? 'block' : 'none'; });
-    });
     box.querySelectorAll('[data-osec]').forEach(function (b) {
       b.addEventListener('click', function () { filter = b.getAttribute('data-osec'); render(); });
     });
