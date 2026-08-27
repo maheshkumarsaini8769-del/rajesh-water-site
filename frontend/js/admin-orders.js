@@ -145,7 +145,18 @@
   /* ---- Lightweight render: only update cards, preserve search/focus ---- */
   function renderCards() {
     var cardsEl = $('ordCards');
-    if (cardsEl) { cardsEl.innerHTML = cardsHtml(); bindCardEvents(); }
+    if (cardsEl) {
+      var searchEl = $('ordSearch');
+      var hadFocus = document.activeElement && document.activeElement === searchEl;
+      var selStart = searchEl ? searchEl.selectionStart : -1;
+      var selEnd = searchEl ? searchEl.selectionEnd : -1;
+      cardsEl.innerHTML = cardsHtml();
+      bindCardEvents();
+      if (hadFocus && searchEl) {
+        searchEl.focus();
+        if (selStart >= 0) { try { searchEl.setSelectionRange(selStart, selEnd); } catch (e) {} }
+      }
+    }
   }
 
   function bindShellEvents() {
@@ -182,13 +193,14 @@
   }
 
   function setStatus(id, status) {
-    /* Suppress polling for 5 seconds so user sees the change stick */
-    suppressPollUntil = Date.now() + 5000;
+    /* Suppress polling for 8 seconds so user sees the change stick */
+    suppressPollUntil = Date.now() + 8000;
 
-    /* Optimistic update â€” show change immediately */
+    /* Optimistic update — show change immediately */
     for (var i = 0; i < orders.length; i++) {
       if (orders[i].id === id) {
         orders[i].status = status;
+        orders[i]._localStatus = status; /* mark so poll preserves it */
         if (!orders[i].statusHistory) orders[i].statusHistory = [];
         orders[i].statusHistory.push({ status: status, at: Date.now() });
         break;
@@ -219,7 +231,21 @@
       if (d && d.needLogin) { toast('Session expired', true); return; }
       if (d && d.ok && Array.isArray(d.orders)) {
         var oldCount = orders.length;
+        /* Build a map of locally-updated orders to preserve */
+        var localMap = {};
+        orders.forEach(function (o) { if (o._localStatus) localMap[o.id] = o; });
         orders = d.orders;
+        /* Restore local status only if server still shows old status */
+        orders.forEach(function (o) {
+          if (localMap[o.id] && localMap[o.id]._localStatus && o.status !== localMap[o.id]._localStatus) {
+            o.status = localMap[o.id]._localStatus;
+            o.statusHistory = localMap[o.id].statusHistory;
+            o._localStatus = localMap[o.id]._localStatus;
+          } else if (localMap[o.id] && o.status === localMap[o.id]._localStatus) {
+            /* Server confirmed — clear the local override */
+            delete localMap[o.id]._localStatus;
+          }
+        });
         if (oldCount && orders.length > oldCount) {
           var newest = orders[0];
           toast('New order! #' + newest.id + ' from ' + newest.name);

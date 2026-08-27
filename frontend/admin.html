@@ -961,8 +961,10 @@ function loadAdminBiz() {
     var content = $('content');
     /* Orders tab uses lightweight module — no need to wait for heavy BIZ */
     if (tab === 'biz-orders') {
-      content.innerHTML = '<div id="ordBox"></div>';
-      if (window.RWOrders) window.RWOrders.init($('ordBox'));
+      if (!$('ordBox')) {
+        content.innerHTML = '<div id="ordBox"></div>';
+        if (window.RWOrders) window.RWOrders.init($('ordBox'));
+      }
       $('tabTitle').textContent = 'Online Orders';
       return;
     }
