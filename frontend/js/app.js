@@ -183,11 +183,13 @@
     showStep('cart');
     drawer.classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    document.querySelectorAll('.rw-fab-btn').forEach(function (el) { el.style.display = 'none'; });
   }
   function closeDrawer() {
     if (!drawer) return;
     drawer.classList.remove('is-open');
     document.body.style.overflow = '';
+    document.querySelectorAll('.rw-fab-btn').forEach(function (el) { el.style.display = ''; });
   }
 
   function showStep(step) {

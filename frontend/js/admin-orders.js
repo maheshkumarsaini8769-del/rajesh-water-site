@@ -98,7 +98,8 @@
       var actions = '';
       if (sec === 'PENDING') {
         actions = '<button data-confirm="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#35E0A1;color:#000">Confirm</button>' +
-          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Reject</button>';
+          '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#38D9FF;color:#000">Complete</button>' +
+          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Cancel</button>';
       } else if (sec === 'CONFIRMED') {
         actions = '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#38D9FF;color:#000">Complete</button>' +
           '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Cancel</button>';
