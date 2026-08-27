@@ -8,19 +8,11 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/",
       "dest": "/api/index.js"
     },
     {
-      "src": "/orders.html",
-      "dest": "/orders.html"
-    },
-    {
-      "src": "/admin.html",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/",
+      "src": "/api/(.*)",
       "dest": "/api/index.js"
     },
     {
