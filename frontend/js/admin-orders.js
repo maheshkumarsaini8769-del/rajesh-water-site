@@ -1,5 +1,5 @@
-"use strict";
-/* Lightweight Orders Module — v2
+﻿"use strict"; /* v2.1 */
+/* Lightweight Orders Module â€” v2
    Fixes: no focus loss on search, no revert after status change, faster loading */
 
 (function () {
@@ -10,7 +10,7 @@
   var refreshTimer = null;
   var box = null;
   var initialized = false;
-  var suppressPollUntil = 0; /* timestamp — don't poll while user just acted */
+  var suppressPollUntil = 0; /* timestamp â€” don't poll while user just acted */
 
   var SEC_TXT = { PENDING: 'PENDING', CONFIRMED: 'CONFIRMED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
   var SEC_CLR = { PENDING: '#FFC857', CONFIRMED: '#38D9FF', COMPLETED: '#35E0A1', CANCELLED: '#FF5C7A' };
@@ -185,7 +185,7 @@
     /* Suppress polling for 5 seconds so user sees the change stick */
     suppressPollUntil = Date.now() + 5000;
 
-    /* Optimistic update — show change immediately */
+    /* Optimistic update â€” show change immediately */
     for (var i = 0; i < orders.length; i++) {
       if (orders[i].id === id) {
         orders[i].status = status;
@@ -238,7 +238,7 @@
         initialized = true;
         loadOrders(true);
       } else {
-        renderShell(); /* just re-render with cached data — instant */
+        renderShell(); /* just re-render with cached data â€” instant */
       }
       clearInterval(refreshTimer);
       refreshTimer = setInterval(function () { loadOrders(false); }, 10000);
