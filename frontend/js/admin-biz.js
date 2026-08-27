@@ -1144,20 +1144,39 @@
       if ($('adPin')) $('adPin').addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
     }
     function ordSetStatus(o, status, reason) {
+      /* P16+P17: disable only THIS order's button, not the whole list */
+      var btnEl = box ? box.querySelector('[data-complete="' + o.id + '"], [data-confirm="' + o.id + '"], [data-reject="' + o.id + '"]') : null;
+      if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Saving\u2026'; }
       ordFetch('/api/admin/orders/status', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: o.id, status: status, reason: reason || '' })
       }, function (d) {
+        if (btnEl) { btnEl.disabled = false; }
         if (d && d.ok) {
-          var lbl = status === 'completed' ? 'Completed \u2014 sale recorded in business reports' : (status === 'cancelled' ? 'Cancelled' : ORD_LABEL[status] || status);
+          var lbl = status === 'completed' ? 'Completed' : (status === 'cancelled' ? 'Cancelled' : ORD_LABEL[status] || status);
           toast('#' + o.id + ' \u2192 ' + lbl);
-          if (status === 'completed') { ordNotify(o, true, 0); notifyAlert(); reloadBizData(function () { render(); }); }
-          load();
+          /* P3+P8: Update ONLY this order locally — no full reload, no disappearance */
+          for (var i = 0; i < orders.length; i++) {
+            if (orders[i].id === o.id) {
+              orders[i].status = status;
+              if (!orders[i].statusHistory) orders[i].statusHistory = [];
+              orders[i].statusHistory.push({ status: status, at: Date.now() });
+              if (status === 'completed') orders[i].completedAt = Date.now();
+              if (status === 'cancelled') orders[i].cancelledAt = Date.now();
+              if (status === 'confirmed') orders[i].confirmedAt = Date.now();
+              break;
+            }
+          }
+          /* P4: NO vibration/sound on complete — only notify on NEW orders */
+          if (status === 'completed') { reloadBizData(function () { renderAd(); }); }
+          else { renderAd(); }
+          if (btnEl) { btnEl.textContent = lbl; }
         } else if (d && d.error) {
           toast(d.error, true);
-          load();
+          if (btnEl) { btnEl.textContent = 'Retry'; }
         } else {
           toast('Server unreachable', true);
+          if (btnEl) { btnEl.textContent = 'Retry'; }
         }
       });
     }
@@ -1408,7 +1427,10 @@
       ordFetch('/api/admin/orders', {}, function (d) {
         if (d && d.needLogin) { renderLogin(); return; }
         if (d && d.netError) { box.innerHTML = '<p class="hint">Could not load orders — is the server running?</p>'; return; }
-        orders = (d && d.ok && Array.isArray(d.orders)) ? d.orders : [];
+        if (d && d.ok && Array.isArray(d.orders)) {
+          /* P3+P8: Merge — replace orders array without blanking first */
+          orders = d.orders;
+        }
         if (!box) return;
         box.querySelectorAll('[data-osec]').forEach(function (b) {
           var s = b.getAttribute('data-osec');
@@ -1434,7 +1456,7 @@
   function primeAlertGestures() {
     ['touchstart', 'pointerdown', 'click', 'keydown'].forEach(function (ev) {
       document.addEventListener(ev, function () {
-        if (navigator.vibrate) { try { navigator.vibrate(1); } catch (e) {} }
+        /* P4: Don't vibrate on every gesture — only AudioContext for sound */
         if (!alertAudioCtx) {
           var AC = window.AudioContext || window.webkitAudioContext;
           if (AC) { try { alertAudioCtx = new AC(); } catch (e) {} }
