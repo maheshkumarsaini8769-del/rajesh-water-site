@@ -830,7 +830,7 @@
       '<button class="btn" id="qaCash">Cash Sale</button>' +
       '<button class="btn" id="qaOnline">Online Sale</button>' +
       '<button class="btn ghost" id="qaInventory">View Inventory</button>' +
-      '<a class="btn ghost" href="/orders.html" target="_blank" id="qaOrders">View Orders</a>' +
+      '<button class="btn ghost" id="qaOrders">View Orders</button>' +
       '<button class="btn ghost" id="qaReports">View Reports</button>' +
       '</div>';
 
@@ -1339,7 +1339,9 @@
           (o.rejectReason ? '<span class="hint">Reject reason: ' + esc(o.rejectReason) + '</span>' : '') +
           '<button class="btn small danger" data-del="' + esc(o.id) + '" type="button">Delete Permanently</button>';
       }
-      return '<div class="card" style="background:var(--panel2);padding:12px 14px">' +
+      var secColors = { PENDING: 'rgba(255,200,87,.5)', CONFIRMED: 'rgba(56,217,255,.5)', COMPLETED: 'rgba(53,224,161,.5)', CANCELLED: 'rgba(255,92,122,.5)' };
+      var secBg = { PENDING: 'rgba(255,200,87,.06)', CONFIRMED: 'rgba(56,217,255,.06)', COMPLETED: 'rgba(53,224,161,.06)', CANCELLED: 'rgba(255,92,122,.06)' };
+      return '<div class="card" style="background:' + (secBg[sec] || 'var(--panel2)') + ';padding:12px 14px;border-left:4px solid ' + (secColors[sec] || 'var(--line)') + '">' +
         '<div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px">' +
         '<span><b>#' + esc(o.id) + '</b> <span class="badge ' + SEC_CLS[sec] + '">' + SEC_TXT[sec] + '</span> <span class="hint">' + fmtDate(o.createdAt) + '</span> ' + waState + '</span>' +
         '<b class="money-cell">\u20B9' + o.total + '</b></div>' +
