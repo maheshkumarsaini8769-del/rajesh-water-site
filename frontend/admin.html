@@ -898,8 +898,9 @@ function loadAdminBiz() {
         $('tabTitle').textContent = tabTitle(tab);
         return;
       }
-      tab = 'home';
-      ssSet('rwTab', tab);
+      /* BIZ not loaded yet — try again shortly instead of falling back */
+      setTimeout(function () { render(); }, 200);
+      return;
     }
     var html = '';
     if (tab === 'home') html = rHome();
