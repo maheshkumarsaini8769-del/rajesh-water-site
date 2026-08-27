@@ -972,7 +972,10 @@
                 '*Total:* ' + money(d.order.total) + '%0A' +
                 '*Payment:* ' + (d.order.type || 'COD');
               var waLink = 'https://wa.me/' + ownerPhone + '?text=' + waMsg;
-              window.open(waLink, '_blank');
+              var waWin = window.open(waLink, '_blank');
+              if (!waWin || waWin.closed || typeof waWin.closed === 'undefined') {
+                location.href = waLink;
+              }
             }
 
             if (suWaNote) {

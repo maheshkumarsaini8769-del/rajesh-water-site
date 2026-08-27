@@ -201,6 +201,7 @@ var SECTION_LABEL = {
 /* Allowed transitions only. 'complete_requested' is customer-initiated, never set by admin.
    Same-status requests are no-ops. Everything else is rejected (prevents double confirm/complete). */
 var TRANSITIONS = {
+  received: ['cancelled'],
   confirmed: ['received'],
   preparing: ['confirmed'],
   out: ['preparing'],

@@ -105,7 +105,8 @@
       } else if (sec === 'COMPLETED') {
         actions = '<span style="color:#35E0A1;font-size:12px;font-weight:600">&#10003; Sale recorded</span>';
       } else {
-        actions = o.rejectReason ? '<span style="color:#FF5C7A;font-size:12px">Reason: ' + esc(o.rejectReason) + '</span>' : '';
+        actions = '<button data-revert="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(56,217,255,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(56,217,255,.12);color:#38D9FF">Revert to Pending</button>' +
+          (o.rejectReason ? '<span style="color:#FF5C7A;font-size:12px;margin-left:8px">Reason: ' + esc(o.rejectReason) + '</span>' : '');
       }
 
       html += '<div class="ord-card" data-oid="' + esc(o.id) + '" style="background:' + SEC_BG[sec] + ';border-left:4px solid ' + SEC_CLR[sec] + ';border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:all .2s">' +
@@ -145,6 +146,9 @@
     });
     box.querySelectorAll('[data-cancel]').forEach(function (b) {
       b.addEventListener('click', function (e) { e.stopPropagation(); if (confirm('Cancel this order?')) setStatus(b.getAttribute('data-cancel'), 'cancelled'); });
+    });
+    box.querySelectorAll('[data-revert]').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); if (confirm('Revert this cancelled order back to pending?')) setStatus(b.getAttribute('data-revert'), 'received'); });
     });
     var refresh = $('ordRefresh');
     if (refresh) refresh.addEventListener('click', loadOrders);
