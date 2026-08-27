@@ -219,10 +219,14 @@
      update right after an online order is completed (not just orders list). */
   function reloadBizData(cb) {
     if (window.fetch) {
+      var prevOrdSection = S._ordSection;
+      var prevOrdSearch = S._ordSearch;
       fetch('/api/biz').then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
           if (d && Array.isArray(d.products)) {
             S = d; S.loaded = true; apiOk = true;
+            S._ordSection = prevOrdSection;
+            S._ordSearch = prevOrdSearch;
             if (!S.settings) S.settings = { bizName: 'Rajesh Water', minStock: 15, initialCapital: 0 };
             replayStock(S.products, S.purchases, S.sales, S.adjustments);
           }
@@ -1168,8 +1172,14 @@
             }
           }
           /* P4: NO vibration/sound on complete — only notify on NEW orders */
-          if (status === 'completed') { reloadBizData(function () { renderAd(); }); }
-          else { renderAd(); }
+          var newSec = secOf(orders[i] || {});
+          if (status === 'completed') {
+            reloadBizData(function () { S._ordSection = newSec; renderAd(); });
+          }
+          else {
+            S._ordSection = newSec;
+            renderAd();
+          }
           if (btnEl) { btnEl.textContent = lbl; }
         } else if (d && d.error) {
           toast(d.error, true);
