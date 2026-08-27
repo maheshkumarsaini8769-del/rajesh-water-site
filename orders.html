@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rajesh Water — Orders</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%2300aeef'/></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#05070D;--panel:#0D1421;--panel2:#111A29;--panel3:#151F31;--line:rgba(124,235,255,.12);--text:#F4F8FC;--soft:#C2CCDA;--muted:#7E8CA0;--acc:#38D9FF;--acc2:#0B5C7C;--ok:#35E0A1;--oksoft:rgba(53,224,161,.12);--err:#FF5C7A;--errsoft:rgba(255,92,122,.12);--warn:#FFC857;--warnsoft:rgba(255,200,87,.12);--r-sm:10px;--r-md:16px;--ease:cubic-bezier(.22,1,.36,1)}
+html{color-scheme:dark}body{background:var(--bg);color:var(--text);font-family:"Inter Tight","Inter",system-ui,sans-serif;font-size:14px;min-height:100vh}
+a{color:var(--acc);text-decoration:none}
+.top{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:12px;padding:14px 20px;background:rgba(5,7,13,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top h1{font-size:18px;font-weight:700;flex:1}
+.top .pill{background:var(--acc2);color:var(--acc);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.top .btn{background:transparent;border:1px solid var(--line);color:var(--soft);padding:6px 14px;border-radius:var(--r-sm);cursor:pointer;font-size:13px;text-decoration:none;display:inline-block;transition:all .2s}
+.top .btn:hover{border-color:var(--acc);color:var(--acc)}
+.filters{display:flex;gap:8px;padding:12px 20px;flex-wrap:wrap;position:sticky;top:52px;z-index:99;background:rgba(5,7,13,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.filters button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.filters button.on{background:var(--acc2);border-color:var(--acc);color:var(--acc)}
+.filters button:hover{border-color:var(--acc);color:var(--acc)}
+.filters .cnt{font-size:11px;opacity:.6;margin-left:2px}
+.list{padding:12px 20px 40px}
+.ocard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.ocard:hover{border-color:rgba(124,235,255,.25)}
+.ocard-head{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;flex-wrap:wrap}
+.ocard-head .id{font-weight:700;font-size:15px;min-width:90px}
+.ocard-head .badge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.badge-pending{background:var(--warnsoft);color:var(--warn)}
+.badge-confirmed{background:rgba(56,217,255,.12);color:var(--acc)}
+.badge-completed{background:var(--oksoft);color:var(--ok)}
+.badge-cancelled{background:var(--errsoft);color:var(--err)}
+.ocard-head .name{font-weight:600;flex:1}
+.ocard-head .phone{color:var(--muted);font-size:13px}
+.ocard-head .date{color:var(--muted);font-size:12px}
+.ocard-head .total{font-weight:800;font-size:16px;color:var(--ok);white-space:nowrap}
+.ocard-head .arrow{color:var(--muted);font-size:12px;transition:transform .2s}
+.ocard.open .arrow{transform:rotate(90deg)}
+.ocard-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
+.ocard.open .ocard-body{display:block}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.detail-item label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px}
+.detail-item span{font-size:13px}
+.detail-full{grid-column:1/-1}
+table.items{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+table.items th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);font-weight:600}
+table.items td{padding:5px 8px;border-bottom:1px solid rgba(124,235,255,.06)}
+table.items .money{text-align:right;font-weight:600;color:var(--ok)}
+.ocard-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ocard-actions button{padding:7px 14px;border-radius:var(--r-sm);border:0;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
+.btn-confirm{background:var(--ok);color:#000}.btn-confirm:hover{opacity:.85}
+.btn-complete{background:var(--acc);color:#000}.btn-complete:hover{opacity:.85}
+.btn-cancel{background:var(--errsoft);color:var(--err);border:1px solid rgba(255,92,122,.3)}.btn-cancel:hover{background:var(--err);color:#fff}
+.btn-call{background:var(--panel3);color:var(--acc);border:1px solid var(--line)}.btn-call:hover{border-color:var(--acc)}
+.status-hist{margin-top:8px;font-size:12px;color:var(--muted)}
+.status-hist div{padding:2px 0}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot-pending{background:var(--warn)}.dot-confirmed{background:var(--acc)}.dot-completed{background:var(--ok)}.dot-cancelled{background:var(--err)}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .icon{font-size:40px;margin-bottom:8px}
+.loading{text-align:center;padding:30px;color:var(--muted)}
+@media(max-width:600px){.detail-grid{grid-template-columns:1fr}.top{padding:10px 14px}.list{padding:8px 10px 30px}.filters{padding:10px 14px}.ocard-head{gap:6px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="/admin" class="btn">&larr; Admin</a>
+  <h1>Orders</h1>
+  <span class="pill" id="countPill">0</span>
+  <button class="btn" id="refreshBtn" type="button">&#8635;</button>
+</div>
+<div class="filters" id="filters">
+  <button class="on" data-f="all">All <span class="cnt" id="cntAll">0</span></button>
+  <button data-f="PENDING">Pending <span class="cnt" id="cntPending">0</span></button>
+  <button data-f="CONFIRMED">Confirmed <span class="cnt" id="cntConfirmed">0</span></button>
+  <button data-f="COMPLETED">Completed <span class="cnt" id="cntCompleted">0</span></button>
+  <button data-f="CANCELLED">Cancelled <span class="cnt" id="cntCancelled">0</span></button>
+</div>
+<div class="list" id="list"><div class="loading">Loading orders...</div></div>
+<script>
+(function(){
+"use strict";
+var orders=[];
+var filter='all';
+var listEl=document.getElementById('list');
+var countPill=document.getElementById('countPill');
+var SEC_TXT={received:'PENDING',confirmed:'CONFIRMED',preparing:'CONFIRMED',out:'CONFIRMED',delivered:'CONFIRMED',completed:'COMPLETED',cancelled:'CANCELLED'};
+var SEC_CLS={received:'badge-pending',confirmed:'badge-confirmed',preparing:'badge-confirmed',out:'badge-confirmed',delivered:'badge-confirmed',completed:'badge-completed',cancelled:'badge-cancelled'};
+var SEC_DOT={received:'dot-pending',confirmed:'dot-confirmed',completed:'dot-completed',cancelled:'dot-cancelled'};
+var ORD_LABEL={received:'Order Placed',confirmed:'Confirmed',preparing:'Preparing',out:'Out for Delivery',delivered:'Delivered',completed:'Completed',cancelled:'Cancelled',complete_requested:'Customer Requested'};
+function secOf(o){return SEC_TXT[o.status]||'PENDING'}
+function money(n){return'\u20B9'+Math.round(Number(n)||0).toLocaleString('en-IN')}
+function fmtDate(ts){try{return new Date(ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}catch(e){return''}}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function fetchOrders(){
+  fetch('/api/orders/all').then(function(r){return r.json().catch(function(){return null})}).then(function(d){
+    if(d&&d.ok){orders=d.orders||[];render()}
+    else{listEl.innerHTML='<div class="empty"><div class="icon">&#9888;</div>Could not load orders.</div>'}
+  }).catch(function(){listEl.innerHTML='<div class="empty"><div class="icon">&#9888;</div>Server unreachable.</div>'});
+}
+
+function render(){
+  var filtered=filter==='all'?orders:orders.filter(function(o){return secOf(o)===filter});
+  var c={PENDING:0,CONFIRMED:0,COMPLETED:0,CANCELLED:0};
+  orders.forEach(function(o){var s=secOf(o);c[s]=(c[s]||0)+1});
+  countPill.textContent=orders.length;
+  var e=document.getElementById('cntAll');if(e)e.textContent=orders.length;
+  e=document.getElementById('cntPending');if(e)e.textContent=c.PENDING;
+  e=document.getElementById('cntConfirmed');if(e)e.textContent=c.CONFIRMED;
+  e=document.getElementById('cntCompleted');if(e)e.textContent=c.COMPLETED;
+  e=document.getElementById('cntCancelled');if(e)e.textContent=c.CANCELLED;
+  if(!filtered.length){listEl.innerHTML='<div class="empty"><div class="icon">&#128230;</div>No '+(filter==='all'?'':filter.toLowerCase()+' ')+'orders.</div>';return}
+  var html='';
+  for(var i=0;i<filtered.length;i++){html+=cardHtml(filtered[i])}
+  listEl.innerHTML=html;
+  listEl.querySelectorAll('.ocard-head').forEach(function(h){h.addEventListener('click',function(){h.closest('.ocard').classList.toggle('open')})});
+  listEl.querySelectorAll('[data-confirm]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();setStatus(b.getAttribute('data-confirm'),'confirmed')})});
+  listEl.querySelectorAll('[data-complete]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();setStatus(b.getAttribute('data-complete'),'completed')})});
+  listEl.querySelectorAll('[data-cancel]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();if(confirm('Cancel order?'))setStatus(b.getAttribute('data-cancel'),'cancelled')})});
+}
+
+function cardHtml(o){
+  var sec=secOf(o);
+  var items=(o.items||[]).map(function(it){return'<tr><td>'+esc(it.name)+' '+esc(it.size)+'</td><td style="text-align:center">'+it.qty+'</td><td style="text-align:center">'+(it.boxes||0)+'b+'+(it.bottles||0)+'</td><td class="money">'+money(it.price)+'</td><td class="money">'+money(it.lineTotal)+'</td></tr>'}).join('');
+  var actions='';
+  if(sec==='PENDING'){actions='<button class="btn-confirm" data-confirm="'+esc(o.id)+'">Confirm</button><a class="btn-call" href="tel:+91'+esc(o.phone)+'">Call</a><button class="btn-cancel" data-cancel="'+esc(o.id)+'">Reject</button>'}
+  else if(sec==='CONFIRMED'){actions='<button class="btn-complete" data-complete="'+esc(o.id)+'">Complete</button><a class="btn-call" href="tel:+91'+esc(o.phone)+'">Call</a><button class="btn-cancel" data-cancel="'+esc(o.id)+'">Cancel</button>'}
+  else if(sec==='COMPLETED'){actions='<a class="btn-call" href="tel:+91'+esc(o.phone)+'">Call</a> <span style="color:var(--ok);font-size:11px">&#10003; Done</span>'}
+  var hist=(o.statusHistory||[]).map(function(h){return'<div><span class="dot '+(SEC_DOT[h.status]||'dot-pending')+'"></span>'+fmtDate(h.at)+' — '+esc(ORD_LABEL[h.status]||h.status)+'</div>'}).join('');
+  return'<div class="ocard"><div class="ocard-head"><span class="id">#'+esc(o.id)+'</span><span class="badge '+(SEC_CLS[sec]||'badge-pending')+'">'+sec+'</span><span class="name">'+esc(o.name)+'</span><span class="phone">'+esc(o.phone)+'</span><span class="date">'+fmtDate(o.createdAt)+'</span><span class="total">'+money(o.total)+'</span><span class="arrow">&#9654;</span></div><div class="ocard-body"><div class="detail-grid"><div class="detail-item"><label>Address</label><span>'+esc(o.address)+', '+esc(o.city)+' — '+esc(o.pincode)+'</span></div>'+(o.note?'<div class="detail-item"><label>Note</label><span>'+esc(o.note)+'</span></div>':'')+'<div class="detail-item"><label>Payment</label><span>'+esc(o.type||'COD')+' — '+esc(o.paymentStatus||'Pending')+'</span></div><div class="detail-item"><label>Verified</label><span>'+(o.verified?'Yes':'No')+'</span></div><div class="detail-item"><label>ETA</label><span>'+esc(o.eta||'—')+'</span></div><div class="detail-item"><label>WhatsApp</label><span>'+(o.notified?'Sent':o.notifyError?'Failed':'Pending')+'</span></div></div><table class="items"><thead><tr><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:center">Box+loose</th><th style="text-align:right">Rate</th><th style="text-align:right">Total</th></tr></thead><tbody>'+items+'</tbody></table>'+(hist?'<div class="status-hist"><label style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;display:block;margin-top:10px;margin-bottom:3px">History</label>'+hist+'</div>':'')+(actions?'<div class="ocard-actions">'+actions+'</div>':'')+'</div></div>';
+}
+
+function setStatus(id,status){
+  fetch('/api/admin/orders/status',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':localStorage.getItem('rw_admin_tok')||''},body:JSON.stringify({id:id,status:status})}).then(function(r){return r.json()}).then(function(d){if(d&&d.ok)fetchOrders();else alert((d&&d.error)||'Failed')}).catch(function(){alert('Server unreachable')});
+}
+
+document.getElementById('filters').addEventListener('click',function(e){var btn=e.target.closest('button');if(!btn)return;filter=btn.getAttribute('data-f');document.querySelectorAll('#filters button').forEach(function(b){b.classList.toggle('on',b===btn)});render()});
+document.getElementById('refreshBtn').addEventListener('click',fetchOrders);
+
+fetchOrders();
+setInterval(fetchOrders,10000);
+})();
+</script>
+</body>
+</html>
