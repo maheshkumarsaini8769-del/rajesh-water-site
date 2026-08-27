@@ -268,7 +268,7 @@ function writeOrders(d) {
     fs.writeFileSync(tmp, JSON.stringify(d, null, 2));
     fs.renameSync(tmp, ORDERS_FILE);
   } catch (e) {}
-  if (db.state().on) db.saveOrders(d).catch(function (err) { db.markError('orders', err); });
+  if (db.state().on) db.saveOrders(d).then(function () { console.log('[db] orders saved to MongoDB'); }).catch(function (err) { console.error('[db] orders MongoDB save FAILED:', err.message); db.markError('orders', err); });
 }
 
 /* On boot: when MongoDB is reachable it is the source of truth — pull the latest
@@ -723,6 +723,10 @@ async function handleOrderCreate(req, res, payload) {
   if (d.orders.length > 1000) d.orders = d.orders.slice(0, 1000);
   if (nonce) { NONCES.add(nonce); if (NONCES.size > 5000) NONCES.clear(); }
 writeOrders(d);
+  /* Ensure MongoDB has the order before responding — critical on Vercel */
+  if (db.state().on) {
+    try { await db.saveOrders(d); } catch (e) { console.error('[create] mongo save failed:', e.message); }
+  }
   var itemSummary = items.map(function (it) { return it.name + ' ' + it.size + ' x' + it.qty; }).join(', ');
   pushNotification('order', order.id, 'New Order #' + order.id, name + ' \u2014 \u20B9' + total + ' \u2014 ' + itemSummary + ' \u2014 ' + city, phone);
   send(res, 200, { ok: true, order: pubOrder(order), whatsappConfigured: !!((CFG.waBot || {}).enabled && (CFG.waBot || {}).owner), ownerPhone: (CFG.waBot || {}).owner || (CFG.whatsapp || {}).owner || '' });
@@ -917,6 +921,8 @@ if (status === 'completed') {
         console.log('[sales] #' + o.id + ' completed \u2014 recorded ' + saleInfo.recorded + ' sale line(s) into business.json' + (saleInfo.skipped.length ? '; skipped unmatched: ' + saleInfo.skipped.join(', ') : '') + '.');
       }
 writeOrders(d);
+      /* Ensure MongoDB has the update before responding */
+      if (db.state().on) { try { await db.saveOrders(d); } catch (e) { console.error('[status] mongo save failed:', e.message); } }
       send(res, 200, { ok: true, status: status, id: id, section: SECTION_LABEL[status] });
       return;
     }
