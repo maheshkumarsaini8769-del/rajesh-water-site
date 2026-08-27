@@ -631,6 +631,13 @@ function pubOrder(o) {
 
 async function handleOrderCreate(req, res, payload) {
   await tcHydrate();
+  /* Vercel: refresh from MongoDB first to avoid stale MEM */
+  if (db.state().on) {
+    try {
+      var fresh = await db.loadOrders();
+      if (fresh && Array.isArray(fresh.orders)) writeOrders(fresh);
+    } catch (e) {}
+  }
   var name = String(payload.name || '').trim().slice(0, 80);
   var phone = String(payload.phone || '').replace(/\D/g, '');
   var address = String(payload.address || '').trim().slice(0, 300);
@@ -843,20 +850,41 @@ function adminOrderJson(o) {
   return p;
 }
 
-function handleAdminOrders(req, res) {
+async function handleAdminOrders(req, res) {
   if (!requireAdmin(req, res)) return;
+  /* Always refresh from MongoDB on Vercel to avoid stale MEM */
+  if (db.state().on) {
+    try {
+      var fresh = await db.loadOrders();
+      if (fresh && Array.isArray(fresh.orders)) writeOrders(fresh);
+    } catch (e) {}
+  }
   var d = readOrders();
   var list = d.orders.map(adminOrderJson);
   send(res, 200, { ok: true, seq: d.seq, orders: list });
 }
 
-function handleAdminOrderStatus(req, res, payload) {
+async function handleAdminOrderStatus(req, res, payload) {
   if (!requireAdmin(req, res)) return;
   var id = String(payload.id || '');
   var status = String(payload.status || '');
   if (STATUSES.indexOf(status) === -1) { send(res, 400, { ok: false, error: 'invalid status' }); return; }
-  if (status === 'complete_requested') { send(res, 400, { ok: false, error: 'complete_requested is customer-initiated â€” admin sets completed directly.' }); return; }
+  if (status === 'complete_requested') { send(res, 400, { ok: false, error: 'complete_requested is customer-initiated \u2014 admin sets completed directly.' }); return; }
   var d = readOrders();
+  var found = false;
+  for (var i = 0; i < d.orders.length; i++) {
+    if (d.orders[i].id === id) { found = true; break; }
+  }
+  /* Vercel cold-start: MEM may be stale — refresh from MongoDB */
+  if (!found && db.state().on) {
+    try {
+      var fresh = await db.loadOrders();
+      if (fresh && Array.isArray(fresh.orders)) {
+        writeOrders(fresh);
+        d = fresh;
+      }
+    } catch (e) { console.log('[status] mongo refresh failed:', e.message); }
+  }
   for (var i = 0; i < d.orders.length; i++) {
     if (d.orders[i].id === id) {
       var o = d.orders[i];
