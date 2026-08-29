@@ -496,6 +496,7 @@
 <div id="toast"></div>
 
 <script src="data/site-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.14/dist/index.umd.js" defer></script>
 <script src="js/admin-orders.js?v=87"></script>
 <script>
 /* Defer heavy admin-biz.js until after login */
@@ -936,13 +937,40 @@ function loadAdminBiz() {
       el.addEventListener('change', function () {
         var file = el.files && el.files[0];
         if (!file) return;
-        var rd = new FileReader();
-        rd.onload = function () {
-          setAt(DATA, el.getAttribute('data-file'), rd.result);
-          setDirty(true);
-          render();
-        };
-        rd.readAsDataURL(file);
+        var key = el.getAttribute('data-file');
+        /* Auto background removal if library loaded */
+        if (window.ImageBackgroundRemoval && window.ImageBackgroundRemoval.removeBackground) {
+          toast('Removing background...');
+          window.ImageBackgroundRemoval.removeBackground(file).then(function (blob) {
+            var rd = new FileReader();
+            rd.onload = function () {
+              setAt(DATA, key, rd.result);
+              setDirty(true);
+              render();
+              toast('Background removed!');
+            };
+            rd.readAsDataURL(blob);
+          }).catch(function (err) {
+            console.warn('BG removal failed, using original:', err);
+            var rd = new FileReader();
+            rd.onload = function () {
+              setAt(DATA, key, rd.result);
+              setDirty(true);
+              render();
+              toast('Used original image (bg removal failed)');
+            };
+            rd.readAsDataURL(file);
+          });
+        } else {
+          /* Library not loaded yet — use original image */
+          var rd = new FileReader();
+          rd.onload = function () {
+            setAt(DATA, key, rd.result);
+            setDirty(true);
+            render();
+          };
+          rd.readAsDataURL(file);
+        }
       });
     });
     root.querySelectorAll('button[data-clear]').forEach(function (el) {
