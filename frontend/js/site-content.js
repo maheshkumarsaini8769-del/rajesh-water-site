@@ -183,18 +183,23 @@
   }
 
   /* Apply static data immediately, then fetch live in background */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      applyStatic();
-      fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
-        if (res && res.ok && res.content) applyAll(res.content);
-      }).catch(function () {});
-    });
-  } else {
-    applyStatic();
+  function doFetchLive() {
     fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
       if (res && res.ok && res.content) applyAll(res.content);
     }).catch(function () {});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      applyStatic();
+      doFetchLive();
+      /* Re-fetch every 30s for live updates (image changes, text edits) */
+      setInterval(doFetchLive, 30000);
+    });
+  } else {
+    applyStatic();
+    doFetchLive();
+    setInterval(doFetchLive, 30000);
   }
 
   window.siteApplyContent = applyStatic;
