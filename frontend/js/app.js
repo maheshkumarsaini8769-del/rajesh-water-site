@@ -1096,30 +1096,46 @@
       var text = (document.getElementById('revText').value || '').trim();
       if (!name || !text || !revStars) { revErrEl.textContent = 'Please add your name, a star rating and review text.'; return; }
       revErrEl.textContent = '';
+      revSubmitBtn.disabled = true;
+      revSubmitBtn.textContent = 'Submitting...';
       var now = new Date();
       var mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()];
-      var rev = { name: name, rating: revStars, text: text, product: prod, date: mon + ' ' + now.getFullYear(), pending: true };
-      userReviews.unshift(rev);
-      try { localStorage.setItem(USER_REVIEWS_KEY, JSON.stringify(userReviews.slice(0, 50))); } catch (e) {}
-      try {
-        if (window.fetch) {
-          fetch('/api/reviews', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, rating: revStars, text: text, product: prod, date: mon + ' ' + now.getFullYear() })
-          }).catch(function () {});
+      var dateStr = mon + ' ' + now.getFullYear();
+      var rev = { name: name, rating: revStars, text: text, product: prod, date: dateStr };
+      /* Save to server first — this is the source of truth */
+      fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rev)
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        if (d && d.ok) {
+          /* Server saved — also add to local list for instant display */
+          rev.id = d.id;
+          rev.at = Date.now();
+          userReviews.unshift(rev);
+          try { localStorage.setItem(USER_REVIEWS_KEY, JSON.stringify(userReviews.slice(0, 50))); } catch (e) {}
+          notifyReviewsChanged();
+          revForm.hidden = true;
+          revOpenBtn.style.display = '';
+          revStarBtns.forEach(function (x) { x.classList.remove('on'); });
+          revStars = 0;
+          document.getElementById('revName').value = '';
+          document.getElementById('revProduct').value = '';
+          document.getElementById('revText').value = '';
+          revErrEl.style.color = '#35E0A1';
+          revErrEl.textContent = 'Thanks! Your review is now visible on all devices. \u2713';
+        } else {
+          revErrEl.style.color = '#FF5C7A';
+          revErrEl.textContent = 'Failed to submit review. Please try again.';
         }
-      } catch (e) {}
-      notifyReviewsChanged();
-      revForm.hidden = true;
-      revOpenBtn.style.display = '';
-      revStarBtns.forEach(function (x) { x.classList.remove('on'); });
-      revStars = 0;
-      document.getElementById('revName').value = '';
-      document.getElementById('revProduct').value = '';
-      document.getElementById('revText').value = '';
-      revErrEl.textContent = 'Thanks! Your review is now visible on the website. \u2713';
-      revErrEl.style.color = '#35E0A1';
+        revSubmitBtn.disabled = false;
+        revSubmitBtn.textContent = 'Submit Review';
+      }).catch(function () {
+        revErrEl.style.color = '#FF5C7A';
+        revErrEl.textContent = 'Network error. Check your connection and try again.';
+        revSubmitBtn.disabled = false;
+        revSubmitBtn.textContent = 'Submit Review';
+      });
     });
   }
 
