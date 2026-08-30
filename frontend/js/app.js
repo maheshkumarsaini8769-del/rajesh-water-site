@@ -55,6 +55,10 @@
   var coSubmit = document.getElementById('coSubmit');
   var coContinue = document.getElementById('coContinue');
 
+  var bottomBar = document.getElementById('cartBottomBar');
+  var bottomItems = document.getElementById('cartBottomItems');
+  var bottomTotal = document.getElementById('cartBottomTotal');
+
   function money(n) { return '\u20B9' + fmt.format(n); }
 
   function cards() {
@@ -248,6 +252,23 @@
     });
   }
 
+  function renderBottomBar() {
+    if (!bottomBar) return;
+    var keys = Object.keys(cart);
+    if (keys.length === 0) { bottomBar.classList.remove('is-visible'); return; }
+    var names = [];
+    var total = 0;
+    keys.forEach(function (k) {
+      var it = cart[k];
+      names.push(it.label);
+      total += it.qty * it.price;
+    });
+    var summary = names.length <= 2 ? names.join(', ') : names.slice(0, 2).join(', ') + ' +' + (names.length - 2) + ' more';
+    if (bottomItems) { bottomItems.textContent = summary; }
+    if (bottomTotal) { bottomTotal.textContent = money(total); }
+    bottomBar.classList.add('is-visible');
+  }
+
   function renderFoot() {
     var has = Object.keys(cart).length > 0;
     if (foot) { foot.style.display = has ? '' : 'none'; }
@@ -288,6 +309,7 @@
     if (bar) { bar.classList.toggle('is-visible', tb > 0); }
     renderDrawer();
     renderFoot();
+    renderBottomBar();
   }
 
   function clearCart() {
@@ -786,6 +808,7 @@
   /* ---------- Cart wiring ---------- */
   if (cartBtn) { cartBtn.addEventListener('click', openDrawer); }
   if (bar) { bar.addEventListener('click', openDrawer); }
+  if (bottomBar) { bottomBar.addEventListener('click', openDrawer); }
   if (clearBtn) { clearBtn.addEventListener('click', clearCart); }
   if (closeBtn) { closeBtn.addEventListener('click', closeDrawer); }
   var backBtn = document.getElementById('drawerBack'); if (backBtn) { backBtn.addEventListener('click', closeDrawer); }
