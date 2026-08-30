@@ -1267,7 +1267,9 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
       var payload = {};
       try { payload = JSON.parse(nb || '{}'); } catch (e) {}
       var list = readNotifications();
-      if (payload.readAll) {
+      if (payload.deleteAll) {
+        list = [];
+      } else if (payload.readAll) {
         list.forEach(function (n) { n.read = true; });
       } else if (payload.ids && Array.isArray(payload.ids)) {
         var ids = payload.ids;
@@ -1276,6 +1278,23 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
       writeNotifications(list);
       var unread = list.filter(function (n) { return !n.read; }).length;
       send(res, 200, { ok: true, unread: unread });
+    });
+    return true;
+  }
+  if (req.method === 'POST' && pathname === '/api/notifications/delete') {
+    if (!requireAdmin(req, res)) return;
+    var db2 = '';
+    req.on('data', function (chunk) { db2 += chunk; if (db2.length > 1e6) req.destroy(); });
+    req.on('end', function () {
+      var payload = {};
+      try { payload = JSON.parse(db2 || '{}'); } catch (e) {}
+      var target = payload.id;
+      if (!target) { send(res, 400, { ok: false, error: 'id required' }); return; }
+      var list = readNotifications();
+      var before = list.length;
+      list = list.filter(function (n) { return n.id !== target; });
+      writeNotifications(list);
+      send(res, 200, { ok: true, removed: before - list.length });
     });
     return true;
   }

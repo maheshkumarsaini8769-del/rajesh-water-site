@@ -386,11 +386,17 @@
   .notif-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #1e2d3d; color: #fff; font-size: 13px; }
   .notif-mark-read { background: none; border: none; color: #38D9FF; cursor: pointer; font-size: 11px; padding: 2px 6px; border-radius: 6px; transition: background 0.2s; }
   .notif-mark-read:hover { background: rgba(56,217,255,0.12); }
+  .notif-actions { padding: 6px 16px; border-bottom: 1px solid #1e2d3d20; display: flex; justify-content: flex-end; }
+  .notif-clear-all { background: rgba(255,92,122,0.1); border: 1px solid rgba(255,92,122,0.3); color: #FF5C7A; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  .notif-clear-all:hover { background: rgba(255,92,122,0.2); }
   .notif-list { max-height: 360px; overflow-y: auto; }
-  .notif-item { padding: 10px 16px; border-bottom: 1px solid #1e2d3d15; cursor: pointer; transition: background 0.2s; }
+  .notif-item { padding: 10px 16px; border-bottom: 1px solid #1e2d3d15; transition: background 0.2s; }
   .notif-item:hover { background: rgba(56,217,255,0.06); }
   .notif-item.unread { border-left: 3px solid #38D9FF; background: rgba(56,217,255,0.04); }
-  .notif-item-title { color: #fff; font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .notif-item-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .notif-item-title { color: #fff; font-size: 12px; font-weight: 600; flex: 1; }
+  .notif-delete-btn { background: none; border: none; color: #5a6b6e; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1; border-radius: 4px; transition: all 0.2s; flex-shrink: 0; }
+  .notif-delete-btn:hover { color: #FF5C7A; background: rgba(255,92,122,0.12); }
   .notif-item-body { color: #8b9da0; font-size: 11px; line-height: 1.4; }
   .notif-item-time { color: #5a6b6e; font-size: 10px; margin-top: 3px; }
   .notif-empty { color: #5a6b6e; text-align: center; padding: 30px 16px; font-size: 12px; }
@@ -401,6 +407,14 @@
   .notif-reply-input:focus { border-color: #38D9FF; }
   .notif-reply-send { background: #38D9FF; color: #000; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
   .notif-reply-send:hover { background: #5ce6ff; }
+  @media (max-width: 480px) {
+    .notif-dropdown { width: calc(100vw - 20px); right: -10px; max-height: 60vh; }
+    .notif-head { padding: 10px 12px; font-size: 12px; }
+    .notif-item { padding: 8px 12px; }
+    .notif-item-title { font-size: 11px; }
+    .notif-item-body { font-size: 10px; }
+    .notif-actions { padding: 6px 12px; }
+  }
   .combo-wrap { position: relative; }
   .combo-wrap input[type="text"] { width: 100%; background: #0a0f18; border: 1px solid #1e2d3d; color: #fff; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none; }
   .combo-wrap input[type="text"]:focus { border-color: #38D9FF; }
@@ -546,10 +560,11 @@ function loadAdminBiz() {
 
   function renderNotifs(list) {
     if (!list || !list.length) { notifList.innerHTML = '<div class="notif-empty">No notifications yet</div>'; return; }
-    notifList.innerHTML = list.slice(0, 50).map(function (n) {
+    notifList.innerHTML = '<div class="notif-actions"><button class="notif-clear-all" id="notifClearAll" type="button">Clear All</button></div>' + list.slice(0, 50).map(function (n) {
       var replyBtn = n.orderId ? '<button class="notif-reply-btn" data-nid="' + n.id + '" data-phone="' + (n.phone || '') + '" type="button">Reply</button>' : '';
       return '<div class="notif-item' + (n.read ? '' : ' unread') + '" data-nid="' + n.id + '" data-order="' + (n.orderId || '') + '">' +
-        '<div class="notif-item-title">' + (n.title || 'Notification') + replyBtn + '</div>' +
+        '<div class="notif-item-top"><div class="notif-item-title">' + (n.title || 'Notification') + replyBtn + '</div>' +
+        '<button class="notif-delete-btn" data-nid="' + n.id + '" type="button" title="Delete">&times;</button></div>' +
         '<div class="notif-item-body">' + (n.body || '') + '</div>' +
         '<div class="notif-reply-box" id="replyBox-' + n.id + '" style="display:none">' +
           '<input type="text" class="notif-reply-input" id="replyInput-' + n.id + '" placeholder="Type reply message...">' +
@@ -558,6 +573,24 @@ function loadAdminBiz() {
         '<div class="notif-item-time">' + timeAgo(n.at) + '</div>' +
         '</div>';
     }).join('');
+    /* Bind delete buttons */
+    notifList.querySelectorAll('.notif-delete-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var nid = btn.getAttribute('data-nid');
+        fetch('/api/notifications/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': lsGet('rw_admin_tok') || '' },
+          body: JSON.stringify({ id: nid })
+        }).then(function () { fetchNotifs(); }).catch(function () {});
+      });
+    });
+    /* Bind Clear All */
+    var clearAll = notifList.querySelector('#notifClearAll');
+    if (clearAll) clearAll.addEventListener('click', function () {
+      fetch('/api/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': lsGet('rw_admin_tok') || '' }, body: JSON.stringify({ readAll: true, deleteAll: true }) })
+        .then(function () { fetchNotifs(); }).catch(function () {});
+    });
   }
 
   function playNotifSound() {
@@ -984,7 +1017,6 @@ function loadAdminBiz() {
 
   /* ---------- renderers ---------- */
   function render() {
-    if (!DATA) return;
     var tab = (ssGet('rwTab') || 'biz-dash');
     var content = $('content');
     /* Orders tab uses lightweight module — no need to wait for heavy BIZ */
@@ -996,6 +1028,7 @@ function loadAdminBiz() {
       $('tabTitle').textContent = 'Online Orders';
       return;
     }
+    if (!DATA) return;
     if (tab.indexOf('biz-') === 0) {
       if (window.BIZ && window.BIZ.render) {
         window.BIZ.render(tab);
