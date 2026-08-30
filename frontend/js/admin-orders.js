@@ -130,6 +130,9 @@
   /* ---- Full render (shell + cards) ---- */
   function renderShell() {
     if (!box) return;
+    var secCounts = { PENDING: 0, CONFIRMED: 0, COMPLETED: 0, CANCELLED: 0 };
+    orders.forEach(function (o) { var s = secOf(o); secCounts[s] = (secCounts[s] || 0) + 1; });
+    var todayCount = orders.filter(function (o) { var d = new Date(o.createdAt); return d.toDateString() === new Date().toDateString(); }).length;
     var html = '<div style="display:flex;align-items:center;gap:12px;padding:14px 0;flex-wrap:wrap">' +
       '<h3 style="flex:1;margin:0">Orders <span style="color:var(--muted);font-size:13px" id="ocntTotal">' + orders.length + ' total</span></h3>' +
       '<button class="btn small ghost" id="ordRefresh" type="button" style="font-size:18px;line-height:1" title="Refresh">&#8635;</button>' +
@@ -138,8 +141,9 @@
     html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
     ['ALL', 'TODAY', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].forEach(function (s) {
       var on = filter === s;
+      var cnt = s === 'ALL' ? orders.length : s === 'TODAY' ? todayCount : (secCounts[s] || 0);
       html += '<button data-osec="' + s + '" style="padding:6px 14px;border-radius:20px;border:1px solid ' + (on ? SEC_CLR[s] : 'var(--line)') + ';background:' + (on ? SEC_BG[s] : 'var(--panel2)') + ';color:' + (on ? SEC_CLR[s] : 'var(--muted)') + ';font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">' +
-        SEC_TXT[s] + ' <span id="ocnt_' + s + '" style="opacity:.7">' + (s === 'ALL' ? orders.length : s === 'TODAY' ? orders.filter(function (o) { var d = new Date(o.createdAt); return d.toDateString() === new Date().toDateString(); }).length : (secCounts[s] || 0)) + '</span></button>';
+        SEC_TXT[s] + ' <span id="ocnt_' + s + '" style="opacity:.7">' + cnt + '</span></button>';
     });
     html += '</div>';
 
