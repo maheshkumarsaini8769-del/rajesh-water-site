@@ -971,8 +971,7 @@ function loadAdminBiz() {
         var file = el.files && el.files[0];
         if (!file) return;
         var key = el.getAttribute('data-file');
-        toast('Processing image...');
-        /* Resize + compress before storing as base64 to keep site-data small */
+        toast('Uploading image...');
         var img = new Image();
         var url = URL.createObjectURL(file);
         img.onload = function () {
@@ -987,10 +986,35 @@ function loadAdminBiz() {
           cv.width = w; cv.height = h;
           cv.getContext('2d').drawImage(img, 0, 0, w, h);
           var dataUrl = cv.toDataURL('image/webp', 0.82);
-          setAt(DATA, key, dataUrl);
-          setDirty(true);
-          render();
-          toast('Image saved!');
+          var baseName = key.replace(/\./g, '-') + '-' + Date.now();
+          fetch('/api/upload', {
+            method: 'POST',
+            headers: adminAuthHeaders(),
+            body: JSON.stringify({ dataUrl: dataUrl, name: baseName })
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res && res.ok && res.path) {
+              setAt(DATA, key, res.path);
+              setDirty(true);
+              render();
+              toast('Image uploaded! Saving...');
+              save().then(function () {
+                fetch('/api/deploy', { method: 'POST', headers: adminAuthHeaders() })
+                  .then(function (r) { return r.json(); })
+                  .then(function (d) {
+                    if (d && d.ok) toast('Image updated on website!');
+                    else toast('Saved but deploy failed', true);
+                  }).catch(function () { toast('Saved locally', true); });
+              });
+            } else {
+              toast('Upload failed: ' + (res && res.error || 'unknown'), true);
+            }
+          }).catch(function (e) {
+            console.warn('[upload] error:', e);
+            setAt(DATA, key, dataUrl);
+            setDirty(true);
+            render();
+            toast('Upload failed — saved locally');
+          });
         };
         img.onerror = function () { URL.revokeObjectURL(url); toast('Failed to process image', true); };
         img.src = url;

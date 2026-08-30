@@ -201,14 +201,14 @@ window.SITE_DATA = {
   "products": [
     {
       "id": "p001",
-      "name": "Rajesh Premium Water",
+      "name": "Rajesh Test Upload",
       "label": "Bisleri 1 LITRE",
       "size": "1 LITRE",
       "category": "Premium Water",
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/bisleri.webp",
+      "img": "../images/test-product-img.png",
       "badge": "Bestseller",
       "featured": true
     },

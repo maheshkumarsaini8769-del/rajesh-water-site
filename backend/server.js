@@ -858,7 +858,7 @@ function adminOrderJson(o) {
 }
 
 async function handleAdminOrders(req, res) {
-  if (!requireAdmin(req, res)) return;
+  if (!requireAdmin(req, res)) return true;
   /* Always refresh from MongoDB on Vercel to avoid stale MEM */
   if (db.state().on) {
     try {
@@ -872,7 +872,7 @@ async function handleAdminOrders(req, res) {
 }
 
 async function handleAdminOrderStatus(req, res, payload) {
-  if (!requireAdmin(req, res)) return;
+  if (!requireAdmin(req, res)) return true;
   var id = String(payload.id || '');
   var status = String(payload.status || '');
   if (STATUSES.indexOf(status) === -1) { send(res, 400, { ok: false, error: 'invalid status' }); return; }
@@ -976,7 +976,7 @@ function recordCompletedOrderSale(o) {
 }
 
 function handleAdminOrderNote(req, res, payload) {
-  if (!requireAdmin(req, res)) return;
+  if (!requireAdmin(req, res)) return true;
   var id = String(payload.id || '');
   var note = String(payload.note || '').trim().slice(0, 1000);
   var d = readOrders();
@@ -992,7 +992,7 @@ function handleAdminOrderNote(req, res, payload) {
 }
 
 function handleAdminOrderDelete(req, res, payload) {
-  if (!requireAdmin(req, res)) return;
+  if (!requireAdmin(req, res)) return true;
   var id = String(payload.id || '');
   var d = readOrders();
   for (var i = 0; i < d.orders.length; i++) {
@@ -1132,7 +1132,7 @@ function handleApi(req, res, pathname) {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/biz') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var bb = '';
     req.on('data', function (chunk) { bb += chunk; if (bb.length > 4e6) req.destroy(); });
     req.on('end', async function () {
@@ -1159,7 +1159,7 @@ function handleApi(req, res, pathname) {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/site-data') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var sdb = '';
     req.on('data', function (chunk) { sdb += chunk; if (sdb.length > 10e6) req.destroy(); });
     req.on('end', async function () {
@@ -1177,11 +1177,11 @@ function handleApi(req, res, pathname) {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/deploy') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var projRoot = path.resolve(__dirname, '..');
     var cmds = [
-      'git add frontend/data/site-data.js',
-      'git commit -m "admin: update site-data (' + new Date().toISOString().slice(0, 19) + ')" --allow-empty',
+      'git add -A',
+      'git diff --cached --quiet || git commit -m "admin: update site content (' + new Date().toISOString().slice(0, 19) + ')"',
       'git push origin main'
     ].join(' && ');
     console.log('[deploy] running:', cmds);
@@ -1192,6 +1192,37 @@ function handleApi(req, res, pathname) {
       } else {
         console.log('[deploy] success:', stdout.trim());
         send(res, 200, { ok: true, output: stdout.trim().slice(0, 500) });
+      }
+    });
+    return true;
+  }
+  /* ---- Image upload: saves to frontend/images/, returns relative path ---- */
+  if (req.method === 'POST' && pathname === '/api/upload') {
+    if (!requireAdmin(req, res)) return true;
+    var ub = '';
+    req.on('data', function (chunk) { ub += chunk; if (ub.length > 10e6) req.destroy(); });
+    req.on('end', function () {
+      var payload = null;
+      try { payload = JSON.parse(ub || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
+      var dataUrl = String(payload.dataUrl || '');
+      var baseName = String(payload.name || ('upload-' + Date.now())).replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
+      if (!dataUrl || !dataUrl.startsWith('data:image/')) { send(res, 400, { ok: false, error: 'invalid image data' }); return; }
+      var m = dataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!m) { send(res, 400, { ok: false, error: 'bad data url format' }); return; }
+      var ext = m[1] === 'jpeg' ? 'jpg' : m[1];
+      var buf = Buffer.from(m[2], 'base64');
+      var fileName = baseName + '.' + ext;
+      var destDir = path.join(APP_DIR, 'images');
+      var destPath = path.join(destDir, fileName);
+      try { if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true }); } catch (e) {}
+      try {
+        fs.writeFileSync(destPath, buf);
+        var relPath = '../images/' + fileName;
+        console.log('[upload] saved', fileName, '(' + buf.length + ' bytes)', '→', relPath);
+        send(res, 200, { ok: true, path: relPath, fileName: fileName, size: buf.length });
+      } catch (e) {
+        console.error('[upload] write failed:', e.message);
+        send(res, 500, { ok: false, error: 'write failed: ' + e.message });
       }
     });
     return true;
@@ -1278,14 +1309,14 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/notifications') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var list = readNotifications();
     var unread = list.filter(function (n) { return !n.read; }).length;
     send(res, 200, { ok: true, notifications: list.slice(0, 100), unread: unread });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/notifications/read') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var nb = '';
     req.on('data', function (chunk) { nb += chunk; if (nb.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1307,7 +1338,7 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/notifications/delete') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var db2 = '';
     req.on('data', function (chunk) { db2 += chunk; if (db2.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1324,7 +1355,7 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/notifications/reply') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var rb = '';
     req.on('data', function (chunk) { rb += chunk; if (rb.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1350,13 +1381,13 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/whatsapp-config') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var wa = CFG.whatsapp || {};
     send(res, 200, { ok: true, enabled: !!wa.enabled, phoneId: wa.phoneId || '', owner: wa.owner || '917742735762' });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/whatsapp-config') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var wcb = '';
     req.on('data', function (chunk) { wcb += chunk; if (wcb.length > 1e6) req.destroy(); });
     req.on('end', function () {
@@ -1402,7 +1433,7 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
   }
   /* ---- Analytics / Event Tracking ---- */
   if (req.method === 'POST' && pathname === '/api/track') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     readBody(req, res, function (p) {
       var evt = { type: String(p.type || '').slice(0, 40), page: String(p.page || '').slice(0, 100), productId: String(p.productId || '').slice(0, 60), source: String(p.source || '').slice(0, 60), ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim().slice(0, 45), ua: String(req.headers['user-agent'] || '').slice(0, 200), at: Date.now() };
       if (!evt.type) { send(res, 400, { ok: false, error: 'type required' }); return; }
@@ -1412,7 +1443,7 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/track') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     if (db.state().on) { db.loadEvents().then(function (events) { send(res, 200, { ok: true, events: events || [] }); }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); }); }
     else { send(res, 200, { ok: true, events: [] }); }
     return true;
@@ -1428,13 +1459,13 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
   }
   /* ---- Archives (admin) ---- */
   if (req.method === 'GET' && pathname === '/api/archives') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     if (db.state().on) { db.loadArchives().then(function (list) { send(res, 200, { ok: true, archives: list || [] }); }).catch(function (e) { send(res, 500, { ok: false, error: e.message }); }); }
     else { send(res, 200, { ok: true, archives: [] }); }
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/admin/archive') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     readBody(req, res, function (p) {
       handleArchive(req, res, p);
     });
@@ -1442,7 +1473,7 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
   }
   /* ---- Dashboard Stats (admin) ---- */
   if (req.method === 'GET' && pathname === '/api/admin/dashboard') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     handleDashboard(req, res);
     return true;
   }
@@ -1460,7 +1491,7 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
 
   /* ---- Image upload (multipart/form-data) ---- */
   if (req.method === 'POST' && pathname === '/api/upload') {
-    if (!requireAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return true;
     var uploadDir = path.join(APP_DIR, 'uploads');
     try { if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true }); } catch (e) {}
     var bufs = [];
