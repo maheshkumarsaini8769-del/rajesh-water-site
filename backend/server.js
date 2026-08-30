@@ -29,6 +29,7 @@ var https = require('https');
 var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
+var exec = require('child_process').exec;
 var root = path.resolve(__dirname);            /* backend/ — data, config, secrets */
 var APP_DIR = path.resolve(__dirname, '..', 'frontend');  /* frontend/ — static site + admin UI */
 var port = Number(process.env.PORT || process.argv[2] || 3000);
@@ -1172,6 +1173,26 @@ function handleApi(req, res, pathname) {
         try { await db.saveSiteData(payload); } catch (e) { console.error('[mongo] site-data save failed:', e.message); }
       }
       send(res, 200, { ok: true });
+    });
+    return true;
+  }
+  if (req.method === 'POST' && pathname === '/api/deploy') {
+    if (!requireAdmin(req, res)) return;
+    var projRoot = path.resolve(__dirname, '..');
+    var cmds = [
+      'git add frontend/data/site-data.js',
+      'git commit -m "admin: update site-data (' + new Date().toISOString().slice(0, 19) + ')" --allow-empty',
+      'git push origin main'
+    ].join(' && ');
+    console.log('[deploy] running:', cmds);
+    exec(cmds, { cwd: projRoot, timeout: 30000 }, function (err, stdout, stderr) {
+      if (err) {
+        console.error('[deploy] failed:', stderr || err.message);
+        send(res, 200, { ok: false, error: (stderr || err.message || 'deploy failed').slice(0, 500) });
+      } else {
+        console.log('[deploy] success:', stdout.trim());
+        send(res, 200, { ok: true, output: stdout.trim().slice(0, 500) });
+      }
     });
     return true;
   }

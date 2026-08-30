@@ -1586,10 +1586,26 @@ function loadAdminBiz() {
         setDirty(false);
         clearDraft();
         toast(apiOk ? 'Saved \u2014 website updated live! \u2714' : 'Saved to file \u2014 deploy to update website. \u2714');
+        if (apiOk) {
+          toast('Saved \u2014 pushing to Vercel...');
+          fetch('/api/deploy', { method: 'POST', headers: adminAuthHeaders() })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              console.log('[admin-save] deploy result:', d);
+              if (d && d.ok) toast('Saved \u2014 deployed to Vercel! \u2714');
+              else toast('Saved locally \u2014 deploy failed: ' + (d && d.error || 'unknown'), true);
+            })
+            .catch(function (e) { console.warn('[admin-save] deploy error:', e); toast('Saved locally \u2014 deploy error', true); });
+        }
       } catch (e) {
         if (e && e.name === 'AbortError') { toast('Save cancelled.', true); }
         else if (!apiOk) { fallbackDownload(); }
-        else { DEFAULTS = clone(DATA); setDirty(false); clearDraft(); toast('Saved to server \u2014 website updated! \u2714'); }
+        else { DEFAULTS = clone(DATA); setDirty(false); clearDraft(); toast('Saved to server \u2014 website updated! \u2714');
+          fetch('/api/deploy', { method: 'POST', headers: adminAuthHeaders() })
+            .then(function (r) { return r.json(); })
+            .then(function (d) { console.log('[admin-save] deploy result:', d); if (d && d.ok) toast('Deployed to Vercel! \u2714'); })
+            .catch(function (e) { console.warn('[admin-save] deploy error:', e); });
+        }
       }
     } catch (e) {
       fallbackDownload();
