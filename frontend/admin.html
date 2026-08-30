@@ -971,39 +971,28 @@ function loadAdminBiz() {
         var file = el.files && el.files[0];
         if (!file) return;
         var key = el.getAttribute('data-file');
-        /* Auto background removal if library loaded */
-        if (window.ImageBackgroundRemoval && window.ImageBackgroundRemoval.removeBackground) {
-          toast('Removing background...');
-          window.ImageBackgroundRemoval.removeBackground(file).then(function (blob) {
-            var rd = new FileReader();
-            rd.onload = function () {
-              setAt(DATA, key, rd.result);
+        /* Upload to server as file, get URL back */
+        var fd = new FormData();
+        fd.append('file', file, file.name);
+        toast('Uploading image...');
+        fetch('/api/upload', { method: 'POST', headers: { 'x-admin-token': lsGet('rw_admin_tok') || '' }, body: fd })
+          .then(function (r) { return r.json(); }).then(function (d) {
+            if (d && d.ok && d.files && d.files[0]) {
+              setAt(DATA, key, d.files[0].url);
               setDirty(true);
               render();
-              toast('Background removed!');
-            };
-            rd.readAsDataURL(blob);
-          }).catch(function (err) {
-            console.warn('BG removal failed, using original:', err);
+              toast('Image uploaded!');
+            } else {
+              /* Fallback: store as base64 */
+              var rd = new FileReader();
+              rd.onload = function () { setAt(DATA, key, rd.result); setDirty(true); render(); toast('Saved locally (upload failed)'); };
+              rd.readAsDataURL(file);
+            }
+          }).catch(function () {
             var rd = new FileReader();
-            rd.onload = function () {
-              setAt(DATA, key, rd.result);
-              setDirty(true);
-              render();
-              toast('Used original image (bg removal failed)');
-            };
+            rd.onload = function () { setAt(DATA, key, rd.result); setDirty(true); render(); };
             rd.readAsDataURL(file);
           });
-        } else {
-          /* Library not loaded yet — use original image */
-          var rd = new FileReader();
-          rd.onload = function () {
-            setAt(DATA, key, rd.result);
-            setDirty(true);
-            render();
-          };
-          rd.readAsDataURL(file);
-        }
       });
     });
     root.querySelectorAll('button[data-clear]').forEach(function (el) {
@@ -1294,7 +1283,7 @@ function loadAdminBiz() {
     var rows = DATA.products.map(function (p, i) {
       return '<tr>' +
         '<td><img class="thumb" src="' + esc(p.img) + '" alt=""></td>' +
-        '<td><input type="text" data-k="products.' + i + '.img" value="' + esc(p.img) + '" style="width:130px" title="Image path (e.g. ../images/bisleri.webp)"></td>' +
+        '<td><div style="display:flex;gap:4px;align-items:center"><input type="text" data-k="products.' + i + '.img" value="' + esc(p.img) + '" style="width:110px" title="Image path"><label style="cursor:pointer;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel2);font-size:11px" title="Upload image">&#128247;<input type="file" accept="image/*" data-file="products.' + i + '.img" style="display:none"></label></div></td>' +
         '<td><input type="text" data-k="products.' + i + '.name" value="' + esc(p.name) + '" style="width:110px"></td>' +
         '<td><input type="text" data-k="products.' + i + '.label" value="' + esc(p.label) + '" style="width:150px"></td>' +
         '<td><input type="text" data-k="products.' + i + '.size" value="' + esc(p.size) + '" style="width:90px"></td>' +

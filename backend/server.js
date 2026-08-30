@@ -1158,7 +1158,7 @@ function handleApi(req, res, pathname) {
   if (req.method === 'POST' && pathname === '/api/site-data') {
     if (!requireAdmin(req, res)) return;
     var sdb = '';
-    req.on('data', function (chunk) { sdb += chunk; if (sdb.length > 3e6) req.destroy(); });
+    req.on('data', function (chunk) { sdb += chunk; if (sdb.length > 10e6) req.destroy(); });
     req.on('end', async function () {
       var payload = null;
       try { payload = JSON.parse(sdb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
@@ -1429,6 +1429,43 @@ if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
       tcLog('POST ' + req.url + ' body=' + JSON.stringify(p || {}).slice(0, 100));
       if (p && (p.requestId || p.accessToken || p.status)) { handleTcCallback(req, res, p); return; }
       send(res, 200, { ok: true });
+    });
+    return true;
+  }
+
+  /* ---- Image upload (multipart/form-data) ---- */
+  if (req.method === 'POST' && pathname === '/api/upload') {
+    if (!requireAdmin(req, res)) return;
+    var uploadDir = path.join(APP_DIR, 'uploads');
+    try { if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true }); } catch (e) {}
+    var bufs = [];
+    var boundary = '';
+    var ct = String(req.headers['content-type'] || '');
+    var bm = ct.match(/boundary=(.+)/);
+    if (bm) boundary = bm[1];
+    if (!boundary) { send(res, 400, { ok: false, error: 'no boundary' }); return; }
+    req.on('data', function (chunk) { bufs.push(chunk); });
+    req.on('end', function () {
+      var body = Buffer.concat(bufs);
+      var parts = body.toString('binary').split('--' + boundary);
+      var saved = [];
+      for (var i = 1; i < parts.length; i++) {
+        var part = parts[i];
+        var hdrEnd = part.indexOf('\r\n\r\n');
+        if (hdrEnd < 0) continue;
+        var hdr = part.substring(0, hdrEnd);
+        var data = part.substring(hdrEnd + 4);
+        if (data.endsWith('\r\n')) data = data.slice(0, -2);
+        if (data.endsWith('--')) data = data.slice(0, -2);
+        var nameM = hdr.match(/name="([^"]+)"/);
+        var fnM = hdr.match(/filename="([^"]+)"/);
+        if (!fnM || !nameM) continue;
+        var ext = path.extname(fnM[1]) || '.webp';
+        var fname = nameM[1].replace(/[^a-zA-Z0-9._-]/g, '_') + '-' + Date.now() + ext;
+        var fp = path.join(uploadDir, fname);
+        try { fs.writeFileSync(fp, Buffer.from(data, 'binary')); saved.push({ field: nameM[1], url: '/uploads/' + fname, name: fname }); } catch (e) {}
+      }
+      send(res, 200, { ok: true, files: saved });
     });
     return true;
   }
