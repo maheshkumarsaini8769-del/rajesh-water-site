@@ -1,8 +1,9 @@
 FROM node:20-slim
 
-# Chromium deps for whatsapp-web.js / puppeteer
+# Chromium + curl for healthcheck
 RUN apt-get update && apt-get install -y \
     chromium \
+    curl \
     fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
