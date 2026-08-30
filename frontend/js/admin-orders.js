@@ -12,9 +12,9 @@
   var initialized = false;
   var suppressPollUntil = 0; /* timestamp â€” don't poll while user just acted */
 
-  var SEC_TXT = { PENDING: 'PENDING', CONFIRMED: 'CONFIRMED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
-  var SEC_CLR = { PENDING: '#FFC857', CONFIRMED: '#38D9FF', COMPLETED: '#35E0A1', CANCELLED: '#FF5C7A' };
-  var SEC_BG = { PENDING: 'rgba(255,200,87,.06)', CONFIRMED: 'rgba(56,217,255,.06)', COMPLETED: 'rgba(53,224,161,.06)', CANCELLED: 'rgba(255,92,122,.06)' };
+  var SEC_TXT = { ALL: 'ALL', TODAY: 'TODAY', PENDING: 'PENDING', CONFIRMED: 'CONFIRMED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
+  var SEC_CLR = { ALL: '#bcc9ca', TODAY: '#a78bfa', PENDING: '#FFC857', CONFIRMED: '#38D9FF', COMPLETED: '#35E0A1', CANCELLED: '#FF5C7A' };
+  var SEC_BG = { ALL: 'rgba(188,201,202,.06)', TODAY: 'rgba(167,139,250,.06)', PENDING: 'rgba(255,200,87,.06)', CONFIRMED: 'rgba(56,217,255,.06)', COMPLETED: 'rgba(53,224,161,.06)', CANCELLED: 'rgba(255,92,122,.06)' };
 
   function secOf(o) {
     if (!o) return 'PENDING';
@@ -54,7 +54,14 @@
     orders.forEach(function (o) { var s = secOf(o); secCounts[s] = (secCounts[s] || 0) + 1; });
 
     var filtered = orders.filter(function (o) {
-      if (secOf(o) !== filter) return false;
+      if (filter === 'ALL') { /* show all */ }
+      else if (filter === 'TODAY') {
+        var d = new Date(o.createdAt);
+        var now = new Date();
+        if (d.toDateString() !== now.toDateString()) return false;
+      } else {
+        if (secOf(o) !== filter) return false;
+      }
       if (searchQ) {
         var q = searchQ.toLowerCase();
         return ((o.id || '') + ' ' + (o.name || '') + ' ' + (o.phone || '') + ' ' + (o.city || '') + ' ' + (o.address || '')).toLowerCase().indexOf(q) !== -1;
@@ -67,6 +74,10 @@
       var el = $('ocnt_' + s);
       if (el) el.textContent = secCounts[s] || 0;
     });
+    var allEl = $('ocnt_ALL');
+    if (allEl) allEl.textContent = orders.length;
+    var todayEl = $('ocnt_TODAY');
+    if (todayEl) todayEl.textContent = orders.filter(function (o) { var d = new Date(o.createdAt); return d.toDateString() === new Date().toDateString(); }).length;
     var pill = $('ocntTotal');
     if (pill) pill.textContent = orders.length;
 
@@ -125,10 +136,10 @@
       '</div>';
 
     html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
-    ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].forEach(function (s) {
+    ['ALL', 'TODAY', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].forEach(function (s) {
       var on = filter === s;
       html += '<button data-osec="' + s + '" style="padding:6px 14px;border-radius:20px;border:1px solid ' + (on ? SEC_CLR[s] : 'var(--line)') + ';background:' + (on ? SEC_BG[s] : 'var(--panel2)') + ';color:' + (on ? SEC_CLR[s] : 'var(--muted)') + ';font-size:12px;font-weight:700;cursor:pointer;transition:all .15s">' +
-        SEC_TXT[s] + ' <span id="ocnt_' + s + '" style="opacity:.7">0</span></button>';
+        SEC_TXT[s] + ' <span id="ocnt_' + s + '" style="opacity:.7">' + (s === 'ALL' ? orders.length : s === 'TODAY' ? orders.filter(function (o) { var d = new Date(o.createdAt); return d.toDateString() === new Date().toDateString(); }).length : (secCounts[s] || 0)) + '</span></button>';
     });
     html += '</div>';
 
@@ -164,7 +175,7 @@
     box.querySelectorAll('[data-osec]').forEach(function (b) {
       b.addEventListener('click', function () {
         filter = b.getAttribute('data-osec');
-        box.querySelectorAll('[data-osec]').forEach(function (x) { x.style.fontWeight = x === b ? '900' : '700'; });
+        updateFilterBtns();
         renderCards();
       });
     });
@@ -174,6 +185,18 @@
     if (search) {
       search.addEventListener('input', function () { searchQ = search.value; renderCards(); });
     }
+  }
+
+  function updateFilterBtns() {
+    if (!box) return;
+    box.querySelectorAll('[data-osec]').forEach(function (b) {
+      var s = b.getAttribute('data-osec');
+      var on = filter === s;
+      b.style.border = '1px solid ' + (on ? SEC_CLR[s] : 'var(--line)');
+      b.style.background = on ? SEC_BG[s] : 'var(--panel2)';
+      b.style.color = on ? SEC_CLR[s] : 'var(--muted)';
+      b.style.fontWeight = on ? '900' : '700';
+    });
   }
 
   function bindCardEvents() {
