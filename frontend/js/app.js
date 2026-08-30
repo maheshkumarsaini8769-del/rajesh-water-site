@@ -346,6 +346,7 @@
     if (countEl) { countEl.textContent = 'Showing ' + featCount + ' Products'; }
     if (allCountEl) { allCountEl.textContent = 'Showing ' + window.PRODUCTS.length + ' Products'; }
   }
+  window.renderProducts = renderProducts;
 
   /* ---------- Catalog steppers ---------- */
   document.addEventListener('click', function (e) {
