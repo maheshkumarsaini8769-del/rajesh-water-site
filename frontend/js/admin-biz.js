@@ -190,8 +190,9 @@
     if (window.fetch) {
       fetch('/api/biz').then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
-          if (d && Array.isArray(d.products)) {
-            S = d; S.loaded = true; apiOk = true;
+          var biz = (d && d.ok && d.content) ? d.content : d;
+          if (biz && Array.isArray(biz.products)) {
+            S = biz; S.loaded = true; apiOk = true;
             if (!S.settings) S.settings = { bizName: 'Rajesh Water', minStock: 15, initialCapital: 0 };
             if (!S.settings.seeded) { S.products = seedFromCatalog(); S.settings.seeded = true; saveBiz(true); }
             replayStock(S.products, S.purchases, S.sales, S.adjustments);
@@ -223,8 +224,9 @@
       var prevOrdSearch = S._ordSearch;
       fetch('/api/biz').then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
-          if (d && Array.isArray(d.products)) {
-            S = d; S.loaded = true; apiOk = true;
+          var biz = (d && d.ok && d.content) ? d.content : d;
+          if (biz && Array.isArray(biz.products)) {
+            S = biz; S.loaded = true; apiOk = true;
             S._ordSection = prevOrdSection;
             S._ordSearch = prevOrdSearch;
             if (!S.settings) S.settings = { bizName: 'Rajesh Water', minStock: 15, initialCapital: 0 };
