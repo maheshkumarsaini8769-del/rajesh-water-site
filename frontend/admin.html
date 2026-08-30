@@ -766,13 +766,43 @@ function loadAdminBiz() {
     return DEFAULTS;
   }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  var _autoSaveTimer = null;
+  var _autoSaving = false;
+  function scheduleAutoSave() {
+    if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(function () {
+      _autoSaveTimer = null;
+      if (!dirty || _autoSaving) return;
+      _autoSaving = true;
+      fetch('/api/site-data', {
+        method: 'POST',
+        headers: adminAuthHeaders(),
+        body: JSON.stringify(DATA)
+      }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res && res.ok) {
+          DEFAULTS = clone(DATA);
+          setDirty(false);
+          clearDraft();
+          toast('Auto-saved!');
+          fetch('/api/deploy', { method: 'POST', headers: adminAuthHeaders() })
+            .then(function (r) { return r.json(); })
+            .then(function (d) { if (d && d.ok) toast('Deployed to website!'); })
+            .catch(function () {});
+        } else {
+          toast('Auto-save failed: ' + (res && res.error || 'unknown'), true);
+        }
+      }).catch(function () {
+        toast('Auto-save failed — server offline', true);
+      }).finally(function () { _autoSaving = false; });
+    }, 2000);
+  }
   function setDirty(v) {
     dirty = v;
     $('saveState').textContent = v ? '\u25CF Unsaved changes' : 'All changes saved';
     $('saveState').className = 'st' + (v ? ' dirty' : '');
     $('saveBtn').disabled = !v;
     $('revertBtn').disabled = !v;
-    if (v) backupDraft();
+    if (v) { backupDraft(); scheduleAutoSave(); }
   }
 
   /* ---------- login (server-side auth) ---------- */
