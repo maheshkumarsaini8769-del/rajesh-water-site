@@ -91,7 +91,7 @@ function readReviews() {
 }
 function writeReviews(list) {
   MEM.reviews = list;
-  try { fs.writeFileSync(REVIEW_FILE, JSON.stringify(list, null, 2)); } catch (e) {}
+  if (!process.env.VERCEL) { try { fs.writeFileSync(REVIEW_FILE, JSON.stringify(list, null, 2)); } catch (e) {} }
   if (db.state().on) db.saveReviews(list).catch(function (err) { db.markError('reviews', err); });
 }
 
@@ -127,7 +127,7 @@ function readBiz() {
 }
 function writeBiz(b) {
   MEM.biz = b;
-  try { fs.writeFileSync(BIZ_FILE, JSON.stringify(b, null, 2)); } catch (e) {}
+  if (!process.env.VERCEL) { try { fs.writeFileSync(BIZ_FILE, JSON.stringify(b, null, 2)); } catch (e) {} }
   if (db.state().on) db.saveBiz(b).catch(function (err) { db.markError('biz', err); });
 }
 
@@ -145,7 +145,7 @@ function readSiteDataJs() {
 }
 function writeSiteDataJs(obj) {
   MEM.siteData = obj;
-  try { fs.writeFileSync(SITE_DATA_FILE, 'window.SITE_DATA = ' + JSON.stringify(obj, null, 2) + ';\n'); } catch (e) {}
+  if (!process.env.VERCEL) { try { fs.writeFileSync(SITE_DATA_FILE, 'window.SITE_DATA = ' + JSON.stringify(obj, null, 2) + ';\n'); } catch (e) {} }
   if (db.state().on) db.saveSiteData(obj).catch(function (err) { db.markError('sitedata', err); });
 }
 
@@ -161,7 +161,7 @@ function readNotifications() {
 }
 function writeNotifications(list) {
   MEM.notifications = list;
-  try { fs.writeFileSync(NOTIF_FILE, JSON.stringify(list, null, 2)); } catch (e) {}
+  if (!process.env.VERCEL) { try { fs.writeFileSync(NOTIF_FILE, JSON.stringify(list, null, 2)); } catch (e) {} }
   if (db.state().on) db.saveNotifications(list).catch(function (err) { db.markError('notifications', err); });
 }
 function pushNotification(type, orderId, title, body, phone) {
@@ -1085,7 +1085,7 @@ function handleApi(req, res, pathname) {
   if (req.method === 'POST' && (pathname === '/api/reviews' || pathname === '/api/reviews/delete')) {
     var body = '';
     req.on('data', function (chunk) { body += chunk; if (body.length > 1e6) req.destroy(); });
-    req.on('end', function () {
+    req.on('end', async function () {
       var payload = {};
       try { payload = JSON.parse(body || '{}'); } catch (e) {}
       var list = readReviews();
@@ -1103,7 +1103,10 @@ function handleApi(req, res, pathname) {
           };
           list.unshift(rev);
           if (list.length > 200) list = list.slice(0, 200);
-          writeReviews(list);
+          MEM.reviews = list;
+          if (db.state().on) {
+            try { await db.saveReviews(list); } catch (e) { console.error('[mongo] reviews save failed:', e.message); }
+          }
           send(res, 200, { ok: true, id: rev.id });
         } else {
           send(res, 400, { ok: false, error: 'bad review' });
@@ -1112,7 +1115,10 @@ function handleApi(req, res, pathname) {
         var target = payload.id;
         var before = list.length;
         list = list.filter(function (x) { return x.id !== target; });
-        writeReviews(list);
+        MEM.reviews = list;
+        if (db.state().on) {
+          try { await db.saveReviews(list); } catch (e) { console.error('[mongo] reviews delete failed:', e.message); }
+        }
         send(res, 200, { ok: true, removed: before - list.length });
       }
     });
@@ -1126,7 +1132,7 @@ function handleApi(req, res, pathname) {
     if (!requireAdmin(req, res)) return;
     var bb = '';
     req.on('data', function (chunk) { bb += chunk; if (bb.length > 4e6) req.destroy(); });
-    req.on('end', function () {
+    req.on('end', async function () {
       var payload = null;
       try { payload = JSON.parse(bb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
       if (!payload || !Array.isArray(payload.products)) { send(res, 400, { ok: false, error: 'not a business doc' }); return; }
@@ -1137,7 +1143,10 @@ function handleApi(req, res, pathname) {
       if (payload.sales) cur.sales = payload.sales;
       if (payload.adjustments) cur.adjustments = payload.adjustments;
       if (payload.settings) cur.settings = payload.settings;
-writeBiz(cur);
+      MEM.biz = cur;
+      if (db.state().on) {
+        try { await db.saveBiz(cur); } catch (e) { console.error('[mongo] biz save failed:', e.message); }
+      }
       send(res, 200, { ok: true });
     });
     return true;
@@ -1150,11 +1159,14 @@ writeBiz(cur);
     if (!requireAdmin(req, res)) return;
     var sdb = '';
     req.on('data', function (chunk) { sdb += chunk; if (sdb.length > 3e6) req.destroy(); });
-    req.on('end', function () {
+    req.on('end', async function () {
       var payload = null;
       try { payload = JSON.parse(sdb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) { send(res, 400, { ok: false, error: 'site data must be a json object' }); return; }
-      writeSiteDataJs(payload);
+      MEM.siteData = payload;
+      if (db.state().on) {
+        try { await db.saveSiteData(payload); } catch (e) { console.error('[mongo] site-data save failed:', e.message); }
+      }
       send(res, 200, { ok: true });
     });
     return true;
