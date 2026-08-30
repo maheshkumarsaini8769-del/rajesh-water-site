@@ -8,7 +8,7 @@
 window.SITE_DATA = {
   "version": 1,
   "admin": {
-    "passcode": "admin123"
+    "passcode": "7742"
   },
   "brand": {
     "name": "Rajesh Water",

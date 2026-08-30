@@ -225,6 +225,16 @@
     if (!document.hidden) doFetchLive();
   });
 
+  if (window.location.protocol === 'file:') {
+    console.warn('[site-content] WARNING: Page opened via file:// — admin changes will NOT reflect live. Open through http://localhost:3000/ instead.');
+    document.addEventListener('DOMContentLoaded', function () {
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff4444;color:#fff;text-align:center;padding:10px;font:14px/1.4 sans-serif;';
+      banner.textContent = 'Warning: Site opened via file:// — admin changes won\'t reflect. Open via http://localhost:3000/';
+      document.body.appendChild(banner);
+    });
+  }
+
   window.siteApplyContent = applyStatic;
   window.siteContentApplied = true;
 })();
