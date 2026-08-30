@@ -706,7 +706,7 @@ async function handleOrderCreate(req, res, payload) {
   if (db.state().on) {
     try {
       var fresh = await db.loadOrders();
-      if (fresh && Array.isArray(fresh.orders)) writeOrders(fresh);
+      if (fresh && Array.isArray(fresh.orders)) MEM.orders = fresh;
     } catch (e) {}
   }
   var name = String(payload.name || '').trim().slice(0, 80);
@@ -793,7 +793,7 @@ async function handleOrderCreate(req, res, payload) {
   d.orders.unshift(order);
   if (d.orders.length > 1000) d.orders = d.orders.slice(0, 1000);
   if (nonce) { NONCES.add(nonce); if (NONCES.size > 5000) NONCES.clear(); }
-writeOrders(d);
+  MEM.orders = d;
   /* Ensure MongoDB has the order before responding — critical on Vercel */
   if (db.state().on) {
     try { await db.saveOrders(d); } catch (e) { console.error('[create] mongo save failed:', e.message); }
@@ -931,7 +931,7 @@ async function handleAdminOrders(req, res) {
   if (db.state().on) {
     try {
       var fresh = await db.loadOrders();
-      if (fresh && Array.isArray(fresh.orders)) writeOrders(fresh);
+      if (fresh && Array.isArray(fresh.orders)) { MEM.orders = fresh; }
     } catch (e) {}
   }
   var d = readOrders();
@@ -991,7 +991,7 @@ if (status === 'completed') {
         o.saleSkipped = saleInfo.skipped;
         console.log('[sales] #' + o.id + ' completed \u2014 recorded ' + saleInfo.recorded + ' sale line(s) into business.json' + (saleInfo.skipped.length ? '; skipped unmatched: ' + saleInfo.skipped.join(', ') : '') + '.');
       }
-writeOrders(d);
+      MEM.orders = d;
       /* Ensure MongoDB has the update before responding */
       if (db.state().on) { try { await db.saveOrders(d); } catch (e) { console.error('[status] mongo save failed:', e.message); } }
       send(res, 200, { ok: true, status: status, id: id, section: SECTION_LABEL[status] });
