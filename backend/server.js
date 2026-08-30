@@ -1197,9 +1197,9 @@ function handleApi(req, res, pathname) {
   }
   if (req.method === 'GET' && pathname === '/api/biz') {
     readBiz().then(function (data) {
-      send(res, 200, { ok: true, content: data });
+      send(res, 200, data);
     }).catch(function () {
-      send(res, 200, { ok: true, content: JSON.parse(JSON.stringify(EMPTY_BIZ)) });
+      send(res, 200, JSON.parse(JSON.stringify(EMPTY_BIZ)));
     });
     return true;
   }
