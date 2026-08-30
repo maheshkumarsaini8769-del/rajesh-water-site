@@ -1,9 +1,9 @@
-﻿"use strict"; /* v2.1 */
-/* Lightweight Orders Module â€” v2
+﻿"use strict"; /* v2.2 */
+/* Lightweight Orders Module — v2
    Fixes: no focus loss on search, no revert after status change, faster loading */
 
 (function () {
-  var token = (function () { try { return localStorage.getItem('rw_admin_tok') || ''; } catch (e) { return ''; } })();
+  function getToken() { try { return localStorage.getItem('rw_admin_tok') || ''; } catch (e) { return ''; } }
   var orders = [];
   var filter = 'PENDING';
   var searchQ = '';
@@ -32,7 +32,7 @@
   function apiFetch(url, opts, cb) {
     opts = opts || {};
     opts.headers = opts.headers || {};
-    opts.headers['x-admin-token'] = token;
+    opts.headers['x-admin-token'] = getToken();
     fetch(url, opts).then(function (r) {
       if (r.status === 401) { cb({ needLogin: true }); return; }
       r.json().catch(function () { return null; }).then(function (d) { cb(d || {}); });
