@@ -213,7 +213,7 @@ window.SITE_DATA = {
       "price": 20,
       "boxSize": 12,
       "minBoxes": 1,
-      "img": "../images/products-0-img-1788085822293.webp",
+      "img": "../images/products-0-img-1788085839242.webp",
       "badge": "Bestseller",
       "featured": true
     },
