@@ -1,10 +1,3 @@
-﻿/* ============================================================
-   Rajesh Water - site-data.js  (generated)
-   SINGLE SOURCE OF TRUTH - edit via admin.html
-   (https://localhost:3000/admin.html)
-   Passcode default: admin123 - change it in Admin > Settings
-   ============================================================ */
-
 window.SITE_DATA = {
   "version": 1,
   "admin": {
@@ -35,8 +28,20 @@ window.SITE_DATA = {
     "trust1": "Fast Delivery",
     "trust2": "Quality Checked",
     "trust3": "Bulk Orders",
-    "stageImg": ["", "", "", "", ""],
-    "deliverImg": ["", "", "", "", ""]
+    "stageImg": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "deliverImg": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
   },
   "featured": {
     "title": "Featured Boxes",
@@ -179,10 +184,10 @@ window.SITE_DATA = {
       }
     ]
   },
-    "catalog": {
+  "catalog": {
     "badge": "Full Catalog",
     "title": "All Products",
-    "sub": "Every water bottle and cold drink we supply \u2014 sealed boxes, wholesale-friendly pricing."
+    "sub": "Every water bottle and cold drink we supply — sealed boxes, wholesale-friendly pricing."
   },
   "footer": {
     "about": "Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.",
@@ -196,7 +201,7 @@ window.SITE_DATA = {
   "products": [
     {
       "id": "p001",
-      "name": "Bisleri",
+      "name": "Rajesh Premium Water",
       "label": "Bisleri 1 LITRE",
       "size": "1 LITRE",
       "category": "Premium Water",
@@ -555,5 +560,3 @@ window.SITE_DATA = {
     }
   ]
 };
-
-
