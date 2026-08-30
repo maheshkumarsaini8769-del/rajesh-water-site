@@ -23,13 +23,13 @@ window.SITE_DATA = {
     "cartName": "RAJESH WATER",
     "supportMsg": "Hello Rajesh Water, I need help with my order.",
     "bulkMsg": "Hello Rajesh Water, I'm interested in bulk supply.",
-    "hours": "Every day, 8:00 AM â€“ 8:00 PM. Bulk orders can schedule earlier slots."
+    "hours": "Every day, 8:00 AM “ 8:00 PM. Bulk orders can schedule earlier slots."
   },
   "hero": {
-    "eyebrow": "Pure â€¢ Fresh â€¢ Delivered",
+    "eyebrow": "Pure • Fresh • Delivered",
     "headline1": "The Art of",
     "headline2": "Pure Water",
-    "lede": "Premium bottled water and cold drinks, sourced clean and quality checked at every stage. Supplied in bulk to homes, offices, hotels and events â€” delivered cold, delivered fast.",
+    "lede": "Premium bottled water and cold drinks, sourced clean and quality checked at every stage. Supplied in bulk to homes, offices, hotels and events — delivered cold, delivered fast.",
     "cta1": "Order Now",
     "cta2": "Explore Products",
     "trust1": "Fast Delivery",
@@ -60,9 +60,9 @@ window.SITE_DATA = {
   "about": {
     "badge": "About Us",
     "title": "Pure Water, Delivered with Trust.",
-    "para1": "Rajesh Water is a trusted bottled water and beverage supplier for homes, offices, hotels and events. Har box fresh stock se bhar jata hai â€” sealed bottles, clean packing aur quality check har delivery ke pehle.",
-    "para2": "From a single box to full bulk supply, humara promise wahi hai â€” fresh stock, on-time delivery aur transparent pricing. Regular monthly supply ho ya wedding function, hamara delivery team waqt par pohonchta hai.",
-    "para3": "Ordering is simple: pick your bottles, WhatsApp par order bhejo, aur hum chilling kiye fresh boxes aapke doorstep par chhod jayenge. Bulk rates ke liye direct baat karein â€” office, hotel aur event ke liye best prices.",
+    "para1": "Rajesh Water is a trusted bottled water and beverage supplier for homes, offices, hotels and events. Har box fresh stock se bhar jata hai — sealed bottles, clean packing aur quality check har delivery ke pehle.",
+    "para2": "From a single box to full bulk supply, humara promise wahi hai — fresh stock, on-time delivery aur transparent pricing. Regular monthly supply ho ya wedding function, hamara delivery team waqt par pohonchta hai.",
+    "para3": "Ordering is simple: pick your bottles, WhatsApp par order bhejo, aur hum chilling kiye fresh boxes aapke doorstep par chhod jayenge. Bulk rates ke liye direct baat karein — office, hotel aur event ke liye best prices.",
     "p1t": "Quality Checked",
     "p1s": "Sealed bottles, checked stock",
     "p2t": "On-Time",
@@ -75,7 +75,7 @@ window.SITE_DATA = {
     "s2v": "Boxes min. order",
     "s3n": "100%",
     "s3v": "Sealed & checked",
-    "s4n": "24Ã—7",
+    "s4n": "24×7",
     "s4v": "WhatsApp support",
     "btn1": "Order on WhatsApp",
     "btn2": "View Products",
@@ -85,20 +85,20 @@ window.SITE_DATA = {
   },
   "slot": {
     "title": "Pure. Packed. Delivered Fresh.",
-    "sub": "Premium packaged drinking water â€” chilled, sealed and at your doorstep, box after box, every day."
+    "sub": "Premium packaged drinking water — chilled, sealed and at your doorstep, box after box, every day."
   },
   "support": {
     "badge": "We're Here to Help",
     "title": "Support",
     "sub": "Questions about an order, delivery or bulk supply? Reach us directly.",
     "c1t": "WhatsApp Support",
-    "c1d": "Fastest way to reach us â€” order help, delivery status or queries.",
+    "c1d": "Fastest way to reach us — order help, delivery status or queries.",
     "c1l": "Chat on WhatsApp →",
     "c2t": "Call Us",
     "c2d": "Speak to our supply team directly for urgent requirements.",
     "c2l": "+91 77427 35762 →",
     "c3t": "Delivery Hours",
-    "c3d": "Every day, 8:00 AM â€“ 8:00 PM. Bulk orders can schedule earlier slots.",
+    "c3d": "Every day, 8:00 AM “ 8:00 PM. Bulk orders can schedule earlier slots.",
     "c3l": "7 days a week"
   },
   "reviews": {
@@ -116,7 +116,7 @@ window.SITE_DATA = {
       {
         "name": "Priya Verma",
         "rating": 5,
-        "text": "Ordered for a family function â€” the 2 LITRE boxes worked perfectly for 150+ guests.",
+        "text": "Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.",
         "product": "2 LITRE Box",
         "date": "Jul 2026",
         "demo": true
@@ -156,7 +156,7 @@ window.SITE_DATA = {
       {
         "name": "Priya Verma",
         "rating": 5,
-        "text": "Ordered for a family function â€” the 2 LITRE boxes worked perfectly for 150+ guests.",
+        "text": "Ordered for a family function — the 2 LITRE boxes worked perfectly for 150+ guests.",
         "meta": "2 LITRE Box · Family event"
       },
       {
@@ -185,8 +185,8 @@ window.SITE_DATA = {
     "sub": "Every water bottle and cold drink we supply \u2014 sealed boxes, wholesale-friendly pricing."
   },
   "footer": {
-    "about": "Sealed, quality-checked water bottles and cold drinks â€” delivered fresh in sturdy boxes to homes, offices, hotels and events.",
-    "copyright": "Â© 2026 Rajesh Water. All rights reserved."
+    "about": "Sealed, quality-checked water bottles and cold drinks — delivered fresh in sturdy boxes to homes, offices, hotels and events.",
+    "copyright": "© 2026 Rajesh Water. All rights reserved."
   },
   "theme": {
     "accent": "#00aeef",

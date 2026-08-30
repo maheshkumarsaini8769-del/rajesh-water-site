@@ -10,7 +10,7 @@
   var refreshTimer = null;
   var box = null;
   var initialized = false;
-  var suppressPollUntil = 0; /* timestamp â€” don't poll while user just acted */
+  var suppressPollUntil = 0; /* timestamp — don't poll while user just acted */
 
   var SEC_TXT = { ALL: 'ALL', TODAY: 'TODAY', PENDING: 'PENDING', CONFIRMED: 'CONFIRMED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
   var SEC_CLR = { ALL: '#bcc9ca', TODAY: '#a78bfa', PENDING: '#FFC857', CONFIRMED: '#38D9FF', COMPLETED: '#35E0A1', CANCELLED: '#FF5C7A' };

@@ -1,5 +1,5 @@
 ﻿/* ============================================================
-   AQUALINE Ã¢â‚¬â€ Home page interactions
+   AQUALINE — Home page interactions
    Coverflow-style bottle slider (ported from the Framer
    coverflow pattern): one `pos` value drives every card; the
    active card is a large centre card, neighbours are flat
@@ -52,12 +52,12 @@ function updateSizing() {
     return (rel < 0 ? -1 : 1) * mag;
   }
 
-  // 0 at centre Ã¢â€ â€™ 1 one full slot away
+  // 0 at centre  ™ 1 one full slot away
   function blendForRel(rel) {
     return Math.min(Math.abs(rel), 1);
   }
 
-  // cards visible on each side (seam hidden at Ã‚Â±count/2)
+  // cards visible on each side (seam hidden at ±count/2)
   var R = Math.max(1, Math.min(6, Math.floor(count / 2) - 1));
 
   /* ---------------- Driver state ---------------- */
@@ -187,7 +187,7 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
     if (e.key === "ArrowRight") goNext();
   });
 
-  // click a side card Ã¢â€ â€™ jump to it
+  // click a side card  ™ jump to it
   spins.forEach(function (sp, i) {
     sp.addEventListener("click", function () {
       if (drag.didMove) return; location.href = "products.html";
@@ -393,7 +393,7 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
 
 
 
-/* ================ WHAT WE DELIVER â€” scroll-driven cinematic scene ================ */
+/* ================ WHAT WE DELIVER — scroll-driven cinematic scene ================ */
 
 (function () {
   "use strict";

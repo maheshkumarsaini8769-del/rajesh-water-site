@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rajesh Water â€” Admin Panel</title>
+<title>Rajesh Water — Admin Panel</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%2300aeef'/></svg>">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -433,7 +433,7 @@
   <div class="box">
     <div class="drop"></div>
     <h2>Admin Panel</h2>
-    <p>Rajesh Water â€” content manager</p>
+    <p>Rajesh Water — content manager</p>
     <input id="pw" type="password" placeholder="Passcode" autocomplete="off">
     <div class="err" id="pwErr"></div>
     <button class="btn" id="pwBtn" style="width:100%">Unlock</button>
@@ -1259,7 +1259,7 @@ function loadAdminBiz() {
     var newReviews = window.NEW_REVIEWS || [];
     if (newReviews.length) {
       out += '<div class="card"><h3>New Reviews From Website <span class="pill warn">' + newReviews.length + ' pending</span></h3>' +
-        '<div class="sub">Reviews from the site (all visitors) â€” website par turant dikhte hain. Keep = permanently circle me save karo (site data me). Delete = website se hata do.</div>';
+        '<div class="sub">Reviews from the site (all visitors) — website par turant dikhte hain. Keep = permanently circle me save karo (site data me). Delete = website se hata do.</div>';
       newReviews.forEach(function (r, i) {
         out += oneLineReview(r,
           '<button class="btn small" data-act="keep" data-i="' + i + '">✓ Keep</button>' +
@@ -1271,7 +1271,7 @@ function loadAdminBiz() {
         '<div class="sub">Koi naya review nahi aaya. Reviews submit karne par yahaan aate hain.</div></div>';
     }
     out += '<div class="card"><h3>Review Cards</h3>' +
-      '<div class="sub">Only for viewing and deleting â€” edits aap site-data.js me nahi, yahaan se nahi ho sakte.</div>';
+      '<div class="sub">Only for viewing and deleting — edits aap site-data.js me nahi, yahaan se nahi ho sakte.</div>';
     g.forEach(function (r, i) {
       out += oneLineReview(r,
         '<button class="btn small reply-toggle-btn" data-source="grid" data-idx="' + i + '">' + (r.reply ? '\u2713 Replied' : '\u21a9 Reply') + '</button>' +
@@ -1332,12 +1332,12 @@ function loadAdminBiz() {
   function rTheme() {
     return '' +
       '<div class="card"><h3>Site Highlight Color</h3><div class="grid">' +
-      '<div class="field"><label>Main highlight (icy cyan)</label><input type="color" data-k="theme.accent" value="' + esc(DATA.theme.accent) + '"><div class="hint">Default #38D9FF. Tints the whole site â€” eyebrows, brand name, borders, glows. Change it to any color and the whole theme shifts with it.</div></div>' +
-      '<div class="field"><label>Deep tone (logo gradient + shadows)</label><input type="color" data-k="theme.deep" value="' + esc(DATA.theme.deep) + '"><div class="hint">Default #0B5C7C â€” used with the logo drop and button gradients.</div></div>' +
+      '<div class="field"><label>Main highlight (icy cyan)</label><input type="color" data-k="theme.accent" value="' + esc(DATA.theme.accent) + '"><div class="hint">Default #38D9FF. Tints the whole site — eyebrows, brand name, borders, glows. Change it to any color and the whole theme shifts with it.</div></div>' +
+      '<div class="field"><label>Deep tone (logo gradient + shadows)</label><input type="color" data-k="theme.deep" value="' + esc(DATA.theme.deep) + '"><div class="hint">Default #0B5C7C — used with the logo drop and button gradients.</div></div>' +
       '</div></div>' +
       '<div class="card"><h3>Motion</h3>' +
       '<div class="row"><input type="checkbox" data-chex="theme.animate" id="animChk"' + (DATA.theme.animate !== false ? ' checked' : '') + '><label for="animChk" style="color:var(--muted)">Keep all animations on (planet, waves, buttons)</label></div>' +
-      '<div class="hint" style="margin-top:8px">Switch off to freeze every animation on the whole site â€” useful for calm, print-style or very old devices.</div></div>';
+      '<div class="hint" style="margin-top:8px">Switch off to freeze every animation on the whole site — useful for calm, print-style or very old devices.</div></div>';
   }
 
   function rSettings() {
@@ -1616,7 +1616,7 @@ function loadAdminBiz() {
     DEFAULTS = clone(DATA);
     setDirty(false);
     clearDraft();
-    toast('Downloaded site-data.js â€” put this file in the data/ folder (replace the old one), then refresh the site.');
+    toast('Downloaded site-data.js — put this file in the data/ folder (replace the old one), then refresh the site.');
   }
   function doExport() {
     var blob = new Blob([serialize()], { type: 'application/javascript' });
