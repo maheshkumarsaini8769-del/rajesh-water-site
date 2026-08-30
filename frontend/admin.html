@@ -593,7 +593,7 @@ function loadAdminBiz() {
   }
 
   function fetchNotifs() {
-    fetch('/api/notifications').then(function (r) { return r.json(); }).then(function (d) {
+    fetch('/api/notifications', { headers: { 'x-admin-token': lsGet('rw_admin_tok') || '' } }).then(function (r) { return r.json(); }).then(function (d) {
       if (!d || !d.ok) return;
       var unread = d.unread || 0;
       if (unread > 0) {
@@ -630,7 +630,7 @@ function loadAdminBiz() {
 
   if (notifMarkRead) {
     notifMarkRead.addEventListener('click', function () {
-      fetch('/api/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ readAll: true }) })
+      fetch('/api/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': lsGet('rw_admin_tok') || '' }, body: JSON.stringify({ readAll: true }) })
         .then(function () { fetchNotifs(); }).catch(function () {});
     });
   }
@@ -657,7 +657,7 @@ function loadAdminBiz() {
         sendBtn.disabled = true;
         fetch('/api/notifications/reply', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': lsGet('rw_admin_tok') || '' },
           body: JSON.stringify({ nid: rNid, phone: rPhone, message: msg })
         }).then(function (r) { return r.json(); }).then(function (d) {
           if (d && d.ok) {
@@ -680,7 +680,7 @@ function loadAdminBiz() {
       if (!item) return;
       var nid = item.getAttribute('data-nid');
       var oid = item.getAttribute('data-order');
-      fetch('/api/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: [nid] }) })
+        fetch('/api/notifications/read', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': lsGet('rw_admin_tok') || '' }, body: JSON.stringify({ ids: [nid] }) })
         .then(function () { fetchNotifs(); }).catch(function () {});
       if (oid) { notifDropdown.style.display = 'none'; }
     });
