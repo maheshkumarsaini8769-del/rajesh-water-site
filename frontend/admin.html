@@ -768,11 +768,13 @@ function loadAdminBiz() {
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   var _autoSaveTimer = null;
   var _autoSaving = false;
+  var _uploadInProgress = false;
   function scheduleAutoSave() {
     if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+    if (_uploadInProgress) return;
     _autoSaveTimer = setTimeout(function () {
       _autoSaveTimer = null;
-      if (!dirty || _autoSaving) return;
+      if (!dirty || _autoSaving || _uploadInProgress) return;
       _autoSaving = true;
       fetch('/api/site-data', {
         method: 'POST',
@@ -1001,7 +1003,8 @@ function loadAdminBiz() {
         var file = el.files && el.files[0];
         if (!file) return;
         var key = el.getAttribute('data-file');
-        toast('Uploading image...');
+        _uploadInProgress = true;
+        toast('Removing background...');
         var img = new Image();
         var url = URL.createObjectURL(file);
         img.onload = function () {
@@ -1015,38 +1018,56 @@ function loadAdminBiz() {
           var cv = document.createElement('canvas');
           cv.width = w; cv.height = h;
           cv.getContext('2d').drawImage(img, 0, 0, w, h);
-          var dataUrl = cv.toDataURL('image/webp', 0.82);
-          var baseName = key.replace(/\./g, '-') + '-' + Date.now();
-          fetch('/api/upload', {
-            method: 'POST',
-            headers: adminAuthHeaders(),
-            body: JSON.stringify({ dataUrl: dataUrl, name: baseName })
-          }).then(function (r) { return r.json(); }).then(function (res) {
-            if (res && res.ok && res.path) {
-              setAt(DATA, key, res.path);
+          var rawDataUrl = cv.toDataURL('image/webp', 0.82);
+
+          function uploadImage(dataUrlToUpload) {
+            toast('Uploading image...');
+            fetch('/api/upload', {
+              method: 'POST',
+              headers: adminAuthHeaders(),
+              body: JSON.stringify({ dataUrl: dataUrlToUpload })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res && res.ok && res.dataUrl) {
+                setAt(DATA, key, res.dataUrl);
+                setDirty(true);
+                render();
+                _uploadInProgress = false;
+                scheduleAutoSave();
+                toast('Image updated!');
+              } else {
+                _uploadInProgress = false;
+                toast('Upload failed: ' + (res && res.error || 'unknown'), true);
+              }
+            }).catch(function (e) {
+              console.warn('[upload] error:', e);
+              setAt(DATA, key, dataUrlToUpload);
               setDirty(true);
               render();
-              toast('Image uploaded! Saving...');
-              save().then(function () {
-                fetch('/api/deploy', { method: 'POST', headers: adminAuthHeaders() })
-                  .then(function (r) { return r.json(); })
-                  .then(function (d) {
-                    if (d && d.ok) toast('Image updated on website!');
-                    else toast('Saved but deploy failed', true);
-                  }).catch(function () { toast('Saved locally', true); });
-              });
-            } else {
-              toast('Upload failed: ' + (res && res.error || 'unknown'), true);
-            }
-          }).catch(function (e) {
-            console.warn('[upload] error:', e);
-            setAt(DATA, key, dataUrl);
-            setDirty(true);
-            render();
-            toast('Upload failed — saved locally');
-          });
+              _uploadInProgress = false;
+              toast('Upload failed — saved locally');
+            });
+          }
+
+          if (typeof removeBackgroundFromImage === 'function') {
+            removeBackgroundFromImage(rawDataUrl).then(function (processedDataUrl) {
+              uploadImage(processedDataUrl);
+            }).catch(function (err) {
+              console.warn('[bgremove] failed, uploading original:', err);
+              uploadImage(rawDataUrl);
+            });
+          } else if (window.imgly && typeof window.imgly.removeBackground === 'function') {
+            window.imgly.removeBackground(rawDataUrl).then(function (processedDataUrl) {
+              uploadImage(processedDataUrl);
+            }).catch(function (err) {
+              console.warn('[bgremove] failed, uploading original:', err);
+              uploadImage(rawDataUrl);
+            });
+          } else {
+            toast('Background removal not ready — uploading original...');
+            uploadImage(rawDataUrl);
+          }
         };
-        img.onerror = function () { URL.revokeObjectURL(url); toast('Failed to process image', true); };
+        img.onerror = function () { URL.revokeObjectURL(url); _uploadInProgress = false; toast('Failed to process image', true); };
         img.src = url;
       });
     });
