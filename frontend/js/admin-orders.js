@@ -262,9 +262,10 @@
       box = container;
       if (!initialized) {
         initialized = true;
+        renderShell();
         loadOrders(true);
       } else {
-        renderShell(); /* just re-render with cached data â€” instant */
+        renderShell(); /* just re-render with cached data — instant */
       }
       clearInterval(refreshTimer);
       refreshTimer = setInterval(function () { loadOrders(false); }, 10000);
