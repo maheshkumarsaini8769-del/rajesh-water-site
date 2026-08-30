@@ -169,7 +169,16 @@ function proxyTo(port, req, res) {
 
 /* ---------- business store (data/business.json) ---------- */
 function readBiz() {
-  if (MEM.biz) return memCopy(MEM.biz);
+  if (MEM.biz) return Promise.resolve(memCopy(MEM.biz));
+  if (db.state().on) {
+    return db.loadBiz().then(function (b) {
+      if (b && Array.isArray(b.products)) { MEM.biz = b; return memCopy(b); }
+      return JSON.parse(JSON.stringify(EMPTY_BIZ));
+    }).catch(function () { return readBizFromFile(); });
+  }
+  return Promise.resolve(readBizFromFile());
+}
+function readBizFromFile() {
   try {
     var b = JSON.parse(fs.readFileSync(BIZ_FILE, 'utf8'));
     if (!b || !Array.isArray(b.products)) return JSON.parse(JSON.stringify(EMPTY_BIZ));
@@ -352,11 +361,10 @@ async function syncFromMongo() {
 
 function catalogPrices() {
   var map = {};
-  try {
-    var b = readBiz();
+  return readBiz().then(function (b) {
     (b.products || []).forEach(function (p) { if (p && p.id) map[p.id] = { name: p.name, price: Number(p.price) || 0, bottlesPerBox: Number(p.bottlesPerBox) || 12 }; });
-  } catch (e) {}
-  return map;
+    return map;
+  }).catch(function () { return map; });
 }
 
 function etaText(createdAt) {
@@ -734,12 +742,12 @@ async function handleOrderCreate(req, res, payload) {
     verificationStatus = 'Pending Owner Confirmation';
   }
 
-  if (!Array.isArray(payload.items) || !payload.items.length) { send(res, 400, { ok: false, error: 'empty order' }); return; }
+  if (!Array.isArray(payload.items) || !payload.items.length) { send(res, 400, { ok: false, error: 'empty order — at least 1 item required' }); return; }
   if (nonce && NONCES.has(nonce)) {
     send(res, 409, { ok: false, duplicate: true, error: 'Duplicate submission — this order was already placed.' });
     return;
   }
-  var prices = catalogPrices();
+  var prices = await catalogPrices();
   var items = [];
   var total = 0;
   payload.items.slice(0, 25).forEach(function (it) {
@@ -977,7 +985,7 @@ if (status === 'completed') {
         o.paymentStatus = 'Paid';
       }
       if (status === 'completed' && !o.stockApplied) {
-        var saleInfo = recordCompletedOrderSale(o);
+        var saleInfo = await recordCompletedOrderSale(o);
         o.stockApplied = true;
         o.saleRecorded = saleInfo.recorded > 0;
         o.saleSkipped = saleInfo.skipped;
@@ -995,8 +1003,8 @@ writeOrders(d);
 
 /* When an order becomes COMPLETED its sale is recorded into business.json (idempotent via o.stockApplied).
    This is the ONLY place a tracked order becomes a completed sale: PENDING/CONFIRMED never count. */
-function recordCompletedOrderSale(o) {
-  var b = readBiz();
+async function recordCompletedOrderSale(o) {
+  var b = await readBiz();
   var recorded = 0, skipped = [];
   function todayIso() {
     var d = new Date();
@@ -1188,7 +1196,11 @@ function handleApi(req, res, pathname) {
     return true;
   }
   if (req.method === 'GET' && pathname === '/api/biz') {
-    send(res, 200, readBiz());
+    readBiz().then(function (data) {
+      send(res, 200, data);
+    }).catch(function () {
+      send(res, 200, JSON.parse(JSON.stringify(EMPTY_BIZ)));
+    });
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/biz') {
@@ -1199,7 +1211,7 @@ function handleApi(req, res, pathname) {
       var payload = null;
       try { payload = JSON.parse(bb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
       if (!payload || !Array.isArray(payload.products)) { send(res, 400, { ok: false, error: 'not a business doc' }); return; }
-      var cur = readBiz();
+      var cur = await readBiz();
       if (payload.pendingOrders) cur.pendingOrders = payload.pendingOrders;
       if (payload.products) cur.products = payload.products;
       if (payload.purchases) cur.purchases = payload.purchases;
@@ -1290,7 +1302,7 @@ function handleApi(req, res, pathname) {
     req.on('end', function () {
       var payload = {};
       try { payload = JSON.parse(ob || '{}'); } catch (e) {}
-      var cur = readBiz();
+      readBiz().then(function (cur) {
       var order = {
         id: 'O' + Date.now() + Math.floor(Math.random() * 1000),
         ref: String(payload.ref || ('RW-' + Date.now().toString(36).toUpperCase().slice(-6))),
@@ -1312,6 +1324,7 @@ function handleApi(req, res, pathname) {
       if (cur.pendingOrders.length > 300) cur.pendingOrders = cur.pendingOrders.slice(0, 300);
       writeBiz(cur);
       send(res, 200, { ok: true, id: order.id });
+      }).catch(function () { send(res, 500, { ok: false, error: 'read failed' }); });
     });
     return true;
   }
