@@ -1163,7 +1163,7 @@ function handleApi(req, res, pathname) {
       var payload = null;
       try { payload = JSON.parse(sdb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) { send(res, 400, { ok: false, error: 'site data must be a json object' }); return; }
-      MEM.siteData = payload;
+      writeSiteDataJs(payload);
       if (db.state().on) {
         try { await db.saveSiteData(payload); } catch (e) { console.error('[mongo] site-data save failed:', e.message); }
       }

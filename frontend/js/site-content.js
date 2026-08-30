@@ -3,9 +3,9 @@
    Applies window.SITE_DATA (edited via admin.html) to the live
    page: brand, logo, texts, contact numbers, reviews, theme.
    Load this AFTER data/site-data.js, BEFORE inline builders.
-   
-   v3: Static data instant + background fetch for live updates.
-   No blocking API call on load.
+
+   v4: Live data fetched IMMEDIATELY + every 10s.
+   applyContact() rebuilds ALL WhatsApp/tel links from scratch.
    ============================================================ */
 (function () {
   "use strict";
@@ -17,8 +17,6 @@
       window.PRODUCTS = data.products;
     }
   }
-
-  function trust(d) { return d && (d.name || d.tagline) ? d : null; }
 
   function applyBrand() {
     if (!D.brand) return;
@@ -67,16 +65,25 @@
 
   function applyContact() {
     if (!D.contact) return;
-    var wa = D.contact.whatsapp, ph = D.contact.phone;
+    var wa = D.contact.whatsapp || '';
+    var ph = D.contact.phone || '';
+    var cartName = D.contact.cartName || 'RAJESH WATER';
+    var supportMsg = D.contact.supportMsg || 'Hello ' + cartName + ', I need help with my order.';
+    var bulkMsg = D.contact.bulkMsg || 'Hello ' + cartName + ', I\'m interested in bulk supply.';
+    var orderMsg = 'Hello ' + cartName + ', I\'d like to place an order.';
+
     if (wa) {
+      /* Replace phone number in ALL wa.me links */
       document.querySelectorAll('a[href*="wa.me/"]').forEach(function (a) {
         a.href = a.href.replace(/wa\.me\/\d+/, 'wa.me/' + wa);
       });
-      if (D.contact.supportMsg) {
-        document.querySelectorAll('.support-card[href*="wa.me/"]').forEach(function (a) {
-          a.href = 'https://wa.me/' + wa + '?text=' + encodeURIComponent(D.contact.supportMsg);
-        });
-      }
+      /* Rebuild ?text= for specific link types so business name updates */
+      document.querySelectorAll('.support-card[href*="wa.me/"]').forEach(function (a) {
+        a.href = 'https://wa.me/' + wa + '?text=' + encodeURIComponent(supportMsg);
+      });
+      document.querySelectorAll('.rw-fab-wa[href*="wa.me/"]').forEach(function (a) {
+        a.href = 'https://wa.me/' + wa + '?text=' + encodeURIComponent(orderMsg);
+      });
     }
     if (ph) {
       document.querySelectorAll('a[href*="tel:+"]').forEach(function (a) {
@@ -139,7 +146,7 @@
       var src = si[i];
       if (!src) continue;
       document.querySelectorAll('.spin[data-i="' + i + '"] img').forEach(function (im) {
-        im.src = src;
+        if (im.src !== src) im.src = src;
       });
     }
     var di = (D.hero && D.hero.deliverImg) || [];
@@ -147,12 +154,14 @@
       var src = di[i];
       if (!src) continue;
       document.querySelectorAll('.drink[data-i="' + i + '"] img').forEach(function (im) {
-        im.src = src;
+        if (im.src !== src) im.src = src;
       });
     }
     var bi = (D.about && D.about.bottleImg) || '';
     if (bi) {
-      document.querySelectorAll('.about-bottle').forEach(function (im) { im.src = bi; });
+      document.querySelectorAll('.about-bottle').forEach(function (im) {
+        if (im.src !== bi) im.src = bi;
+      });
     }
   }
 
@@ -182,25 +191,31 @@
     applyTheme();
   }
 
-  /* Apply static data immediately, then fetch live in background */
+  var _fetching = false;
   function doFetchLive() {
-    fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
+    if (_fetching) return;
+    _fetching = true;
+    fetch('/api/site-data?t=' + Date.now()).then(function (r) { return r.json(); }).then(function (res) {
+      _fetching = false;
       if (res && res.ok && res.content) applyAll(res.content);
-    }).catch(function () {});
+    }).catch(function () { _fetching = false; });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       applyStatic();
       doFetchLive();
-      /* Re-fetch every 30s for live updates (image changes, text edits) */
-      setInterval(doFetchLive, 30000);
+      setInterval(doFetchLive, 10000);
     });
   } else {
     applyStatic();
     doFetchLive();
-    setInterval(doFetchLive, 30000);
+    setInterval(doFetchLive, 10000);
   }
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) doFetchLive();
+  });
 
   window.siteApplyContent = applyStatic;
   window.siteContentApplied = true;
