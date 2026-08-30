@@ -93,6 +93,10 @@
       document.querySelectorAll('[data-s="support.c2l"]').forEach(function (el) {
         el.textContent = fmtPh + ' \u2192';
       });
+      /* Update footer phone text */
+      document.querySelectorAll('.footer-col a[href*="tel:+"]').forEach(function (el) {
+        el.textContent = fmtPh;
+      });
     }
   }
 
@@ -178,6 +182,9 @@
     if (typeof window.renderProducts === 'function') {
       try { window.renderProducts(); } catch (e) {}
     }
+    if (typeof window.applyToSteppers === 'function') {
+      try { window.applyToSteppers(); } catch (e) {}
+    }
   }
 
   function applyStatic() {
@@ -197,8 +204,9 @@
     _fetching = true;
     fetch('/api/site-data?t=' + Date.now()).then(function (r) { return r.json(); }).then(function (res) {
       _fetching = false;
+      console.log('[site-content] fetched site-data:', res && res.ok, res && res.content && res.content.products && res.content.products.length + ' products');
       if (res && res.ok && res.content) applyAll(res.content);
-    }).catch(function () { _fetching = false; });
+    }).catch(function (err) { _fetching = false; console.warn('[site-content] fetch failed:', err); });
   }
 
   if (document.readyState === 'loading') {

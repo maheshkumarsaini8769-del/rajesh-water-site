@@ -243,7 +243,7 @@
       if (window.fetch) {
         fetch('/api/biz', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': ordToken() },
           body: JSON.stringify(doc)
         }).then(function (r) { apiOk = r.ok; if (!apiOk) saveLocal(doc); })
           .catch(function () { apiOk = false; saveLocal(doc); })

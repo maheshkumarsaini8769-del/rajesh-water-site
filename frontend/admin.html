@@ -1407,7 +1407,7 @@ function loadAdminBiz() {
             if (window.fetch && nrList[i] && nrList[i].id) {
               fetch('/api/reviews/delete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: adminAuthHeaders(),
                 body: JSON.stringify({ id: nrList[i].id })
               }).catch(function () {});
             }
@@ -1556,10 +1556,11 @@ function loadAdminBiz() {
       try {
         var resp = await fetch('/api/site-data', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: adminAuthHeaders(),
           body: JSON.stringify(DATA)
         });
         var res = await resp.json();
+        console.log('[admin-save] POST /api/site-data →', resp.status, res);
         if (res && res.ok) apiOk = true;
       } catch (e) { /* API unavailable — continue with local save */ }
 

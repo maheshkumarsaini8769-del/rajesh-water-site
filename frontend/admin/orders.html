@@ -245,7 +245,7 @@ document.getElementById('list').addEventListener('click',function(e){
     }
     doBtn.disabled=true;
     doBtn.textContent='…';
-    fetch('/api/admin/orders/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:oid,status:status,reason:status==='cancelled'?'Cancelled by owner':''})}).then(function(r){return r.json().catch(function(){return{};});}).then(function(d){
+    fetch('/api/admin/orders/status',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':localStorage.getItem('rw_admin_tok')||''},body:JSON.stringify({id:oid,status:status,reason:status==='cancelled'?'Cancelled by owner':''})}).then(function(r){return r.json().catch(function(){return{};});}).then(function(d){
       if(d&&d.ok){load();}else{alert(d.error||'Error');doBtn.disabled=false;doBtn.textContent=status==='completed'?'Complete':'Reject';}
     }).catch(function(){alert('Server unreachable');doBtn.disabled=false;doBtn.textContent=status==='completed'?'Complete':'Reject';});
   }

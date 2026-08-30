@@ -137,15 +137,17 @@ function readSiteDataJs() {
   if (MEM.siteData && Object.keys(MEM.siteData).length) return memCopy(MEM.siteData);
   try {
     var c = fs.readFileSync(SITE_DATA_FILE, 'utf8');
-    var i = c.lastIndexOf('='), j = c.lastIndexOf(';');
-    if (i < 0) return {};
+    var m = c.match(/window\.SITE_DATA\s*=\s*/);
+    if (!m) return {};
+    var i = m.index + m[0].length - 1;
+    var j = c.lastIndexOf(';');
     MEM.siteData = JSON.parse(c.slice(i + 1, j > i ? j : undefined));
     return memCopy(MEM.siteData);
-  } catch (e) { return {}; }
+  } catch (e) { console.error('[server] readSiteDataJs parse failed:', e.message); return {}; }
 }
 function writeSiteDataJs(obj) {
   MEM.siteData = obj;
-  if (!process.env.VERCEL) { try { fs.writeFileSync(SITE_DATA_FILE, 'window.SITE_DATA = ' + JSON.stringify(obj, null, 2) + ';\n'); } catch (e) {} }
+  if (!process.env.VERCEL) { try { fs.writeFileSync(SITE_DATA_FILE, 'window.SITE_DATA = ' + JSON.stringify(obj, null, 2) + ';\n'); } catch (e) { console.error('[server] writeSiteDataJs file write failed:', e.message); } }
   if (db.state().on) db.saveSiteData(obj).catch(function (err) { db.markError('sitedata', err); });
 }
 
@@ -1163,7 +1165,9 @@ function handleApi(req, res, pathname) {
       var payload = null;
       try { payload = JSON.parse(sdb || '{}'); } catch (e) { send(res, 400, { ok: false, error: 'bad json' }); return; }
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) { send(res, 400, { ok: false, error: 'site data must be a json object' }); return; }
+      console.log('[server] POST /api/site-data received, products:', payload.products && payload.products.length);
       writeSiteDataJs(payload);
+      console.log('[server] writeSiteDataJs done, MEM.siteData products:', MEM.siteData && MEM.siteData.products && MEM.siteData.products.length);
       if (db.state().on) {
         try { await db.saveSiteData(payload); } catch (e) { console.error('[mongo] site-data save failed:', e.message); }
       }

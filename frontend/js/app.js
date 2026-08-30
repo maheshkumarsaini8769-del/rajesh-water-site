@@ -326,7 +326,7 @@
           '</div>' +
           '<div class="flex items-center gap-3">' +
             '<button class="rw-qty-btn w-8 h-8 rounded-full flex items-center justify-center font-bold pb-1 rw-qty-minus" type="button">-</button>' +
-            '<span class="font-headline-md text-headline-md text-primary w-6 text-center rw-qty">0</span>' +
+            '<span class="font-headline-md text-headline-md text-primary w-6 text-center rw-qty">' + mb + '</span>' +
             '<button class="rw-qty-btn w-8 h-8 rounded-full flex items-center justify-center font-bold pb-1 rw-qty-plus" type="button">+</button>' +
           '</div>' +
         '</div>' +
@@ -347,6 +347,7 @@
     if (allCountEl) { allCountEl.textContent = 'Showing ' + window.PRODUCTS.length + ' Products'; }
   }
   window.renderProducts = renderProducts;
+  window.applyToSteppers = applyToSteppers;
 
   /* ---------- Catalog steppers ---------- */
   document.addEventListener('click', function (e) {
