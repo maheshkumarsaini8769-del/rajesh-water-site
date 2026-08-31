@@ -844,6 +844,13 @@ async function handleMyOrders(req, res, qp) {
   var token = String(qp.token || '');
   var phone = String(qp.phone || '').replace(/\D/g, '');
   var authorized = false;
+  /* Vercel: refresh from MongoDB to get latest status */
+  if (db.state().on) {
+    try {
+      var fresh = await db.loadOrders();
+      if (fresh && Array.isArray(fresh.orders)) MEM.orders = fresh;
+    } catch (e) {}
+  }
   var d = readOrders();
   if (token) {
     for (var i = 0; i < d.orders.length; i++) {
