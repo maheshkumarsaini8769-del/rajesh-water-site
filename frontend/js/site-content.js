@@ -185,6 +185,7 @@
     if (typeof window.applyToSteppers === 'function') {
       try { window.applyToSteppers(); } catch (e) {}
     }
+    document.dispatchEvent(new Event('site-content-updated'));
   }
 
   function applyStatic() {
@@ -202,23 +203,22 @@
   function doFetchLive() {
     if (_fetching) return;
     _fetching = true;
-    fetch('/api/site-data?t=' + Date.now()).then(function (r) { return r.json(); }).then(function (res) {
+    fetch('/api/site-data').then(function (r) { return r.json(); }).then(function (res) {
       _fetching = false;
-      console.log('[site-content] fetched site-data:', res && res.ok, res && res.content && res.content.products && res.content.products.length + ' products');
       if (res && res.ok && res.content) applyAll(res.content);
-    }).catch(function (err) { _fetching = false; console.warn('[site-content] fetch failed:', err); });
+    }).catch(function () { _fetching = false; });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       applyStatic();
       doFetchLive();
-      setInterval(doFetchLive, 10000);
+      setInterval(doFetchLive, 30000);
     });
   } else {
     applyStatic();
     doFetchLive();
-    setInterval(doFetchLive, 10000);
+    setInterval(doFetchLive, 30000);
   }
 
   document.addEventListener('visibilitychange', function () {

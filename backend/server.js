@@ -1239,7 +1239,8 @@ function handleApi(req, res, pathname) {
   }
   if (req.method === 'GET' && pathname === '/api/site-data') {
     readSiteDataJs().then(function (data) {
-      send(res, 200, { ok: true, content: data });
+      res.writeHead(200, Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=5, stale-while-revalidate=30' }, CORS_HEADERS));
+      res.end(JSON.stringify({ ok: true, content: data }));
     }).catch(function (e) {
       send(res, 200, { ok: true, content: {} });
     });

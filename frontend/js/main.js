@@ -386,6 +386,11 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
   updateSizing();
   render();
   restartAuto();
+
+  document.addEventListener("site-content-updated", function () {
+    updateSizing();
+    render();
+  });
 })();
 
 
