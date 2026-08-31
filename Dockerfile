@@ -20,6 +20,9 @@ RUN npm ci --omit=dev
 # Copy backend source
 COPY backend/ .
 
+# Copy frontend (server serves static files from ../frontend/)
+COPY frontend/ ../frontend/
+
 # Create data dir for local file fallback
 RUN mkdir -p data
 

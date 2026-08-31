@@ -62,20 +62,12 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://rajesh-water-site-7bzc.vercel.app/api/$1"
-    },
-    {
       "source": "/admin",
       "destination": "/admin.html"
     },
     {
       "source": "/orders",
       "destination": "/orders.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/404.html"
     }
   ]
 }
