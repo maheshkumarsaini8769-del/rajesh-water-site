@@ -53,3 +53,6 @@
 .rw-cancel-btn{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#c8e6e0;font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
 .rw-cancel-btn:hover{background:rgba(255,80,80,.15);border-color:rgba(255,100,100,.4);color:#ff7070}
 .rw-add-btn{flex:1;margin-top:0!important}
+
+/* === Drawer head: right section === */
+.drawer-head-right{display:flex;align-items:center;gap:12px;margin-left:auto}
