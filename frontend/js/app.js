@@ -351,7 +351,10 @@
           '</div>' +
         '</div>' +
         '<div class="rw-maxhint" role="status">Max ' + (p.maxQty || 40) + ' boxes reached</div>' +
-        '<button class="rw-add-btn" type="button" aria-label="Add to cart">Add to Cart</button>' +
+        '<div class="rw-add-row">' +
+          '<button class="rw-cancel-btn" type="button" aria-label="Cancel">\u2190</button>' +
+          '<button class="rw-add-btn" type="button" aria-label="Add to cart">Add to Cart</button>' +
+        '</div>' +
         '<button class="rw-quote-btn" type="button" aria-label="Bulk order enquiry">Bulk Order</button>' +
       '</div>' +
     '</article>';
@@ -417,6 +420,16 @@
         addPendingToCart(aid);
         addBtn.classList.remove('flash'); void addBtn.offsetWidth; addBtn.classList.add('flash');
         save(); applyToSteppers(); render();
+      }
+      return;
+    }
+    var cancelBtn = e.target.closest('.rw-cancel-btn');
+    if (cancelBtn) {
+      var cc = cancelBtn.closest('.rw-product-card');
+      if (cc) {
+        var cid = cc.getAttribute('data-id');
+        pending[cid] = parseInt(cc.getAttribute('data-minboxes'), 10) || 1;
+        applyToSteppers();
       }
       return;
     }
