@@ -56,3 +56,6 @@
 
 /* === Drawer head: right section === */
 .drawer-head-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+
+/* === Fix: cart drawer above navbar === */
+.cart-drawer{z-index:1300!important}

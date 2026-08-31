@@ -352,7 +352,6 @@
         '</div>' +
         '<div class="rw-maxhint" role="status">Max ' + (p.maxQty || 40) + ' boxes reached</div>' +
         '<div class="rw-add-row">' +
-          '<button class="rw-cancel-btn" type="button" aria-label="Cancel">\u2190</button>' +
           '<button class="rw-add-btn" type="button" aria-label="Add to cart">Add to Cart</button>' +
         '</div>' +
         '<button class="rw-quote-btn" type="button" aria-label="Bulk order enquiry">Bulk Order</button>' +
