@@ -422,16 +422,6 @@
       }
       return;
     }
-    var cancelBtn = e.target.closest('.rw-cancel-btn');
-    if (cancelBtn) {
-      var cc = cancelBtn.closest('.rw-product-card');
-      if (cc) {
-        var cid = cc.getAttribute('data-id');
-        pending[cid] = parseInt(cc.getAttribute('data-minboxes'), 10) || 1;
-        applyToSteppers();
-      }
-      return;
-    }
     var btn = e.target.closest('.rw-qty-plus, .rw-qty-minus');
     if (!btn) return;
     var card = btn.closest('.rw-product-card');
