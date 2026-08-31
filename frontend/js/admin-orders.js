@@ -242,6 +242,8 @@
       if (d && d.ok) {
         var lbl = status === 'completed' ? 'Completed' : (status === 'cancelled' ? 'Cancelled' : 'Confirmed');
         toast('#' + id + ' \u2192 ' + lbl);
+        /* Re-fetch from server to ensure persistence — local-only updates cause revert on refresh */
+        loadOrders(true);
       } else if (d && d.needLogin) {
         toast('Session expired \u2014 refresh page', true);
       } else {

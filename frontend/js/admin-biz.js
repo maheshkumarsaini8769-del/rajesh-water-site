@@ -1161,22 +1161,10 @@
         if (d && d.ok) {
           var lbl = status === 'completed' ? 'Completed' : (status === 'cancelled' ? 'Cancelled' : ORD_LABEL[status] || status);
           toast('#' + o.id + ' \u2192 ' + lbl);
-          /* P3+P8: Update ONLY this order locally — no full reload, no disappearance */
-          for (var i = 0; i < orders.length; i++) {
-            if (orders[i].id === o.id) {
-              orders[i].status = status;
-              if (!orders[i].statusHistory) orders[i].statusHistory = [];
-              orders[i].statusHistory.push({ status: status, at: Date.now() });
-              if (status === 'completed') orders[i].completedAt = Date.now();
-              if (status === 'cancelled') orders[i].cancelledAt = Date.now();
-              if (status === 'confirmed') orders[i].confirmedAt = Date.now();
-              break;
-            }
-          }
-          /* P4: NO vibration/sound on complete — only notify on NEW orders */
-          var newSec = secOf(orders[i] || {});
+          /* Re-fetch from server to ensure persistence — local-only updates cause revert on refresh */
+          var newSec = secOf({ status: status });
           S._ordSection = newSec;
-          renderAd();
+          load();
           if (btnEl) { btnEl.textContent = lbl; }
         } else if (d && d.error) {
           toast(d.error, true);
