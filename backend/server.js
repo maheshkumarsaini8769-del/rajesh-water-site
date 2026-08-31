@@ -1046,7 +1046,7 @@ async function recordCompletedOrderSale(o) {
   return { recorded: recorded, skipped: skipped };
 }
 
-function handleAdminOrderNote(req, res, payload) {
+async function handleAdminOrderNote(req, res, payload) {
   if (!requireAdmin(req, res)) return true;
   var id = String(payload.id || '');
   var note = String(payload.note || '').trim().slice(0, 1000);
@@ -1501,11 +1501,11 @@ if (req.method === 'POST' && pathname === '/api/truecaller/begin') {
     return true;
   }
   if (req.method === 'POST' && pathname === '/api/admin/orders/note') {
-    readBody(req, res, function (p) { handleAdminOrderNote(req, res, p); });
+    readBody(req, res, function (p) { handleAdminOrderNote(req, res, p).catch(function (e) { console.error('[note] error:', e.message); }); });
     return true;
   }
 if (req.method === 'POST' && pathname === '/api/admin/orders/delete') {
-    readBody(req, res, function (p) { handleAdminOrderDelete(req, res, p); });
+    readBody(req, res, function (p) { handleAdminOrderDelete(req, res, p).catch(function (e) { console.error('[delete] error:', e.message); }); });
     return true;
   }
   /* ---- Analytics / Event Tracking ---- */
