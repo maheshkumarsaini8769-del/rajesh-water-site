@@ -951,22 +951,15 @@ async function handleAdminOrderStatus(req, res, payload) {
   var id = String(payload.id || '');
   var status = String(payload.status || '');
   if (STATUSES.indexOf(status) === -1) { send(res, 400, { ok: false, error: 'invalid status' }); return; }
-  if (status === 'complete_requested') { send(res, 400, { ok: false, error: 'complete_requested is customer-initiated \u2014 admin sets completed directly.' }); return; }
-  var d = readOrders();
-  var found = false;
-  for (var i = 0; i < d.orders.length; i++) {
-    if (d.orders[i].id === id) { found = true; break; }
-  }
-  /* Vercel cold-start: MEM may be stale — refresh from MongoDB */
-  if (!found && db.state().on) {
+  if (status === 'complete_requested') { send(res, 400, { ok: false, error: 'complete_requested is customer-initiated — admin sets completed directly.' }); return; }
+  /* ALWAYS refresh from MongoDB — MEM may be stale on Vercel */
+  if (db.state().on) {
     try {
       var fresh = await db.loadOrders();
-      if (fresh && Array.isArray(fresh.orders)) {
-        writeOrders(fresh);
-        d = fresh;
-      }
+      if (fresh && Array.isArray(fresh.orders)) MEM.orders = fresh;
     } catch (e) { console.log('[status] mongo refresh failed:', e.message); }
   }
+  var d = readOrders();
   for (var i = 0; i < d.orders.length; i++) {
     if (d.orders[i].id === id) {
       var o = d.orders[i];
@@ -987,20 +980,23 @@ async function handleAdminOrderStatus(req, res, payload) {
         o.cancelledAt = now;
         o.rejectReason = String(payload.reason || '').slice(0, 300);
       }
-if (status === 'completed') {
+      if (status === 'completed') {
         o.completedAt = now;
         o.paymentStatus = 'Paid';
       }
       if (status === 'completed' && !o.stockApplied) {
-        var saleInfo = await recordCompletedOrderSale(o);
-        o.stockApplied = true;
-        o.saleRecorded = saleInfo.recorded > 0;
-        o.saleSkipped = saleInfo.skipped;
-        console.log('[sales] #' + o.id + ' completed \u2014 recorded ' + saleInfo.recorded + ' sale line(s) into business.json' + (saleInfo.skipped.length ? '; skipped unmatched: ' + saleInfo.skipped.join(', ') : '') + '.');
+        try {
+          var saleInfo = await recordCompletedOrderSale(o);
+          o.stockApplied = true;
+          o.saleRecorded = saleInfo.recorded > 0;
+          o.saleSkipped = saleInfo.skipped;
+          console.log('[sales] #' + o.id + ' completed — recorded ' + saleInfo.recorded + ' sale line(s)');
+        } catch (saleErr) { console.error('[sales] failed for #' + o.id, saleErr.message); }
       }
       MEM.orders = d;
-      /* Ensure MongoDB has the update before responding */
-      if (db.state().on) { try { await db.saveOrders(d); } catch (e) { console.error('[status] mongo save failed:', e.message); } }
+      if (db.state().on) {
+        try { await db.saveOrders(d); } catch (e) { console.error('[status] mongo save FAILED:', e.message); send(res, 500, { ok: false, error: 'save failed' }); return; }
+      }
       send(res, 200, { ok: true, status: status, id: id, section: SECTION_LABEL[status] });
       return;
     }
@@ -1054,11 +1050,15 @@ function handleAdminOrderNote(req, res, payload) {
   if (!requireAdmin(req, res)) return true;
   var id = String(payload.id || '');
   var note = String(payload.note || '').trim().slice(0, 1000);
+  if (db.state().on) {
+    try { var fresh = await db.loadOrders(); if (fresh && Array.isArray(fresh.orders)) MEM.orders = fresh; } catch (e) {}
+  }
   var d = readOrders();
   for (var i = 0; i < d.orders.length; i++) {
     if (d.orders[i].id === id) {
       d.orders[i].ownerNotes = note;
-      writeOrders(d);
+      MEM.orders = d;
+      if (db.state().on) { try { await db.saveOrders(d); } catch (e) {} }
       send(res, 200, { ok: true, id: id, note: note });
       return;
     }
@@ -1066,9 +1066,12 @@ function handleAdminOrderNote(req, res, payload) {
   send(res, 404, { ok: false, error: 'order not found' });
 }
 
-function handleAdminOrderDelete(req, res, payload) {
+async function handleAdminOrderDelete(req, res, payload) {
   if (!requireAdmin(req, res)) return true;
   var id = String(payload.id || '');
+  if (db.state().on) {
+    try { var fresh = await db.loadOrders(); if (fresh && Array.isArray(fresh.orders)) MEM.orders = fresh; } catch (e) {}
+  }
   var d = readOrders();
   for (var i = 0; i < d.orders.length; i++) {
     if (d.orders[i].id === id) {
@@ -1077,7 +1080,8 @@ function handleAdminOrderDelete(req, res, payload) {
         return;
       }
       d.orders.splice(i, 1);
-      writeOrders(d);
+      MEM.orders = d;
+      if (db.state().on) { try { await db.saveOrders(d); } catch (e) {} }
       console.log('[orders] #' + id + ' permanently deleted by admin.');
       send(res, 200, { ok: true, id: id });
       return;
