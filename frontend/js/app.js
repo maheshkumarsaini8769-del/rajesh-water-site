@@ -382,18 +382,19 @@
     clone.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:50%;';
     fly.appendChild(clone);
     document.body.appendChild(fly);
-    var startX = imgRect.left + imgRect.width / 2 - 30;
-    var startY = imgRect.top + imgRect.height / 2 - 30;
-    var endX = cartRect.left + cartRect.width / 2 - 30;
-    var endY = cartRect.top + cartRect.height / 2 - 30;
-    fly.style.cssText = 'position:fixed;z-index:9999;width:60px;height:60px;pointer-events:none;' +
+    var sz = 100;
+    var startX = imgRect.left + imgRect.width / 2 - sz / 2;
+    var startY = imgRect.top + imgRect.height / 2 - sz / 2;
+    var endX = cartRect.left + cartRect.width / 2 - sz / 2;
+    var endY = cartRect.top + cartRect.height / 2 - sz / 2;
+    fly.style.cssText = 'position:fixed;z-index:9999;width:' + sz + 'px;height:' + sz + 'px;pointer-events:none;' +
       'left:' + startX + 'px;top:' + startY + 'px;transition:none;opacity:1;transform:scale(1);';
     requestAnimationFrame(function () {
       fly.style.transition = 'all 0.6s cubic-bezier(0.2,0.8,0.2,1)';
       fly.style.left = endX + 'px';
       fly.style.top = endY + 'px';
-      fly.style.transform = 'scale(0.2)';
-      fly.style.opacity = '0.4';
+      fly.style.transform = 'scale(0.15)';
+      fly.style.opacity = '0.3';
     });
     setTimeout(function () {
       fly.style.transition = 'opacity 0.15s';
