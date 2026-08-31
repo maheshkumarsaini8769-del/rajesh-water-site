@@ -1175,13 +1175,8 @@
           }
           /* P4: NO vibration/sound on complete — only notify on NEW orders */
           var newSec = secOf(orders[i] || {});
-          if (status === 'completed') {
-            reloadBizData(function () { S._ordSection = newSec; renderAd(); });
-          }
-          else {
-            S._ordSection = newSec;
-            renderAd();
-          }
+          S._ordSection = newSec;
+          renderAd();
           if (btnEl) { btnEl.textContent = lbl; }
         } else if (d && d.error) {
           toast(d.error, true);
