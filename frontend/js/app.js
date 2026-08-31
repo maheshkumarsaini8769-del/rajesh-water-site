@@ -256,15 +256,13 @@
     if (!bottomBar) return;
     var keys = Object.keys(cart);
     if (keys.length === 0) { bottomBar.classList.remove('is-visible'); return; }
-    var names = [];
     var total = 0;
+    var count = 0;
     keys.forEach(function (k) {
-      var it = cart[k];
-      names.push(it.label);
-      total += it.qty * it.price;
+      total += cart[k].qty * cart[k].price;
+      count += cart[k].qty;
     });
-    var summary = names.length <= 2 ? names.join(', ') : names.slice(0, 2).join(', ') + ' +' + (names.length - 2) + ' more';
-    if (bottomItems) { bottomItems.textContent = summary; }
+    if (bottomItems) { bottomItems.textContent = keys.length + ' item' + (keys.length > 1 ? 's' : '') + ' · ' + count + ' bottles'; }
     if (bottomTotal) { bottomTotal.textContent = money(total); }
     bottomBar.classList.add('is-visible');
   }
@@ -371,6 +369,40 @@
   window.renderProducts = renderProducts;
   window.applyToSteppers = applyToSteppers;
 
+  /* ---------- Flying animation ---------- */
+  function flyToCart(card) {
+    var img = card.querySelector('.rw-prod-img');
+    if (!img || !cartBtn) return;
+    var imgRect = img.getBoundingClientRect();
+    var cartRect = cartBtn.getBoundingClientRect();
+    var fly = document.createElement('div');
+    fly.className = 'fly-to-cart';
+    var clone = img.cloneNode(true);
+    clone.className = '';
+    clone.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:50%;';
+    fly.appendChild(clone);
+    document.body.appendChild(fly);
+    var startX = imgRect.left + imgRect.width / 2 - 30;
+    var startY = imgRect.top + imgRect.height / 2 - 30;
+    var endX = cartRect.left + cartRect.width / 2 - 30;
+    var endY = cartRect.top + cartRect.height / 2 - 30;
+    fly.style.cssText = 'position:fixed;z-index:9999;width:60px;height:60px;pointer-events:none;' +
+      'left:' + startX + 'px;top:' + startY + 'px;transition:none;opacity:1;transform:scale(1);';
+    requestAnimationFrame(function () {
+      fly.style.transition = 'all 0.6s cubic-bezier(0.2,0.8,0.2,1)';
+      fly.style.left = endX + 'px';
+      fly.style.top = endY + 'px';
+      fly.style.transform = 'scale(0.2)';
+      fly.style.opacity = '0.4';
+    });
+    setTimeout(function () {
+      fly.style.transition = 'opacity 0.15s';
+      fly.style.opacity = '0';
+      cartBtn.classList.add('cart-bump');
+      setTimeout(function () { fly.remove(); cartBtn.classList.remove('cart-bump'); }, 200);
+    }, 580);
+  }
+
   /* ---------- Catalog steppers ---------- */
   document.addEventListener('click', function (e) {
     var qBtn = e.target.closest('.rw-quote-btn');
@@ -380,6 +412,7 @@
       var ac = addBtn.closest('.rw-product-card');
       if (ac) {
         var aid = ac.getAttribute('data-id');
+        flyToCart(ac);
         addPendingToCart(aid);
         addBtn.classList.remove('flash'); void addBtn.offsetWidth; addBtn.classList.add('flash');
         save(); applyToSteppers(); render();
