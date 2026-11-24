@@ -1,4 +1,4 @@
-﻿"use strict"; /* v2.2 */
+"use strict"; /* v2.2 */
 /* Lightweight Orders Module — v2
    Fixes: no focus loss on search, no revert after status change, faster loading */
 
@@ -13,8 +13,8 @@
   var suppressPollUntil = 0; /* timestamp — don't poll while user just acted */
 
   var SEC_TXT = { ALL: 'ALL', TODAY: 'TODAY', PENDING: 'PENDING', CONFIRMED: 'CONFIRMED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
-  var SEC_CLR = { ALL: '#bcc9ca', TODAY: '#a78bfa', PENDING: '#FFC857', CONFIRMED: '#38D9FF', COMPLETED: '#35E0A1', CANCELLED: '#FF5C7A' };
-  var SEC_BG = { ALL: 'rgba(188,201,202,.06)', TODAY: 'rgba(167,139,250,.06)', PENDING: 'rgba(255,200,87,.06)', CONFIRMED: 'rgba(56,217,255,.06)', COMPLETED: 'rgba(53,224,161,.06)', CANCELLED: 'rgba(255,92,122,.06)' };
+  var SEC_CLR = { ALL: '#334155', TODAY: '#7C3AED', PENDING: '#D97706', CONFIRMED: '#0284C7', COMPLETED: '#059669', CANCELLED: '#E11D48' };
+  var SEC_BG = { ALL: '#F8FAFC', TODAY: 'rgba(124,58,237,.06)', PENDING: 'rgba(217,119,6,.06)', CONFIRMED: 'rgba(2,132,199,.06)', COMPLETED: 'rgba(5,150,105,.06)', CANCELLED: 'rgba(225,29,72,.06)' };
 
   function secOf(o) {
     if (!o) return 'PENDING';
@@ -93,17 +93,17 @@
 
       var actions = '';
       if (sec === 'PENDING') {
-        actions = '<button data-confirm="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#35E0A1;color:#000">Confirm</button>' +
-          '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#38D9FF;color:#000">Complete</button>' +
-          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Cancel</button>';
+        actions = '<button data-confirm="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#059669;color:#fff">Confirm</button>' +
+          '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#0284C7;color:#fff">Complete</button>' +
+          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(225,29,72,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(225,29,72,.10);color:#E11D48">Cancel</button>';
       } else if (sec === 'CONFIRMED') {
-        actions = '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#38D9FF;color:#000">Complete</button>' +
-          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,92,122,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(255,92,122,.12);color:#FF5C7A">Cancel</button>';
+        actions = '<button data-complete="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:0;cursor:pointer;font-size:12px;font-weight:700;background:#0284C7;color:#fff">Complete</button>' +
+          '<button data-cancel="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(225,29,72,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(225,29,72,.10);color:#E11D48">Cancel</button>';
       } else if (sec === 'COMPLETED') {
-        actions = '<span style="color:#35E0A1;font-size:12px;font-weight:600">&#10003; Sale recorded</span>';
+        actions = '<span style="color:#059669;font-size:12px;font-weight:600">&#10003; Sale recorded</span>';
       } else {
-        actions = '<button data-revert="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(56,217,255,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(56,217,255,.12);color:#38D9FF">Revert to Pending</button>' +
-          (o.rejectReason ? '<span style="color:#FF5C7A;font-size:12px;margin-left:8px">Reason: ' + esc(o.rejectReason) + '</span>' : '');
+        actions = '<button data-revert="' + esc(o.id) + '" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(2,132,199,.3);cursor:pointer;font-size:12px;font-weight:700;background:rgba(2,132,199,.10);color:#0284C7">Revert to Pending</button>' +
+          (o.rejectReason ? '<span style="color:#E11D48;font-size:12px;margin-left:8px">Reason: ' + esc(o.rejectReason) + '</span>' : '');
       }
 
       return '<div class="ord-card" data-oid="' + esc(o.id) + '" style="background:' + SEC_BG[sec] + ';border-left:4px solid ' + SEC_CLR[sec] + ';border-radius:12px;padding:12px 14px;margin-bottom:8px;transition:all .2s">' +

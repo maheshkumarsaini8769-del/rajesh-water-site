@@ -124,13 +124,18 @@
     if (!D.theme) return;
     var css = '';
     if (D.theme.accent) {
-      var rgb = hexRgb(D.theme.accent);
-      if (rgb) {
-        css += '--ice:' + D.theme.accent + ';';
-        css += '--ice-dim:rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.55);';
-        css += '--line:rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.16);';
+      var acc = D.theme.accent;
+      var low = String(acc).toLowerCase();
+      if (low === '#00aeef' || low === '#38d9ff' || low === '#7cebff') {
+        acc = '#0284c7';
       }
-      css += '--rw-accent:' + D.theme.accent + ';';
+      var rgb = hexRgb(acc);
+      if (rgb) {
+        css += '--ice:' + acc + ';';
+        css += '--ice-dim:rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',0.78);';
+        css += '--line:rgba(15,23,42,0.10);';
+      }
+      css += '--rw-accent:' + acc + ';';
     }
     if (D.theme.deep) css += '--rw-deep:' + D.theme.deep + ';';
     var st = document.getElementById('site-theme');

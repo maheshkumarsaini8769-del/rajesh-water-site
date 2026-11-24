@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    AQUALINE — Home page interactions
    Coverflow-style bottle slider (ported from the Framer
    coverflow pattern): one `pos` value drives every card; the
@@ -342,7 +342,7 @@ sp.style.transform = "translate(-50%, -50%) translateX(" + x + "px)";
       if (p.y < -8) { p.y = h + 8; p.x = Math.random() * w; }
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(169, 220, 236, " + p.alpha + ")";
+      ctx.fillStyle = "rgba(2, 132, 199, " + (p.alpha * 0.85) + ")";
       ctx.fill();
     }
     tickN = (tickN + 1) % 100000;

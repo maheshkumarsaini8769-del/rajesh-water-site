@@ -1045,10 +1045,10 @@
               suWaNote.style.display = '';
               if (ownerPhone) {
                 suWaNote.textContent = 'Order placed! WhatsApp khul gaya hai owner ko order details bhejne ke liye.';
-                suWaNote.style.color = '#4ade80';
+                suWaNote.style.color = '#059669';
               } else {
                 suWaNote.textContent = 'Order saved! Team aapko contact karegi.';
-                suWaNote.style.color = '#fbbf24';
+                suWaNote.style.color = '#d97706';
               }
             }
             cart = Object.create(null);
@@ -1183,16 +1183,16 @@
           document.getElementById('revName').value = '';
           document.getElementById('revProduct').value = '';
           document.getElementById('revText').value = '';
-          revErrEl.style.color = '#35E0A1';
+          revErrEl.style.color = '#059669';
           revErrEl.textContent = 'Thanks! Your review is now visible on all devices. \u2713';
         } else {
-          revErrEl.style.color = '#FF5C7A';
+          revErrEl.style.color = '#e11d48';
           revErrEl.textContent = 'Failed to submit review. Please try again.';
         }
         revSubmitBtn.disabled = false;
         revSubmitBtn.textContent = 'Submit Review';
       }).catch(function () {
-        revErrEl.style.color = '#FF5C7A';
+        revErrEl.style.color = '#e11d48';
         revErrEl.textContent = 'Network error. Check your connection and try again.';
         revSubmitBtn.disabled = false;
         revSubmitBtn.textContent = 'Submit Review';
